@@ -1,0 +1,9 @@
+version: '2.3'
+services:
+  augur-code:
+    image: augur/augur-code
+    container_name: augur-code
+    network_mode: "host"
+    command: ${CMD_PARAMS}
+    volumes:
+      - ./input:/app/input

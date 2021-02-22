@@ -1,0 +1,1 @@
+exec python iceberg_test.py "$@"

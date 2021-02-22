@@ -1,0 +1,7 @@
+.git
+.idea
+.gitignore
+*_container.sh
+*_compose.sh
+Dockerfile
+input

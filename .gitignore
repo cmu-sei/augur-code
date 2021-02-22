@@ -132,3 +132,5 @@ dmypy.json
 input/
 .idea/
 .DS_Store
+*.png
+*.hdf5
