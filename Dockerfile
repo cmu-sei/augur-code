@@ -11,7 +11,7 @@ RUN pipenv install --system --deploy --ignore-pipfile
 
 # Actual code.
 COPY iceberg_test.py /app/
-COPY run.sh /app/
+COPY entrypoint_run.sh /app/
 
 WORKDIR /app/
-ENTRYPOINT ["bash", "run.sh"]
+ENTRYPOINT ["bash", "entrypoint_run.sh"]

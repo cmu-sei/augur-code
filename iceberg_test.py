@@ -4,24 +4,23 @@ import numpy as np # linear algebra
 np.random.seed(666)
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 from sklearn.model_selection import train_test_split
-from matplotlib import pyplot
 import matplotlib.pyplot as plt
 
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Dropout, Input, Flatten
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Dropout, Input
 from tensorflow.keras.layers import GlobalMaxPooling2D
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.layers import Concatenate
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import ModelCheckpoint, Callback, EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 print(check_output(["ls", "./input"]).decode("utf8"))
+
 
 def get_callbacks(filepath, patience=2):
     es = EarlyStopping('val_loss', patience=patience, mode="min")
     msave = ModelCheckpoint(filepath, save_best_only=True)
     return [es, msave]
+
 
 def load_data():
     # Data for each sample has 3 values: band1, band2, inc_angle. band1 and band2 are 2 radar images,
@@ -30,6 +29,9 @@ def load_data():
     train = pd.read_json("./input/train.json")
     test = pd.read_json("./input/test.json")
     print("Done loading data", flush=True)
+
+    #print(train.head(1))
+    #print(test.head(1))
 
     # We set the samples with no info on inc_angle to 0 as its value, to simplify.
     train.inc_angle = train.inc_angle.replace('na', 0)
@@ -76,44 +78,46 @@ def load_data():
 
     return [X_train, X_angle_train, y_train, X_valid, X_angle_valid, y_valid, X_test, X_angle_test]
 
+
 def get_model():
     bn_model = 0
     p_activation = "elu"
     input_1 = Input(shape=(75, 75, 3), name="X_1")
     input_2 = Input(shape=[1], name="angle")
 
-    img_1 = Conv2D(16, kernel_size = (3,3), activation=p_activation) ((BatchNormalization(momentum=bn_model))(input_1))
-    img_1 = Conv2D(16, kernel_size = (3,3), activation=p_activation) (img_1)
+    img_1 = Conv2D(16, kernel_size=(3, 3), activation=p_activation) ((BatchNormalization(momentum=bn_model)) (input_1))
+    img_1 = Conv2D(16, kernel_size=(3, 3), activation=p_activation) (img_1)
+    img_1 = MaxPooling2D((2, 2)) (img_1)
+    img_1 = Dropout(0.2) (img_1)
+    img_1 = Conv2D(32, kernel_size=(3, 3), activation=p_activation) (img_1)
+    img_1 = Conv2D(32, kernel_size=(3, 3), activation=p_activation) (img_1)
     img_1 = MaxPooling2D((2,2)) (img_1)
     img_1 = Dropout(0.2)(img_1)
-    img_1 = Conv2D(32, kernel_size = (3,3), activation=p_activation) (img_1)
-    img_1 = Conv2D(32, kernel_size = (3,3), activation=p_activation) (img_1)
-    img_1 = MaxPooling2D((2,2)) (img_1)
+    img_1 = Conv2D(64, kernel_size=(3, 3), activation=p_activation) (img_1)
+    img_1 = Conv2D(64, kernel_size=(3, 3), activation=p_activation) (img_1)
+    img_1 = MaxPooling2D((2, 2)) (img_1)
     img_1 = Dropout(0.2)(img_1)
-    img_1 = Conv2D(64, kernel_size = (3,3), activation=p_activation) (img_1)
-    img_1 = Conv2D(64, kernel_size = (3,3), activation=p_activation) (img_1)
-    img_1 = MaxPooling2D((2,2)) (img_1)
-    img_1 = Dropout(0.2)(img_1)
-    img_1 = Conv2D(128, kernel_size = (3,3), activation=p_activation) (img_1)
-    img_1 = MaxPooling2D((2,2)) (img_1)
+    img_1 = Conv2D(128, kernel_size=(3, 3), activation=p_activation) (img_1)
+    img_1 = MaxPooling2D((2, 2)) (img_1)
     img_1 = Dropout(0.2)(img_1)
     img_1 = GlobalMaxPooling2D() (img_1)
 
-    img_2 = Conv2D(128, kernel_size = (3,3), activation=p_activation) ((BatchNormalization(momentum=bn_model))(input_1))
-    img_2 = MaxPooling2D((2,2)) (img_2)
-    img_2 = Dropout(0.2)(img_2)
+    img_2 = Conv2D(128, kernel_size=(3, 3), activation=p_activation) ((BatchNormalization(momentum=bn_model)) (input_1))
+    img_2 = MaxPooling2D((2, 2)) (img_2)
+    img_2 = Dropout(0.2) (img_2)
     img_2 = GlobalMaxPooling2D() (img_2)
 
-    img_concat =  (Concatenate()([img_1, img_2, BatchNormalization(momentum=bn_model)(input_2)]))
+    img_concat = (Concatenate()([img_1, img_2, BatchNormalization(momentum=bn_model)(input_2)]))
 
-    dense_layer = Dropout(0.5) (BatchNormalization(momentum=bn_model) ( Dense(256, activation=p_activation)(img_concat) ))
-    dense_layer = Dropout(0.5) (BatchNormalization(momentum=bn_model) ( Dense(64, activation=p_activation)(dense_layer) ))
+    dense_layer = Dropout(0.5) (BatchNormalization(momentum=bn_model) (Dense(256, activation=p_activation)(img_concat)))
+    dense_layer = Dropout(0.5) (BatchNormalization(momentum=bn_model) (Dense(64, activation=p_activation)(dense_layer)))
     output = Dense(1, activation="sigmoid")(dense_layer)
 
-    model = Model([input_1,input_2],  output)
+    model = Model([input_1, input_2],  output)
     optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
     model.compile(loss="binary_crossentropy", optimizer=optimizer, metrics=["accuracy"])
     return model
+
 
 def train(model, X_train, X_angle_train, y_train, X_valid, X_angle_valid, y_valid):
     file_path = ".model_weights.hdf5"
@@ -125,6 +129,7 @@ def train(model, X_train, X_angle_train, y_train, X_valid, X_angle_valid, y_vali
                          callbacks=callbacks)
     print("Done training!", flush=True)
     return history
+
 
 def show_results(history):
     fig = plt.figure()
@@ -146,6 +151,7 @@ def show_results(history):
     plt.legend(['train', 'test'], loc='upper left')
     plt.show()
     fig.savefig('my_figure_2.png')
+
 
 # Main code.
 [X_train, X_angle_train, y_train, X_valid, X_angle_valid, y_valid, X_test, X_angle_test] = load_data()
