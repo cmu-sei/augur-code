@@ -1,7 +1,6 @@
 from subprocess import check_output
 
 import numpy as np # linear algebra
-np.random.seed(666)
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
@@ -13,7 +12,6 @@ from tensorflow.keras.layers import Concatenate
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
-print(check_output(["ls", "./input"]).decode("utf8"))
 
 
 def get_callbacks(filepath, patience=2):
@@ -23,12 +21,16 @@ def get_callbacks(filepath, patience=2):
 
 
 def load_data():
+    print("Input files: ", flush=True)
+    print(check_output(["ls", "./input"]).decode("utf8"), flush=True)
+
     # Data for each sample has 3 values: band1, band2, inc_angle. band1 and band2 are 2 radar images,
     # each consisting of 75x75 "pixels", floats with a dB unit, obtained by pinging
     # at an angle of inc_angle (band1 and 2 differ on how the response was received).
+    print("Loading input files", flush=True)
     train = pd.read_json("./input/train.json")
     test = pd.read_json("./input/test.json")
-    print("Done loading data", flush=True)
+    print("Done loading data. Train rows: " + str(train.shape[0]) + ", test rows: " + str(test.shape[0]), flush=True)
 
     #print(train.head(1))
     #print(test.head(1))
@@ -154,6 +156,7 @@ def show_results(history):
 
 
 # Main code.
+np.random.seed(666)
 [X_train, X_angle_train, y_train, X_valid, X_angle_valid, y_valid, X_test, X_angle_test] = load_data()
 model = get_model()
 model.summary()
