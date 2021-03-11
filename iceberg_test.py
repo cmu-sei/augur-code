@@ -32,7 +32,7 @@ def load_data():
     test = pd.read_json("./input/test.json")
     print("Done loading data. Train rows: " + str(train.shape[0]) + ", test rows: " + str(test.shape[0]), flush=True)
 
-    #print(train.head(1))
+    print(train.head(1))
     #print(test.head(1))
 
     # We set the samples with no info on inc_angle to 0 as its value, to simplify.
@@ -161,4 +161,4 @@ np.random.seed(666)
 model = get_model()
 model.summary()
 history = train(model, X_train, X_angle_train, y_train, X_valid, X_angle_valid, y_valid)
-show_results(history)
+#show_results(history)

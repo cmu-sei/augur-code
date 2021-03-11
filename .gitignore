@@ -134,3 +134,5 @@ input/
 .DS_Store
 *.png
 *.hdf5
+output/
+
