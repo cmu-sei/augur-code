@@ -8,7 +8,7 @@ def load_data(input_filename):
     # Data for each sample has 3 values: band1, band2, inc_angle. band1 and band2 are 2 radar images,
     # each consisting of 75x75 "pixels", floats with a dB unit, obtained by pinging
     # at an angle of inc_angle (band1 and 2 differ on how the response was received).
-    print("Loading input files", flush=True)
+    print("Loading input file: " + input_filename, flush=True)
     dataset = pd.read_json(input_filename)
     print("Done loading data. Rows: " + str(dataset.shape[0]), flush=True)
 

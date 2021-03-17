@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-pipenv run python3 trainer.py
+pipenv run python3 harness/trainer.py
