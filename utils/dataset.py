@@ -35,9 +35,10 @@ def load_data(input_filename):
         axis=-1)
     x_angle = np.array(dataset.inc_angle)
     y_results = np.array(dataset["is_iceberg"])
+    x_ids = np.array(dataset["id"])
     print("Done loading train data into numpy arrays", flush=True)
 
-    return [x_bands, x_angle, y_results]
+    return [x_ids, x_bands, x_angle, y_results]
 
 
 # Stores Numpy arrays with a dataset into a JSON file.

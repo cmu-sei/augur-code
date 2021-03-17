@@ -63,7 +63,7 @@ def main():
     np.random.seed(666)
 
     # Load and split data.
-    [x_all, x_angle_all, y_all] = augur_dataset.load_data("./input/train.json")
+    [x_ids, x_all, x_angle_all, y_all] = augur_dataset.load_data("./input/train.json")
     [x_train, x_angle_train, y_train, x_valid, x_angle_valid, y_valid] = split_data(x_all, x_angle_all, y_all)
 
     # Prepare model.
