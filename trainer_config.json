@@ -1,0 +1,4 @@
+{
+  "dataset": "./input/train.json",
+  "output": "./output/trained_model"
+}

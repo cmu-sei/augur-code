@@ -7,6 +7,9 @@ from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 
 from utils import model as augur_model
 from utils import dataset as augur_dataset
+from utils.config import Config
+
+CONFIG_FILENAME = "./trainer_config.json"
 
 
 def get_callbacks(filepath, patience=2):
@@ -62,8 +65,12 @@ def show_results(history):
 def main():
     np.random.seed(666)
 
+    # Load config.
+    config = Config()
+    config.load(CONFIG_FILENAME)
+
     # Load and split data.
-    [x_ids, x_all, x_angle_all, y_all] = augur_dataset.load_data("./input/train.json")
+    [x_ids, x_all, x_angle_all, y_all] = augur_dataset.load_data(config.get("dataset"))
     [x_train, x_angle_train, y_train, x_valid, x_angle_valid, y_valid] = split_data(x_all, x_angle_all, y_all)
 
     # Prepare model.
@@ -74,7 +81,7 @@ def main():
     history = train(model, x_train, x_angle_train, y_train, x_valid, x_angle_valid, y_valid)
 
     # Save trained model.
-    augur_model.save_model_to_file(model, "./output/trained_model")
+    augur_model.save_model_to_file(model, config.get("output"))
     #show_results(history)
 
 
