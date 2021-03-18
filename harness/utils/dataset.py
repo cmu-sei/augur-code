@@ -1,6 +1,6 @@
 
-import numpy as np  # linear algebra
-import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
+import numpy as np
+import pandas as pd
 
 
 class DataSet(object):
@@ -54,8 +54,14 @@ class DataSet(object):
 
     # Stores Numpy arrays with a dataset into a JSON file.
     def save_data(self, output_filename):
-        # TODO: implement this
-        #df_from_arr = pd.DataFrame(data=[arr1, arr2])
+        dataset_df = pd.DataFrame()
+        dataset_df["id"] = self.x_ids
+        dataset_df["band_1"] = self.x_band1
+        dataset_df["band_2"] = self.x_band2
+        dataset_df["inc_angle"] = self.x_angle
+        dataset_df["is_iceberg"] = self.y_results
 
-
+        print("Saving DataFrame to JSON file", flush=True)
+        dataset_df.to_json(output_filename, orient="records", indent=4)
+        print("Finished saving JSON file", flush=True)
         return

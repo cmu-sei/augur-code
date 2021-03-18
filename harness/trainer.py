@@ -60,10 +60,10 @@ def main():
 
     # Train.
     history = train(model, x_train, x_angle_train, y_train, x_valid, x_angle_valid, y_valid)
+    #plotter.show_results(history)
 
     # Save trained model.
     augur_model.save_model_to_file(model, config.get("output"))
-    #plotter.show_results(history)
 
 
 if __name__ == '__main__':

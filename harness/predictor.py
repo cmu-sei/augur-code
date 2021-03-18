@@ -1,5 +1,5 @@
-import json
-import codecs
+import pandas as pd
+import numpy as np
 
 from utils import model as augur_model
 from utils import dataset as augur_dataset
@@ -10,31 +10,31 @@ CONFIG_FILENAME = "./predictor_config.json"
 
 # Generates predictions based on model and SAR data.
 def predict(model, x_band_data, x_angle_data):
-    predictions = model.predict([x_band_data, x_angle_data])
-    print("predictions shape:", predictions.shape)
+    predictions = model.predict([x_band_data, x_angle_data]).flatten()
+    print("Predictions shape:", predictions.shape, flush=True)
     return predictions
 
 
+# Saves the ids, predictions and metrics into a JSON file.
 def save_predictions(x_ids, predictions, metrics, output_filename):
-    # Link ids to predictions.
-    ids = x_ids.tolist()
-    predictions_list = predictions.tolist()
-    index = 0
-    results = []
-    for prediction_item in predictions_list:
-        result_dict = {"prediction": prediction for prediction in prediction_item}
-        result_dict["id"] = ids[index]
+    # Turn everything into a DataFrame before turning into JSON.
+    print("Creating DataFrame", flush=True)
+    output_df = pd.DataFrame()
+    output_df["id"] = x_ids
+    output_df["prediction"] = predictions
 
-        # Add in the metrics (assuming a dict with them).
-        for metric_name in metrics:
-            result_dict[metric_name] = metrics[metric_name]
+    # Add in the metrics (assuming a dict with them).
+    for metric_name in metrics.keys():
+        output_df[metric_name] = metrics[metric_name]
 
-        results.append(result_dict)
-        index += 1
+    print("Saving DataFrame to JSON file", flush=True)
+    output_df.to_json(output_filename, orient="records", indent=4)
+    print("Finished saving JSON file", flush=True)
 
-    # Save results.
-    json.dump(results, codecs.open(output_filename, 'w', encoding='utf-8'), separators=(',', ': '),
-              sort_keys=True, indent=4)
+
+def save_updated_dataset(dataset, predictions, output_filename):
+    dataset.y_results = np.round(predictions)
+    dataset.save_data(output_filename)
 
 
 # Main code.
@@ -58,8 +58,8 @@ def main():
     mode = config.get("mode")
     if mode == "default":
         save_predictions(dataset.x_ids, predictions, {}, config.get("output"))
-    #else:
-    #    save_updated_dataset(dataset)
+    else:
+        save_updated_dataset(dataset, predictions, config.get("output"))
 
 
 if __name__ == '__main__':
