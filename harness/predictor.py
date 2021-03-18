@@ -15,7 +15,7 @@ def predict(model, x_band_data, x_angle_data):
     return predictions
 
 
-def save_output(x_ids, predictions, metrics, output_filename):
+def save_predictions(x_ids, predictions, metrics, output_filename):
     # Link ids to predictions.
     ids = x_ids.tolist()
     predictions_list = predictions.tolist()
@@ -44,17 +44,22 @@ def main():
     config.load(CONFIG_FILENAME)
 
     # Load dataset to predict on.
-    [x_ids, x_band_data, x_angle_data, y_all] = augur_dataset.load_data(config.get("dataset"))
+    dataset = augur_dataset.DataSet()
+    dataset.load_data(config.get("dataset"))
 
     # Load model.
     model = augur_model.load_model_from_file(config.get("model"))
     model.summary()
 
     # Predict.
-    predictions = predict(model, x_band_data, x_angle_data)
+    predictions = predict(model, dataset.x_combined_bands, dataset.x_angle)
 
     # Save to file.
-    save_output(x_ids, predictions, {}, config.get("output"))
+    mode = config.get("mode")
+    if mode == "default":
+        save_predictions(dataset.x_ids, predictions, {}, config.get("output"))
+    #else:
+    #    save_updated_dataset(dataset)
 
 
 if __name__ == '__main__':

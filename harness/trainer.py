@@ -1,26 +1,26 @@
 
-import numpy as np  # linear algebra
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
+import numpy as np
+import sklearn.model_selection as skm
 
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+import tensorflow.keras.callbacks as tfcb
 
 from utils import model as augur_model
 from utils import dataset as augur_dataset
 from utils.config import Config
+#from utils import plotter
 
 CONFIG_FILENAME = "./trainer_config.json"
 
 
 def get_callbacks(filepath, patience=2):
-    es = EarlyStopping('val_loss', patience=patience, mode="min")
-    msave = ModelCheckpoint(filepath, save_best_only=True)
+    es = tfcb.EarlyStopping('val_loss', patience=patience, mode="min")
+    msave = tfcb.ModelCheckpoint(filepath, save_best_only=True)
     return [es, msave]
 
 
 def split_data(x_all, x_angle_all, y_all):
     # Split training set into train and validation (75% to actually train)
-    x_train, x_valid, x_angle_train, x_angle_valid, y_train, y_valid = train_test_split(x_all, x_angle_all, y_all,
+    x_train, x_valid, x_angle_train, x_angle_valid, y_train, y_valid = skm.train_test_split(x_all, x_angle_all, y_all,
                                                                                         random_state=123,
                                                                                         train_size=0.75)
     print("Done splitting validation data from train data", flush=True)
@@ -39,39 +39,20 @@ def train(model, x_train, x_angle_train, y_train, x_valid, x_angle_valid, y_vali
     return history
 
 
-def show_results(history):
-    fig = plt.figure()
-
-    plt.plot(history.history['accuracy'])
-    plt.plot(history.history['val_accuracy'])
-    plt.title('model accuracy')
-    plt.ylabel('accuracy')
-    plt.xlabel('epoch')
-    plt.legend(['train', 'test'], loc='upper left')
-    plt.show()
-    fig.savefig('my_figure_1.png')
-
-    plt.plot(history.history['loss'])
-    plt.plot(history.history['val_loss'])
-    plt.title('model loss')
-    plt.ylabel('loss')
-    plt.xlabel('epoch')
-    plt.legend(['train', 'test'], loc='upper left')
-    plt.show()
-    fig.savefig('my_figure_2.png')
-
-
 # Main code.
 def main():
-    np.random.seed(666)
+    np.random.seed(555)
 
     # Load config.
     config = Config()
     config.load(CONFIG_FILENAME)
 
     # Load and split data.
-    [x_ids, x_all, x_angle_all, y_all] = augur_dataset.load_data(config.get("dataset"))
-    [x_train, x_angle_train, y_train, x_valid, x_angle_valid, y_valid] = split_data(x_all, x_angle_all, y_all)
+    dataset = augur_dataset.DataSet()
+    dataset.load_data(config.get("dataset"))
+    [x_train, x_angle_train, y_train, x_valid, x_angle_valid, y_valid] = split_data(dataset.x_combined_bands,
+                                                                                    dataset.x_angle,
+                                                                                    dataset.y_results)
 
     # Prepare model.
     model = augur_model.create_model()
@@ -82,7 +63,7 @@ def main():
 
     # Save trained model.
     augur_model.save_model_to_file(model, config.get("output"))
-    #show_results(history)
+    #plotter.show_results(history)
 
 
 if __name__ == '__main__':

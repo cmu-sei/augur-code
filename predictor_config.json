@@ -1,4 +1,5 @@
 {
+  "mode": "default",
   "dataset": "./input/train.json",
   "model": "./output/trained_model",
   "output": "./output/predictions.json"
