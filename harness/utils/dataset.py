@@ -110,7 +110,7 @@ class DataSet(object):
         print("Merging DataFrames", flush=True)
         merged_df = pd.concat([dataset1_df, dataset2_df])
 
-        print("Saving DataFrame to JSON file", flush=True)
+        print("Saving DataFrame to JSON file " + output_filename + " (rows: " + str(merged_df.shape[0]) + ")", flush=True)
         merged_df.to_json(output_filename, orient="records", indent=4)
         print("Finished saving JSON file", flush=True)
 
@@ -123,7 +123,7 @@ class DataSet(object):
         dataset_df["inc_angle"] = self.x_angle
         dataset_df["is_iceberg"] = self.y_results
 
-        print("Saving DataFrame to JSON file", flush=True)
+        print("Saving DataFrame to JSON file " + output_filename + " (rows: " + str(dataset_df.shape[0]) + ")", flush=True)
         dataset_df.to_json(output_filename, orient="records", indent=4)
         print("Finished saving JSON file", flush=True)
         return
