@@ -16,3 +16,7 @@ class Config(object):
             return self.config_data[key_name]
         else:
             raise Exception("Config key not found: " + key_name)
+
+    # Checks whether a specific config is there.
+    def contains(self, key_name):
+        return key_name in self.config_data

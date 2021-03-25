@@ -1,3 +1,5 @@
+import sys
+
 import pandas as pd
 import numpy as np
 
@@ -51,17 +53,27 @@ def save_updated_dataset(dataset, predictions, output_filename):
 
 # Main code.
 def main():
+    # See if we'll use the default or a special config file.
+    config_file = CONFIG_FILENAME
+    if len(sys.argv) > 1:
+        config_file = str(sys.argv[1])
+        print('Config file top use: ', config_file)
+
     # Load config.
     config = Config()
-    config.load(CONFIG_FILENAME)
+    config.load(config_file)
 
-    # Load dataset to predict on.
+    # Load dataset to predict on (and base one if needed).
     dataset = augur_dataset.DataSet()
-    print(config.get("base_dataset"))
-    dataset.load_data(config.get("dataset"), config.get("base_dataset"))
+    base_dataset = None
+    if config.contains("base_dataset"):
+        base_dataset = config.get("base_dataset")
+        print("Base dataset: " + base_dataset)
+    dataset.load_data(config.get("dataset"), base_dataset)
 
     # Load model and metrics.
     model = augur_model.load_model_from_file(config.get("model"))
+    #if config.contains("metrics"):
     #augur_model.add_metrics(model, config.get("metrics"))
     model.summary()
 
@@ -70,7 +82,7 @@ def main():
 
     # Save to file.
     mode = config.get("mode")
-    if mode == "default":
+    if mode == "predict":
         save_predictions(dataset, predictions, config.get("output"))
     elif mode == "label":
         save_updated_dataset(dataset, predictions, config.get("output"))
