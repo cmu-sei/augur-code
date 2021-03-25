@@ -12,28 +12,40 @@ CONFIG_FILENAME = "./predictor_config.json"
 def predict(model, x_band_data, x_angle_data):
     predictions = model.predict([x_band_data, x_angle_data]).flatten()
     print("Predictions shape:", predictions.shape, flush=True)
-    return predictions
+    return np.round(predictions).astype(int)
 
 
 # Saves the ids, predictions and metrics into a JSON file.
-def save_predictions(x_ids, predictions, metrics, output_filename):
+def save_predictions(dataset, predictions, output_filename):
     # Turn everything into a DataFrame before turning into JSON.
+    print("Creating predictions DataFrame", flush=True)
+    output_df = pd.DataFrame()
+    output_df["id"] = dataset.x_ids
+    output_df["original_id"] = dataset.x_original_ids
+    output_df["truth"] = dataset.y_results
+    output_df["prediction"] = predictions
+
+    print("Saving predictions DataFrame to JSON file", flush=True)
+    output_df.to_json(output_filename, orient="records", indent=4)
+    print("Finished saving predictions JSON file", flush=True)
+
+
+def save_metrics(metrics, metrics_filename):
     print("Creating DataFrame", flush=True)
     output_df = pd.DataFrame()
-    output_df["id"] = x_ids
-    output_df["prediction"] = predictions
 
     # Add in the metrics (assuming a dict with them).
     for metric_name in metrics.keys():
         output_df[metric_name] = metrics[metric_name]
 
     print("Saving DataFrame to JSON file", flush=True)
-    output_df.to_json(output_filename, orient="records", indent=4)
+    output_df.to_json(metrics_filename, orient="records", indent=4)
     print("Finished saving JSON file", flush=True)
 
 
+# Saves a dataset to a JSON file, adding the given predictions first.
 def save_updated_dataset(dataset, predictions, output_filename):
-    dataset.y_results = np.round(predictions)
+    dataset.y_results = predictions
     dataset.save_data(output_filename)
 
 
@@ -45,10 +57,12 @@ def main():
 
     # Load dataset to predict on.
     dataset = augur_dataset.DataSet()
-    dataset.load_data(config.get("dataset"))
+    print(config.get("base_dataset"))
+    dataset.load_data(config.get("dataset"), config.get("base_dataset"))
 
-    # Load model.
+    # Load model and metrics.
     model = augur_model.load_model_from_file(config.get("model"))
+    #augur_model.add_metrics(model, config.get("metrics"))
     model.summary()
 
     # Predict.
@@ -57,9 +71,11 @@ def main():
     # Save to file.
     mode = config.get("mode")
     if mode == "default":
-        save_predictions(dataset.x_ids, predictions, {}, config.get("output"))
-    else:
+        save_predictions(dataset, predictions, config.get("output"))
+    elif mode == "label":
         save_updated_dataset(dataset, predictions, config.get("output"))
+    else:
+        print("Unsupported mode: " + mode)
 
 
 if __name__ == '__main__':
