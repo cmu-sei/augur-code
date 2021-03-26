@@ -14,7 +14,12 @@ CONFIG_FILENAME = "./predictor_config.json"
 def predict(model, x_band_data, x_angle_data):
     predictions = model.predict([x_band_data, x_angle_data]).flatten()
     print("Predictions shape:", predictions.shape, flush=True)
-    return np.round(predictions).astype(int)
+    return predictions
+
+
+# Generates predictions based on model and SAR data.
+def classify(predictions, threshold):
+    return np.where(predictions > threshold, 1, 0)
 
 
 # Saves the ids, predictions and metrics into a JSON file.
@@ -79,13 +84,14 @@ def main():
 
     # Predict.
     predictions = predict(model, dataset.x_combined_bands, dataset.x_angle)
+    classified = classify(predictions, config.get("threshold"))
 
     # Save to file.
     mode = config.get("mode")
     if mode == "predict":
-        save_predictions(dataset, predictions, config.get("output"))
+        save_predictions(dataset, classified, config.get("output"))
     elif mode == "label":
-        save_updated_dataset(dataset, predictions, config.get("output"))
+        save_updated_dataset(dataset, classified, config.get("output"))
     else:
         print("Unsupported mode: " + mode)
 
