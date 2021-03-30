@@ -1,0 +1,5 @@
+{
+  "dataset": "./input/train.json",
+  "output": "./output/drift.json",
+  "drift": "something"
+}
