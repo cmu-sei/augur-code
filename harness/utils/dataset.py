@@ -1,3 +1,4 @@
+import secrets
 
 import numpy as np
 import pandas as pd
@@ -8,37 +9,29 @@ import dataframe_helper
 # A dataset following the Kaggle competition format of SAR data.
 class DataSet(object):
 
-    x_ids = []
+    x_ids = np.empty(0, str)
     x_band1 = []
     x_band2 = []
     x_angle = []
     y_results = []
     x_combined_bands = []
-    x_original_ids = []
+    x_original_ids = np.empty(0, str)
 
     # Loads data from a JSON file into this object.
     def load_data(self, dataset_filename, basedataset_filename=None):
-        dataset_df = DataSet.load_dataset(dataset_filename, basedataset_filename)
-        self.prepare_dataset(dataset_df)
-        return
-
-    # Loads data from a JSON file into a Pandas dataframe.
-    # If a base dataset filename is present, it means that the dataset only contains pointers by id to the data in the
-    # base dataset file.
-    @staticmethod
-    def load_dataset(dataset_filename, base_dataset_filename=None):
+        # Load the main dataset from a file into a dataframe.
         dataset_df = dataframe_helper.load_dataframe_from_file(dataset_filename)
 
-        # Load actual data from base dataset, if any.
-        final_dataset_df = dataset_df
-        if base_dataset_filename is not None:
+        # If this dataset is by reference, load the actual data from the base dataset.
+        by_reference = basedataset_filename is not None
+        if by_reference:
             print("Base dataset found.")
-            final_dataset_df = DataSet.get_from_base(dataset_df, base_dataset_filename)
+            dataset_df = DataSet.get_from_base(dataset_df, basedataset_filename)
 
         print("Sample row: ")
-        print(final_dataset_df.head(1))
+        print(dataset_df.head(1))
 
-        return final_dataset_df
+        self.prepare_dataset(dataset_df)
 
     # Go over the original_ids listed in the dataset, and create a new dataframe by appending each of those
     # rows from the base dataset.
@@ -46,6 +39,7 @@ class DataSet(object):
     def get_from_base(referencing_df, base_filename):
         print("Getting dataset from base.")
         base_dataset_df = dataframe_helper.load_dataframe_from_file(base_filename)
+
         new_columns = base_dataset_df.columns.tolist()
         new_columns.append("original_id")
         final_dataset_df = pd.DataFrame(columns=new_columns)
@@ -95,6 +89,12 @@ class DataSet(object):
         print("Done loading train data into numpy arrays", flush=True)
 
         return
+
+    # Adds an original id by reference. Generates automatically a new id.
+    def add_by_reference(self, original_id):
+        id = secrets.token_hex(10)
+        self.x_ids = np.append(self.x_ids, id)
+        self.x_original_ids = np.append(self.x_original_ids, original_id)
 
     # Stores Numpy arrays with a dataset into a JSON file.
     def save_data(self, output_filename):
