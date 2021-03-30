@@ -2,6 +2,8 @@
 import numpy as np
 import pandas as pd
 
+import dataframe_helper
+
 
 # A dataset following the Kaggle competition format of SAR data.
 class DataSet(object):
@@ -25,16 +27,12 @@ class DataSet(object):
     # base dataset file.
     @staticmethod
     def load_dataset(dataset_filename, base_dataset_filename=None):
-        print("Loading input file: " + dataset_filename, flush=True)
-        dataset_df = pd.read_json(dataset_filename)
-        print("Done loading data. Rows: " + str(dataset_df.shape[0]), flush=True)
+        dataset_df = dataframe_helper.load_dataframe_from_file(dataset_filename)
 
         # Load actual data from base dataset, if any.
-        # TODO: maybe optimize this?
-        if base_dataset_filename is None:
-            print("No base dataset found.")
-            final_dataset_df = dataset_df
-        else:
+        final_dataset_df = dataset_df
+        if base_dataset_filename is not None:
+            print("Base dataset found.")
             final_dataset_df = DataSet.get_from_base(dataset_df, base_dataset_filename)
 
         print("Sample row: ")
@@ -47,10 +45,12 @@ class DataSet(object):
     @staticmethod
     def get_from_base(referencing_df, base_filename):
         print("Getting dataset from base.")
-        base_dataset_df = pd.read_json(base_filename)
+        base_dataset_df = dataframe_helper.load_dataframe_from_file(base_filename)
         new_columns = base_dataset_df.columns.tolist()
         new_columns.append("original_id")
         final_dataset_df = pd.DataFrame(columns=new_columns)
+
+        # TODO: maybe optimize this?
         for index, row in referencing_df.iterrows():
             base_id = row["original_id"]
             original_row = base_dataset_df.loc[base_dataset_df["id"] == base_id]
@@ -96,24 +96,6 @@ class DataSet(object):
 
         return
 
-    #  Merges data sets from two files into one.
-    @staticmethod
-    def merge_datasets(dataset1_filename, dataset2_filename, output_filename):
-        print("Loading input file: " + dataset1_filename, flush=True)
-        dataset1_df = pd.read_json(dataset1_filename)
-        print("Done loading data. Rows: " + str(dataset1_df.shape[0]), flush=True)
-
-        print("Loading input file: " + dataset2_filename, flush=True)
-        dataset2_df = pd.read_json(dataset2_filename)
-        print("Done loading data. Rows: " + str(dataset2_df.shape[0]), flush=True)
-
-        print("Merging DataFrames", flush=True)
-        merged_df = pd.concat([dataset1_df, dataset2_df])
-
-        print("Saving DataFrame to JSON file " + output_filename + " (rows: " + str(merged_df.shape[0]) + ")", flush=True)
-        merged_df.to_json(output_filename, orient="records", indent=4)
-        print("Finished saving JSON file", flush=True)
-
     # Stores Numpy arrays with a dataset into a JSON file.
     def save_data(self, output_filename):
         dataset_df = pd.DataFrame()
@@ -123,7 +105,11 @@ class DataSet(object):
         dataset_df["inc_angle"] = self.x_angle
         dataset_df["is_iceberg"] = self.y_results
 
-        print("Saving DataFrame to JSON file " + output_filename + " (rows: " + str(dataset_df.shape[0]) + ")", flush=True)
-        dataset_df.to_json(output_filename, orient="records", indent=4)
-        print("Finished saving JSON file", flush=True)
-        return
+        dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
+
+    def save_by_reference(self, output_filename):
+        dataset_df = pd.DataFrame()
+        dataset_df["id"] = self.x_ids
+        dataset_df["original_id"] = self.x_original_ids
+
+        dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
