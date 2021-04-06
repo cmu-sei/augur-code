@@ -1,5 +1,6 @@
 {
   "dataset": "./input/train.json",
   "model": "./output/trained_model",
-  "mode": "train"
+  "test": "./output/merged_dataset.json",
+  "mode": "evaluate"
 }
