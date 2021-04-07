@@ -24,12 +24,12 @@ def main():
     config.load(CONFIG_FILENAME)
 
     # Load dataset to drift.
-    dataset = augur_dataset.DataSet()
-    dataset.load_data(config.get("dataset"))
+    base_dataset = augur_dataset.DataSet()
+    base_dataset.load_data(config.get("dataset"))
 
     # Apply drift.
     try:
-        drifted_dataset = apply_drift(dataset, config.get("drift_scenario"))
+        drifted_dataset = apply_drift(base_dataset, config.get("drift_scenario"))
 
         # Save drift dataset.
         drifted_dataset.save_by_reference(config.get("output"))
