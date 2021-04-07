@@ -1,5 +1,10 @@
 {
   "dataset": "./input/train.json",
   "output": "./output/drift.json",
-  "drift": "something"
+  "drift_scenario":
+    {
+      "condition": "dummy",
+      "method": "drifts.dummy_drift",
+      "params": {"param1":  "test", "param2": "yep"}
+    }
 }
