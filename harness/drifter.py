@@ -14,6 +14,7 @@ def apply_drift(input_dataset, drift_config):
     drift_module = importlib.import_module(drift_config.get("method"))
     drifted_dataset = drift_module.generate_drift(input_dataset, drift_config.get("params"))
 
+    print("Finished applying drift", flush=True)
     return drifted_dataset
 
 
