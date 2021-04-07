@@ -45,12 +45,12 @@ class DataSet(object):
         final_dataset_df = pd.DataFrame(columns=new_columns)
 
         # TODO: maybe optimize this?
-        for index, row in referencing_df.iterrows():
-            base_id = row["original_id"]
-            original_row = base_dataset_df.loc[base_dataset_df["id"] == base_id]
-            original_row["id"] = row["id"]
-            original_row["original_id"] = base_id
-            final_dataset_df = final_dataset_df.append(original_row, ignore_index=True)
+        for index, referencing_row in referencing_df.iterrows():
+            base_id = referencing_row["original_id"]
+            integrated_row = base_dataset_df.loc[base_dataset_df["id"] == base_id]
+            integrated_row["id"] = referencing_row["id"]
+            integrated_row["original_id"] = base_id
+            final_dataset_df = final_dataset_df.append(integrated_row, ignore_index=True)
 
         #print(final_dataset_df)
         return final_dataset_df
@@ -107,6 +107,7 @@ class DataSet(object):
 
         dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
 
+    # Saves a dataset by only storing its ids and the references to the original ids it has.
     def save_by_reference(self, output_filename):
         dataset_df = pd.DataFrame()
         dataset_df["id"] = self.x_ids
