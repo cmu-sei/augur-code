@@ -13,7 +13,7 @@ class DataSet(object):
     x_band1 = []
     x_band2 = []
     x_angle = []
-    y_results = []
+    y_output = []
     x_combined_bands = []
     x_original_ids = np.empty(0, str)
 
@@ -71,7 +71,7 @@ class DataSet(object):
         self.x_band2 = np.array(dataset_df["band_2"])
         self.x_angle = np.array(dataset_df.inc_angle)
         if "is_iceberg" in dataset_df.columns:
-            self.y_results = np.array(dataset_df["is_iceberg"])
+            self.y_output = np.array(dataset_df["is_iceberg"])
         if "original_id" in dataset_df.columns:
             self.x_original_ids = np.array(dataset_df["original_id"])
 
@@ -90,6 +90,10 @@ class DataSet(object):
 
         return
 
+    # Returns the full input to be used: combination of the combined bands and the angle.
+    def get_full_input(self):
+        return [self.x_combined_bands, self.x_angle]
+
     # Adds an original id by reference. Generates automatically a new id.
     def add_by_reference(self, original_id):
         id = secrets.token_hex(10)
@@ -103,7 +107,7 @@ class DataSet(object):
         dataset_df["band_1"] = self.x_band1
         dataset_df["band_2"] = self.x_band2
         dataset_df["inc_angle"] = self.x_angle
-        dataset_df["is_iceberg"] = self.y_results
+        dataset_df["is_iceberg"] = self.y_output
 
         dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
 

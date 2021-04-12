@@ -29,7 +29,7 @@ def save_predictions(dataset, predictions, output_filename):
     output_df = pd.DataFrame()
     output_df["id"] = dataset.x_ids
     output_df["original_id"] = dataset.x_original_ids
-    output_df["truth"] = dataset.y_results
+    output_df["truth"] = dataset.y_output
     output_df["prediction"] = predictions
 
     print("Saving predictions DataFrame to JSON file", flush=True)
@@ -52,7 +52,7 @@ def save_metrics(metrics, metrics_filename):
 
 # Saves a dataset to a JSON file, adding the given predictions first.
 def save_updated_dataset(dataset, predictions, output_filename):
-    dataset.y_results = predictions
+    dataset.y_output = predictions
     dataset.save_data(output_filename)
 
 

@@ -19,21 +19,19 @@ def get_callbacks(filepath, patience=2):
     return [es, msave]
 
 
-def split_data(x_all, x_angle_all, y_all):
-    # Split training set into train and validation (75% to actually train)
-    x_train, x_valid, x_angle_train, x_angle_valid, y_train, y_valid = skm.train_test_split(x_all, x_angle_all, y_all,
-                                                                                        random_state=123,
-                                                                                        train_size=0.75)
+# Split training set into train and validation (75% to actually train)
+def split_data(x_all, y_all):
+    x_train, x_validation, y_train, y_validation = skm.train_test_split(x_all, y_all, random_state=123, train_size=0.75)
     print("Done splitting validation data from train data", flush=True)
-    return [x_train, x_angle_train, y_train, x_valid, x_angle_valid, y_valid]
+    return [x_train, y_train, x_validation, y_validation]
 
 
-def fit(model, x_train, x_angle_train, y_train, x_valid, x_angle_valid, y_valid):
+def fit(model, x_train, y_train, x_validation, y_validation):
     file_path = ".model_weights.hdf5"
     callbacks = get_callbacks(filepath=file_path, patience=5)
 
-    history = model.fit([x_train, x_angle_train], y_train, epochs=20,
-                        validation_data=([x_valid, x_angle_valid], y_valid),
+    history = model.fit(x_train, y_train, epochs=20,
+                        validation_data=(x_validation, y_validation),
                         batch_size=32,
                         callbacks=callbacks)
     print("Done training!", flush=True)
@@ -44,16 +42,14 @@ def train(config):
     # Load and split data.
     dataset = augur_dataset.DataSet()
     dataset.load_data(config.get("dataset"))
-    [x_train, x_angle_train, y_train, x_valid, x_angle_valid, y_valid] = split_data(dataset.x_combined_bands,
-                                                                                    dataset.x_angle,
-                                                                                    dataset.y_results)
+    [x_train, y_train, x_validation, y_validation] = split_data(dataset.get_full_input(), dataset.y_output)
 
     # Prepare model.
     model = augur_model.create_model()
     model.summary()
 
     # Train.
-    history = fit(model, x_train, x_angle_train, y_train, x_valid, x_angle_valid, y_valid)
+    history = fit(model, x_train, y_train, x_validation, y_validation)
     #plotter.show_results(history)
 
     # Save trained model.
@@ -67,7 +63,7 @@ def evaluate(config):
 
     model = augur_model.load_model_from_file(config.get("model"))
     print("Evaluate on test data", flush=True)
-    results = model.evaluate([dataset.x_combined_bands, dataset.x_angle], dataset.y_results, batch_size=128)
+    results = model.evaluate([dataset.x_combined_bands, dataset.x_angle], dataset.y_output, batch_size=128)
     print("test loss, test acc:", results, flush=True)
 
 
