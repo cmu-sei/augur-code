@@ -12,11 +12,13 @@ from utils.config import Config
 #from utils import plotter
 
 CONFIG_FILENAME = "./trainer_config.json"
+CONFIG = Config()
 
 
-def get_callbacks(filepath, patience=2):
+def get_callbacks(patience=2):
+    file_path = ".model_weights.hdf5"
     es = tfcb.EarlyStopping('val_loss', patience=patience, mode="min")
-    msave = tfcb.ModelCheckpoint(filepath, save_best_only=True)
+    msave = tfcb.ModelCheckpoint(file_path, save_best_only=True)
     return [es, msave]
 
 
@@ -29,22 +31,21 @@ def split_data(x_band, x_angle, y_all):
     return [x_train, y_train, x_validation, y_validation]
 
 
-def fit(model, x_train, y_train, x_validation, y_validation):
-    file_path = ".model_weights.hdf5"
-    callbacks = get_callbacks(filepath=file_path, patience=5)
-
-    history = model.fit(x_train, y_train, epochs=20,
+def fit(model, x_train, y_train, x_validation=None, y_validation=None):
+    callbacks = get_callbacks(patience=5)
+    epochs = CONFIG.get("hyper_parameters").get("epochs")
+    batch_size = CONFIG.get("hyper_parameters").get("batch_size")
+    history = model.fit(x_train, y_train, epochs=epochs,
                         validation_data=(x_validation, y_validation),
-                        batch_size=32,
+                        batch_size=batch_size,
                         callbacks=callbacks)
-    print("Done training!", flush=True)
     return history
 
 
-def train(config):
+def train():
     # Load and split data.
     dataset = augur_dataset.DataSet()
-    dataset.load_data(config.get("dataset"))
+    dataset.load_data(CONFIG.get("dataset"))
     [x_train, y_train, x_validation, y_validation] = split_data(dataset.x_combined_bands, dataset.x_angle, dataset.y_output)
 
     # Prepare model.
@@ -53,50 +54,56 @@ def train(config):
 
     # Train.
     history = fit(model, x_train, y_train, x_validation, y_validation)
+    print("Done training!", flush=True)
     #plotter.show_results(history)
 
     # Save trained model.
-    augur_model.save_model_to_file(model, config.get("model"))
+    augur_model.save_model_to_file(model, CONFIG.get("model"))
 
     # Cross-validate.
-    #cross_validate(config, 5, dataset.get_full_input(), dataset.y_output)
+    cross_validate(dataset)
 
 
-def evaluate(config):
+def evaluate():
     # Load evaluation dataset.
     dataset = augur_dataset.DataSet()
-    dataset.load_data(config.get("test"))
+    dataset.load_data(CONFIG.get("test"))
 
-    model = augur_model.load_model_from_file(config.get("model"))
+    model = augur_model.load_model_from_file(CONFIG.get("model"))
     print("Evaluate on test data", flush=True)
-    results = model.evaluate([dataset.x_combined_bands, dataset.x_angle], dataset.y_output, batch_size=128)
+    batch_size = CONFIG.get("hyper_parameters").get("batch_size")
+    results = model.evaluate([dataset.x_combined_bands, dataset.x_angle], dataset.y_output, batch_size=batch_size)
     print("test loss, test acc:", results, flush=True)
 
 
 # k-fold cross-validation to check how model is performing by selecting different sets to train/validate.
-def cross_validate(config, num_folds, inputs, targets):
+def cross_validate(dataset, num_folds=5):
     # Define the K-fold Cross Validator
     kfold = KFold(n_splits=num_folds, shuffle=True)
 
     # K-fold Cross Validation model evaluation
+    acc_per_fold = []
+    loss_per_fold = []
     fold_no = 1
-    for train, test in kfold.split(inputs, targets):
-        model = augur_model.load_model_from_file(config.get("model"))
+    for train_index, test_index in kfold.split(dataset.x_combined_bands, dataset.y_output):
+        model = augur_model.create_model()
 
         # Generate a print
         print('------------------------------------------------------------------------')
         print(f'Training for fold {fold_no} ...')
 
         # Fit data to model
-        history = model.fit(inputs[train], targets[train],
-                            batch_size=32,
-                            epochs=20)
+        inputs_train = [dataset.x_combined_bands[train_index], dataset.x_angle[train_index]]
+        output_train = dataset.y_output[train_index]
+        history = fit(model, inputs_train, output_train)
 
         # Generate generalization metrics
-        scores = model.evaluate(inputs[test], targets[test], verbose=0)
+        inputs_val = [dataset.x_combined_bands[test_index], dataset.x_angle[test_index]]
+        output_val = dataset.y_output[test_index]
+        scores = model.evaluate(inputs_val, output_val, verbose=0)
         print(f'Score for fold {fold_no}: {model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1]*100}%')
-        #acc_per_fold.append(scores[1] * 100)
-        #loss_per_fold.append(scores[0])
+        acc_per_fold.append(scores[1] * 100)
+        loss_per_fold.append(scores[0])
 
         # Increase fold number
         fold_no = fold_no + 1
@@ -113,14 +120,14 @@ def main():
         print('Config file top use: ', config_file)
 
     # Load config.
-    config = Config()
-    config.load(config_file)
+    CONFIG.load(config_file)
 
-    mode = config.get("mode")
+    # Run depending on mode.
+    mode = CONFIG.get("mode")
     if mode == "train":
-        train(config)
+        train()
     else:
-        evaluate(config)
+        evaluate()
 
 
 if __name__ == '__main__':

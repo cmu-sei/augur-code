@@ -1,5 +1,10 @@
 {
-  "dataset": "./input/train.json",
+  "dataset": "./output/merged_dataset.json",
   "model": "./output/trained_model",
-  "mode": "train"
+  "mode": "train",
+  "hyper_parameters":
+  {
+    "epochs": 10,
+    "batch_size": 32
+  }
 }

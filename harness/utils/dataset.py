@@ -84,13 +84,13 @@ class DataSet(object):
         # equal to x_band1 (2*x_band1/2).
         self.x_combined_bands = np.concatenate([x_band1[:, :, :, np.newaxis],
                                                 x_band2[:, :, :, np.newaxis],
-                                                ((x_band1+x_band2 )/2)[:, :, :, np.newaxis]
-                                                ], axis=-1)
+                                                ((x_band1+x_band2)/2)[:, :, :, np.newaxis]
+                                               ], axis=-1)
         print("Done loading train data into numpy arrays", flush=True)
 
         return
 
-    # Returns the full input to be used: combination of the combined bands and the angle.
+    # Returns the 2 inputs to be used: the combined bands and the angle.
     def get_full_input(self):
         return [self.x_combined_bands, self.x_angle]
 
