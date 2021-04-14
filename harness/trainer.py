@@ -38,14 +38,16 @@ def split_data(x_band, x_angle, y_all):
 
 
 def fit(model, x_train, y_train, x_validation=None, y_validation=None):
-    callbacks = get_callbacks(patience=5)
     epochs = CONFIG.get("hyper_parameters").get("epochs")
     batch_size = CONFIG.get("hyper_parameters").get("batch_size")
-    print_and_log(f'Hyper parameters: epochs: {epochs}, batch size: {batch_size}')
+    print_and_log(f'Starting training with hyper parameters: epochs: {epochs}, batch size: {batch_size}')
 
     validation_data = None
+    callbacks = None
     if x_validation is not None and y_validation is not None:
         validation_data = (x_validation, y_validation)
+        callbacks = get_callbacks(patience=5)
+
     history = model.fit(x_train, y_train, epochs=epochs,
                         validation_data=validation_data,
                         batch_size=batch_size,
@@ -57,6 +59,9 @@ def fit(model, x_train, y_train, x_validation=None, y_validation=None):
 
 
 def train():
+    print_and_log("--------------------------------------------------------------------")
+    print_and_log("Starting training session.")
+
     # Load and split data.
     dataset = augur_dataset.DataSet()
     dataset.load_data(CONFIG.get("dataset"))
@@ -78,6 +83,9 @@ def train():
 
     # Cross-validate.
     cross_validate(dataset)
+
+    print_and_log("Finished training session.")
+    print_and_log("--------------------------------------------------------------------")
 
 
 def evaluate():
