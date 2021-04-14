@@ -104,6 +104,7 @@ def evaluate():
 def cross_validate(dataset, num_folds=5):
     # Define the K-fold Cross Validator
     kfold = KFold(n_splits=num_folds, shuffle=True)
+    print_and_log("Starting cross validation.")
 
     # K-fold Cross Validation model evaluation
     acc_per_fold = []
@@ -114,7 +115,7 @@ def cross_validate(dataset, num_folds=5):
 
         # Generate a print
         print('------------------------------------------------------------------------')
-        print(f'Training for fold {fold_no} ...')
+        print_and_log(f'Training for fold {fold_no} ...')
 
         # Fit data to model
         inputs_train = [dataset.x_combined_bands[train_index], dataset.x_angle[train_index]]
