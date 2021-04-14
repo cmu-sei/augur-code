@@ -9,6 +9,7 @@ from utils import dataframe_helper
 # A dataset following the Kaggle competition format of SAR data.
 class DataSet(object):
 
+    num_samples = 0
     x_ids = np.empty(0, str)
     x_band1 = []
     x_band2 = []
@@ -66,6 +67,7 @@ class DataSet(object):
         print("Done cleaning up angle", flush=True)
 
         # Store locally the data parts.
+        self.num_samples = dataset_df.shape[0]
         self.x_ids = np.array(dataset_df["id"])
         self.x_band1 = np.array(dataset_df["band_1"])
         self.x_band2 = np.array(dataset_df["band_2"])

@@ -1,4 +1,5 @@
 import sys
+import logging
 
 import numpy as np
 import sklearn.model_selection as skm
@@ -13,6 +14,11 @@ from utils.config import Config
 
 CONFIG_FILENAME = "./trainer_config.json"
 CONFIG = Config()
+
+
+def print_and_log(message):
+    print(message, flush=True)
+    logging.info(message)
 
 
 def get_callbacks(patience=2):
@@ -35,10 +41,18 @@ def fit(model, x_train, y_train, x_validation=None, y_validation=None):
     callbacks = get_callbacks(patience=5)
     epochs = CONFIG.get("hyper_parameters").get("epochs")
     batch_size = CONFIG.get("hyper_parameters").get("batch_size")
+    print_and_log(f'Hyper parameters: epochs: {epochs}, batch size: {batch_size}')
+
+    validation_data = None
+    if x_validation is not None and y_validation is not None:
+        validation_data = (x_validation, y_validation)
     history = model.fit(x_train, y_train, epochs=epochs,
-                        validation_data=(x_validation, y_validation),
+                        validation_data=validation_data,
                         batch_size=batch_size,
                         callbacks=callbacks)
+    print_and_log(f'Final training result ({len(history.history.get("loss"))} epochs): loss: {history.history.get("loss")[-1]}, accuracy: {history.history.get("accuracy")[-1]}')
+    if validation_data is not None:
+        print_and_log(f'Validation: val_loss: {history.history.get("val_loss")[-1]}, val_accuracy: {history.history.get("val_accuracy")[-1]}')
     return history
 
 
@@ -47,6 +61,8 @@ def train():
     dataset = augur_dataset.DataSet()
     dataset.load_data(CONFIG.get("dataset"))
     [x_train, y_train, x_validation, y_validation] = split_data(dataset.x_combined_bands, dataset.x_angle, dataset.y_output)
+    print(x_train)
+    print_and_log(f'Dataset samples {dataset.num_samples}, training samples: {len(x_train[0])}, validation samples: {len(x_validation[0])}')
 
     # Prepare model.
     model = augur_model.create_model()
@@ -101,7 +117,7 @@ def cross_validate(dataset, num_folds=5):
         inputs_val = [dataset.x_combined_bands[test_index], dataset.x_angle[test_index]]
         output_val = dataset.y_output[test_index]
         scores = model.evaluate(inputs_val, output_val, verbose=0)
-        print(f'Score for fold {fold_no}: {model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1]*100}%')
+        print_and_log(f'Score for fold {fold_no}: {model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1]*100}%')
         acc_per_fold.append(scores[1] * 100)
         loss_per_fold.append(scores[0])
 
@@ -112,6 +128,7 @@ def cross_validate(dataset, num_folds=5):
 # Main code.
 def main():
     np.random.seed(555)
+    logging.basicConfig(filename='training.log', format='%(asctime)s %(message)s', level=logging.DEBUG)
 
     # See if we'll use the default or a special config file.
     config_file = CONFIG_FILENAME
