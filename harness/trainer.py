@@ -16,6 +16,16 @@ CONFIG_FILENAME = "./trainer_config.json"
 CONFIG = Config()
 
 
+class TrainingSet(object):
+    x_train = []
+    y_train = []
+    x_validation = None
+    y_validation = None
+
+    def has_validation(self):
+        return self.x_validation is not None and self.y_validation is not None
+
+
 def print_and_log(message):
     print(message, flush=True)
     logging.info(message)
@@ -29,109 +39,101 @@ def get_callbacks(patience=2):
 
 
 # Split training set into train and validation (75% to actually train)
-def split_data(x_band, x_angle, y_all):
-    x_band_t, x_band_v, x_angle_t, x_angle_v, y_train, y_validation = skm.train_test_split(x_band, x_angle, y_all, random_state=123, train_size=0.75)
+def split_data(dataset):
+    x_band_t, x_band_v, x_angle_t, x_angle_v, y_train, y_validation = skm.train_test_split(dataset.x_combined_bands,
+                                                                                           dataset.x_angle,
+                                                                                           dataset.y_output,
+                                                                                           random_state=42,
+                                                                                           train_size=0.75)
     print("Done splitting validation data from train data", flush=True)
-    x_train = [x_band_t, x_angle_t]
-    x_validation = [x_band_v, x_angle_v]
-    return [x_train, y_train, x_validation, y_validation]
+    training_set = TrainingSet()
+    training_set.x_train = [x_band_t, x_angle_t]
+    training_set.x_validation = [x_band_v, x_angle_v]
+    training_set.y_train = y_train
+    training_set.y_validation = y_validation
+    return training_set
 
 
-def fit(model, x_train, y_train, x_validation=None, y_validation=None):
+def train(training_set):
+    print_and_log("TRAINING")
+
+    model = augur_model.create_model()
+    #model.summary()
+
     epochs = CONFIG.get("hyper_parameters").get("epochs")
     batch_size = CONFIG.get("hyper_parameters").get("batch_size")
     print_and_log(f'Starting training with hyper parameters: epochs: {epochs}, batch size: {batch_size}')
 
     validation_data = None
     callbacks = None
-    if x_validation is not None and y_validation is not None:
-        validation_data = (x_validation, y_validation)
+    if training_set.has_validation():
+        validation_data = (training_set.x_validation, training_set.y_validation)
         callbacks = get_callbacks(patience=5)
 
-    history = model.fit(x_train, y_train, epochs=epochs,
+    history = model.fit(training_set.x_train, training_set.y_train,
+                        epochs=epochs,
                         validation_data=validation_data,
                         batch_size=batch_size,
                         callbacks=callbacks)
-    print_and_log(f'Final training result ({len(history.history.get("loss"))} epochs): loss: {history.history.get("loss")[-1]}, accuracy: {history.history.get("accuracy")[-1]}')
-    if validation_data is not None:
-        print_and_log(f'Validation: val_loss: {history.history.get("val_loss")[-1]}, val_accuracy: {history.history.get("val_accuracy")[-1]}')
-    return history
+    print_and_log(f'Final training result ({len(history.history.get("loss"))} epochs): '
+                  f'loss: {history.history.get("loss")[-1]}, '
+                  f'accuracy: {history.history.get("accuracy")[-1]}')
+    if training_set.has_validation():
+        print_and_log(f'Validation: val_loss: {history.history.get("val_loss")[-1]}, '
+                      f'val_accuracy: {history.history.get("val_accuracy")[-1]}')
 
-
-def train():
-    print_and_log("--------------------------------------------------------------------")
-    print_and_log("Starting training session.")
-
-    # Load and split data.
-    dataset = augur_dataset.DataSet()
-    dataset.load_data(CONFIG.get("dataset"))
-    [x_train, y_train, x_validation, y_validation] = split_data(dataset.x_combined_bands, dataset.x_angle, dataset.y_output)
-    print(x_train)
-    print_and_log(f'Dataset samples {dataset.num_samples}, training samples: {len(x_train[0])}, validation samples: {len(x_validation[0])}')
-
-    # Prepare model.
-    model = augur_model.create_model()
-    model.summary()
-
-    # Train.
-    history = fit(model, x_train, y_train, x_validation, y_validation)
     print("Done training!", flush=True)
     #plotter.show_results(history)
 
-    # Save trained model.
-    augur_model.save_model_to_file(model, CONFIG.get("model"))
-
-    # Cross-validate.
-    cross_validate(dataset)
-
-    print_and_log("Finished training session.")
-    print_and_log("--------------------------------------------------------------------")
+    return model, history
 
 
-def evaluate():
-    # Load evaluation dataset.
-    dataset = augur_dataset.DataSet()
-    dataset.load_data(CONFIG.get("test"))
-
-    model = augur_model.load_model_from_file(CONFIG.get("model"))
-    print("Evaluate on test data", flush=True)
+def evaluate(model, x_inputs, y_inputs):
+    # Load evaluation dataset and model.
+    print_and_log("EVALUATION")
+    print("Starting evaluation", flush=True)
     batch_size = CONFIG.get("hyper_parameters").get("batch_size")
-    results = model.evaluate([dataset.x_combined_bands, dataset.x_angle], dataset.y_output, batch_size=batch_size)
-    print("test loss, test acc:", results, flush=True)
+    scores = model.evaluate(x_inputs, y_inputs, batch_size=batch_size)
+    print(f'Done! Evaluation loss and acc: {scores}')
+    return scores
 
 
 # k-fold cross-validation to check how model is performing by selecting different sets to train/validate.
 def cross_validate(dataset, num_folds=5):
     # Define the K-fold Cross Validator
+    print_and_log("CROSS VALIDATION")
     kfold = KFold(n_splits=num_folds, shuffle=True)
-    print_and_log("Starting cross validation.")
 
     # K-fold Cross Validation model evaluation
     acc_per_fold = []
     loss_per_fold = []
     fold_no = 1
     for train_index, test_index in kfold.split(dataset.x_combined_bands, dataset.y_output):
-        model = augur_model.create_model()
-
         # Generate a print
         print('------------------------------------------------------------------------')
         print_and_log(f'Training for fold {fold_no} ...')
 
         # Fit data to model
-        inputs_train = [dataset.x_combined_bands[train_index], dataset.x_angle[train_index]]
-        output_train = dataset.y_output[train_index]
-        history = fit(model, inputs_train, output_train)
+        print_and_log(f'Training fold samples: {dataset.x_combined_bands[train_index].shape[0]}')
+        training_set = TrainingSet()
+        training_set.x_train = [dataset.x_combined_bands[train_index], dataset.x_angle[train_index]]
+        training_set.y_validation = dataset.y_output[train_index]
+        model, history = train(training_set)
 
         # Generate generalization metrics
-        inputs_val = [dataset.x_combined_bands[test_index], dataset.x_angle[test_index]]
-        output_val = dataset.y_output[test_index]
-        scores = model.evaluate(inputs_val, output_val, verbose=0)
-        print_and_log(f'Score for fold {fold_no}: {model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1]*100}%')
+        print_and_log(f'Evaluation fold samples: {dataset.x_combined_bands[test_index].shape[0]}')
+        training_set.x_validation = [dataset.x_combined_bands[test_index], dataset.x_angle[test_index]]
+        training_set.y_validation = dataset.y_output[test_index]
+        scores = evaluate(model, training_set.x_validation, training_set.y_validation)
+        print_and_log(f'Score for fold {fold_no}: {model.metrics_names[0]} of {scores[0]}; '
+                      f'{model.metrics_names[1]} of {scores[1]*100}%')
         acc_per_fold.append(scores[1] * 100)
         loss_per_fold.append(scores[0])
 
         # Increase fold number
         fold_no = fold_no + 1
+
+    print_and_log("Done with cross-validation!")
 
 
 # Main code.
@@ -148,12 +150,28 @@ def main():
     # Load config.
     CONFIG.load(config_file)
 
-    # Run depending on mode.
-    mode = CONFIG.get("mode")
-    if mode == "train":
-        train()
-    else:
-        evaluate()
+    print_and_log("--------------------------------------------------------------------")
+    print_and_log("Starting trainer session.")
+
+    dataset = augur_dataset.DataSet()
+    dataset.load_data(CONFIG.get("dataset"))
+    training_set = split_data(dataset)
+    print_and_log(f'Dataset samples {dataset.num_samples}, '
+                  f'training samples: {len(training_set.x_train[0])}, '
+                  f'validation samples: {len(training_set.x_validation[0])}')
+
+    # Run steps depending on config.
+    if CONFIG.get("training") == "on":
+        model, history = train(training_set)
+        augur_model.save_model_to_file(model, CONFIG.get("model"))
+    if CONFIG.get("cross_validation") == "on":
+        cross_validate(dataset)
+    if CONFIG.get("evaluation") == "on":
+        model = augur_model.load_model_from_file(CONFIG.get("model"))
+        evaluate(model, training_set.x_validation, training_set.y_validation)
+
+    print_and_log("Finished trainer session.")
+    print_and_log("--------------------------------------------------------------------")
 
 
 if __name__ == '__main__':

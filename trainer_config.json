@@ -1,7 +1,9 @@
 {
   "dataset": "./output/merged_dataset.json",
   "model": "./output/trained_model",
-  "mode": "train",
+  "training": "on",
+  "cross_validation": "off",
+  "evaluation": "on",
   "hyper_parameters":
   {
     "epochs": 10,
