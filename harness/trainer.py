@@ -40,11 +40,12 @@ def get_callbacks(patience=2):
 
 # Split training set into train and validation (75% to actually train)
 def split_data(dataset):
+    validation_size = CONFIG.get("hyper_parameters").get("validation_size")
     x_band_t, x_band_v, x_angle_t, x_angle_v, y_train, y_validation = skm.train_test_split(dataset.x_combined_bands,
                                                                                            dataset.x_angle,
                                                                                            dataset.y_output,
                                                                                            random_state=42,
-                                                                                           train_size=0.75)
+                                                                                           test_size=validation_size)
     print("Done splitting validation data from train data", flush=True)
     training_set = TrainingSet()
     training_set.x_train = [x_band_t, x_angle_t]
@@ -67,6 +68,7 @@ def train(training_set):
     validation_data = None
     callbacks = None
     if training_set.has_validation():
+        print_and_log("Validation data found")
         validation_data = (training_set.x_validation, training_set.y_validation)
         callbacks = get_callbacks(patience=5)
 
@@ -117,7 +119,7 @@ def cross_validate(dataset, num_folds=5):
         print_and_log(f'Training fold samples: {dataset.x_combined_bands[train_index].shape[0]}')
         training_set = TrainingSet()
         training_set.x_train = [dataset.x_combined_bands[train_index], dataset.x_angle[train_index]]
-        training_set.y_validation = dataset.y_output[train_index]
+        training_set.y_train = dataset.y_output[train_index]
         model, history = train(training_set)
 
         # Generate generalization metrics
@@ -155,20 +157,25 @@ def main():
 
     dataset = augur_dataset.DataSet()
     dataset.load_data(CONFIG.get("dataset"))
-    training_set = split_data(dataset)
-    print_and_log(f'Dataset samples {dataset.num_samples}, '
-                  f'training samples: {len(training_set.x_train[0])}, '
-                  f'validation samples: {len(training_set.x_validation[0])}')
+    evaluation_input = dataset.get_full_input()
+    evaluation_output = dataset.y_output
 
     # Run steps depending on config.
     if CONFIG.get("training") == "on":
+        training_set = split_data(dataset)
+        print_and_log(f'Dataset samples {dataset.num_samples}, '
+                      f'training samples: {len(training_set.x_train[0])}, '
+                      f'validation samples: {len(training_set.x_validation[0])}')
+
         model, history = train(training_set)
         augur_model.save_model_to_file(model, CONFIG.get("model"))
+        evaluation_input = training_set.x_validation
+        evaluation_output = training_set.y_validation
     if CONFIG.get("cross_validation") == "on":
         cross_validate(dataset)
     if CONFIG.get("evaluation") == "on":
         model = augur_model.load_model_from_file(CONFIG.get("model"))
-        evaluate(model, training_set.x_validation, training_set.y_validation)
+        evaluate(model, evaluation_input, evaluation_output)
 
     print_and_log("Finished trainer session.")
     print_and_log("--------------------------------------------------------------------")

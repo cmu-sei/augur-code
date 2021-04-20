@@ -1,12 +1,13 @@
 {
-  "dataset": "./output/merged_dataset.json",
+  "dataset": "./input/train.json",
   "model": "./output/trained_model",
   "training": "on",
   "cross_validation": "off",
-  "evaluation": "on",
+  "evaluation": "off",
   "hyper_parameters":
   {
     "epochs": 10,
-    "batch_size": 32
+    "batch_size": 32,
+    "validation_size": 0.25
   }
 }
