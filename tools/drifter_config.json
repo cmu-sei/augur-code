@@ -1,6 +1,6 @@
 {
-  "dataset": "./input/train.json",
-  "output": "./output/drift.json",
+  "dataset": "../input/train.json",
+  "output": "../output/drift.json",
   "drift_scenario":
     {
       "condition": "dummy",

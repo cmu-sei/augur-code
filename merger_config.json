@@ -1,5 +1,0 @@
-{
-  "dataset1": "./input/train.json",
-  "dataset2": "./output/labelled_test.json",
-  "output": "./output/merged_dataset.json"
-}

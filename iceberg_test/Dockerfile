@@ -10,8 +10,7 @@ WORKDIR /app/
 RUN pipenv install --system --deploy --ignore-pipfile
 
 # Actual code.
-COPY harness/ /app/harness/
-COPY tools/ /app/tools/
+COPY iceberg_test.py /app/
 COPY entrypoint_run.sh /app/
 
 WORKDIR /app/

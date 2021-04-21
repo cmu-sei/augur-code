@@ -1,6 +1,6 @@
 {
-  "dataset": "./input/train.json",
-  "model": "./output/trained_model",
+  "dataset": "../input/train.json",
+  "model": "../output/trained_model",
   "training": "on",
   "cross_validation": "off",
   "evaluation": "off",

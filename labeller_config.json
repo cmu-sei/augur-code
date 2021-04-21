@@ -1,7 +1,0 @@
-{
-  "mode": "label",
-  "dataset": "./input/test.json",
-  "model": "./output/trained_model",
-  "output": "./output/labelled_test.json",
-  "threshold": 0.5
-}
