@@ -7,3 +7,4 @@ services:
     command: ${CMD_PARAMS}
     volumes:
       - ./input:/app/input
+      - ./output:/app/output

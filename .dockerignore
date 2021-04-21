@@ -11,3 +11,4 @@ iceberg_test
 *.png
 *.hdf5
 docker_compose.yml
+*.log

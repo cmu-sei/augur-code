@@ -1,1 +1,1 @@
-exec python3 iceberg_test.py "$@"
+exec python3 "$@"
