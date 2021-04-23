@@ -1,1 +1,1 @@
-exec python3 "$@"
+exec "$@"

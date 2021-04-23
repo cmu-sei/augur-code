@@ -1,10 +1,9 @@
 # augur-code
 Code for Augur LENS
 
-##Non-Containerized Version
+## Non-Containerized Version
 ### Prerequisites
-* Python 3.8 and pip3 are required.
-  * Current version of Tensorflow (2.4) is not supported in Python 3.9.
+* Python 3.8 and pip3 are required (Tensorflow 2.4 is not supported in Python 3.9).
   * If using MacOS, brew is recommended.
     * Install brew, if not installed: https://docs.brew.sh/Installation
     * Update brew, if needed: `brew update`
@@ -17,15 +16,16 @@ Code for Augur LENS
     * `echo "export PATH=\"~/Library/Python/3.8/bin:$PATH\"" >> ~/.bash_profile`
     
 ### Setup
- * (Reference for Tensorflow: https://www.tensorflow.org/install/pip#virtual-environment-install)
  * From the project folder, run:
     * `pipenv install`
+    * (For a manual Tensorflow setup, see: https://www.tensorflow.org/install/pip#virtual-environment-install)
 
 ### Usage
-  * From the project folder, run:
-    * `bash pipenv_run.sh`
+  * From the tools folder, run the tool that you want to run:
+    * `bash <tool>.sh`
+    * 
 
-##Containerized Version
+## Containerized Version
 ### Prerequisites
 * Docker and Docker-Compose are required.
 * If working behind a proxy, Docker needs to be configured to 1) download images and 2) so that images that are being built can download components from the Internet.
