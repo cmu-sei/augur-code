@@ -23,7 +23,7 @@ Code for Augur LENS
 ### Usage
   * From the tools folder, run the tool that you want to run:
     * `bash <tool>.sh`
-    * 
+    * Where <toool> is the name of one of the tools in that folder (i.e., "trainer", "drifter", etc.).
 
 ## Containerized Version
 ### Prerequisites
@@ -36,6 +36,8 @@ Code for Augur LENS
 
 ### Usage
 * From the project folder, run:
-  * `bash run_compose.sh`
+  * `bash run_compose.sh <tool_script>`
+  * Where <tool_script> is the name of the Python script with the tool in the tools folder; i.e., "trainer.py", or "drifter.py"
+  * Note that if you stop this with Ctrl+C, the process doesn't stop, it just runs in the background, and you can get back to viewing its output with `bash logs_compose.sh` 
 * To stop, run:
   * `bash stop_compose.sh`
