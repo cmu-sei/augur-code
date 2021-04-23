@@ -1,6 +1,7 @@
 FROM python:3.8
 #-alpine
 
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 RUN python get-pip.py pip==19.3.1
 RUN pip install pipenv
 
