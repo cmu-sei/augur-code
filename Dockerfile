@@ -1,6 +1,7 @@
 FROM python:3.8
 #-alpine
 
+RUN python -m pip install --upgrade pip --user
 RUN pip install pipenv
 
 # Installing Python deps without a venv (not needed in container).
