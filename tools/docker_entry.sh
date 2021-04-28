@@ -5,6 +5,11 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
+if [[ "$1" == "help" ]]; then
+  echo "Valid tools: trainer, labeller, merger, eval, drifter, predictor"
+  exit 1
+fi
+
 # Calls the python script with parameters defined in the bash file passed as a parameter.
 TOOL_FILE="$1.sh"
 TOOL_SCRIPT_RAW=$(cat $TOOL_FILE)
