@@ -15,4 +15,4 @@ COPY harness/ /app/harness/
 COPY tools/ /app/tools/
 
 WORKDIR /app/tools
-ENTRYPOINT ["python"]
+ENTRYPOINT ["bash", "docker_entry.sh"]

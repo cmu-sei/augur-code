@@ -4,7 +4,7 @@ services:
     image: augur/augur-code
     container_name: augur-code
     network_mode: "host"
-    command: "../harness/${CMD_PARAMS}"
+    command: "${CMD_PARAMS}"
     volumes:
       - ./input:/app/input
       - ./output:/app/output
