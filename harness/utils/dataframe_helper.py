@@ -1,3 +1,4 @@
+import os.path
 
 import pandas as pd
 
@@ -18,6 +19,8 @@ def merge_files(file1, file2, output_filename):
 # Loads a JSON file into a dataframe, with default params and log output.
 def load_dataframe_from_file(filename):
     print("Loading input file: " + filename, flush=True)
+    if not os.path.exists(filename):
+        raise Exception(f"Dataset on path {filename} does not exist.")
     dataset_df = pd.read_json(filename)
     print("Done loading data. Rows: " + str(dataset_df.shape[0]), flush=True)
     return dataset_df
