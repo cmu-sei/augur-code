@@ -7,7 +7,7 @@ from utils import dataframe_helper
 
 
 # A dataset following the Kaggle competition format of SAR data.
-class DataSet(object):
+class DataSet:
 
     num_samples = 0
     x_ids = np.empty(0, str)
