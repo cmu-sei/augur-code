@@ -3,8 +3,8 @@
   "output": "../output/drift.json",
   "drift_scenario":
     {
-      "condition": "dummy",
-      "method": "drifts.dummy_drift",
-      "params": {"param1":  "test", "param2": "yep"}
+      "condition": "random",
+      "method": "drifts.random_drift",
+      "params": {"num_samples":  100}
     }
 }

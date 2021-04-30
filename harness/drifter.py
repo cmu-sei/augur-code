@@ -37,9 +37,7 @@ def main():
 
     # Apply drift.
     try:
-        drifted_dataset = apply_drift(base_dataset, config.get("drift_scenario"))
-
-        # Save drift dataset.
+        drifted_dataset = apply_drift(bins, config.get("drift_scenario"))
         drifted_dataset.save_by_reference(config.get("output"))
     except ModuleNotFoundError:
         print("Could not find module implemeting drift algorithm: " + config.get("drift_scenario").get("method") + ". Aborting.")
