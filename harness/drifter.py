@@ -8,12 +8,16 @@ CONFIG_FILENAME = "./drifter_config.json"
 
 
 # Applies drift on a given dataset
-def apply_drift(input_dataset, drift_config):
+def apply_drift(input_bins, drift_config):
     print("Drift condition: " + drift_config.get("condition"), flush=True)
+    print("Drift function: " + drift_config.get("method"), flush=True)
+    params = drift_config.get("params")
+    print("Generating drift with params: ")
+    print(params)
 
     # Import module dynamically, and call the drift generation method
     drift_module = importlib.import_module(drift_config.get("method"))
-    drifted_dataset = drift_module.generate_drift(input_dataset, drift_config.get("params"))
+    drifted_dataset = drift_module.generate_drift(input_bins, augur_dataset.DataSet(), params)
 
     print("Finished applying drift", flush=True)
     return drifted_dataset
