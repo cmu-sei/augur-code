@@ -5,6 +5,10 @@
     {
       "condition": "random",
       "method": "drifts.random_drift",
-      "params": {"num_samples":  100}
+      "params":
+      {
+          "max_num_samples":  100,
+          "timebox_size": 10
+      }
     }
 }

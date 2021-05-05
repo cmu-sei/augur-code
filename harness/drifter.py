@@ -15,12 +15,35 @@ def apply_drift(input_bins, drift_config):
     print("Generating drift with params: ")
     print(params)
 
-    # Import module dynamically, and call the drift generation method
+    # Import module dynamically.
     drift_module = importlib.import_module(drift_config.get("method"))
-    drifted_dataset = drift_module.generate_drift(input_bins, augur_dataset.DataSet(), params)
 
+    # Loop until we get all samples we want.
+    max_num_samples = params.get("max_num_samples")
+    timebox_size = params.get("timebox_size")
+    drifted_dataset = augur_dataset.DataSet()
+    curr_bin_offset = 0
+    while drifted_dataset.get_number_of_samples() < max_num_samples:
+        print(f"Now getting data for timebox of size {timebox_size}, using bin offset {curr_bin_offset}")
+        timebox_sample_ids = generate_timebox_samples(drift_module, curr_bin_offset, input_bins, timebox_size, params)
+        drifted_dataset.add_multiple_by_reference(timebox_sample_ids)
+
+        # Offset to indicate the starting bin for the condition.
+        curr_bin_offset = (curr_bin_offset + 1) % len(input_bins)
     print("Finished applying drift", flush=True)
     return drifted_dataset
+
+
+# Chooses samples for a given timebox size, and from the given current bin index.
+def generate_timebox_samples(drift_module, curr_bin_offset, input_bins, timebox_size, params):
+    # Get all values for this timebox.
+    timebox_sample_ids = []
+    for sample_index in range(0, timebox_size):
+        bin_idx = drift_module.get_bin_index(sample_index, curr_bin_offset, len(input_bins), params)
+        print(f"Selecting from bin {bin_idx}")
+        next_sample_id = input_bins[bin_idx].get_random()
+        timebox_sample_ids.append(next_sample_id)
+    return timebox_sample_ids
 
 
 # Main code.

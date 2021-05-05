@@ -9,7 +9,6 @@ from utils import dataframe_helper
 # A dataset following the Kaggle competition format of SAR data.
 class DataSet:
 
-    num_samples = 0
     x_ids = np.empty(0, str)
     x_band1 = []
     x_band2 = []
@@ -17,6 +16,10 @@ class DataSet:
     y_output = []
     x_combined_bands = []
     x_original_ids = np.empty(0, str)
+
+    # Gets the current size in num of samples.
+    def get_number_of_samples(self):
+        return self.x_ids.size
 
     # Loads data from a JSON file into this object.
     def load_data(self, dataset_filename, basedataset_filename=None):
@@ -67,7 +70,6 @@ class DataSet:
         print("Done cleaning up angle", flush=True)
 
         # Store locally the data parts.
-        self.num_samples = dataset_df.shape[0]
         self.x_ids = np.array(dataset_df["id"])
         self.x_band1 = np.array(dataset_df["band_1"])
         self.x_band2 = np.array(dataset_df["band_2"])
@@ -101,6 +103,11 @@ class DataSet:
         id = secrets.token_hex(10)
         self.x_ids = np.append(self.x_ids, id)
         self.x_original_ids = np.append(self.x_original_ids, original_id)
+
+    # Adds multiple original ids by reference.
+    def add_multiple_by_reference(self, original_ids):
+        for id in original_ids:
+            self.add_by_reference(id)
 
     # Stores Numpy arrays with a dataset into a JSON file.
     def save_data(self, output_filename):
