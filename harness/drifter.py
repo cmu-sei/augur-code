@@ -1,10 +1,12 @@
+import sys
 import importlib
 
 from utils import dataset as augur_dataset
 from utils.config import Config
 from utils import databin
 
-CONFIG_FILENAME = "./drifter_config.json"
+DEFAULT_CONFIG_FILENAME = "./drifter_config.json"
+DRIFT_EXP_CONFIG_FOLDER = "../experiments/drift"
 
 
 # Applies drift on a given dataset
@@ -48,9 +50,10 @@ def generate_timebox_samples(drift_module, curr_bin_offset, input_bins, timebox_
 
 # Main code.
 def main():
-    # Load config.
+    # Allow selecting configs for experiments, and load it.
+    config_file = Config.choose_from_folder(sys.argv, DRIFT_EXP_CONFIG_FOLDER, DEFAULT_CONFIG_FILENAME)
     config = Config()
-    config.load(CONFIG_FILENAME)
+    config.load(config_file)
 
     # Load dataset to drift.
     base_dataset = augur_dataset.DataSet()
