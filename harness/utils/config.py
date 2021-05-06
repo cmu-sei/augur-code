@@ -37,7 +37,7 @@ class Config(object):
                         config_files.append(filename)
                         print(f"{file_idx}. {filename}")
                 try:
-                    option = int(input("Which file would you use? (Indicate a number):"))
+                    option = int(input("Which file would you use? (Indicate a number): "))
                     if option not in range(1, file_idx):
                         print("No valid config file selected.")
                     else:
