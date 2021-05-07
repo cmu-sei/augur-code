@@ -7,7 +7,8 @@ from utils import model as augur_model
 from utils import dataset as augur_dataset
 from utils.config import Config
 
-CONFIG_FILENAME = "./predictor_config.json"
+DEFAULT_CONFIG_FILENAME = "./predictor_config.json"
+METRIC_EXP_CONFIG_FOLDER = "../experiments/metric"
 
 
 # Generates predictions based on model and SAR data.
@@ -58,13 +59,8 @@ def save_updated_dataset(dataset, predictions, output_filename):
 
 # Main code.
 def main():
-    # See if we'll use the default or a special config file.
-    config_file = CONFIG_FILENAME
-    if len(sys.argv) > 1:
-        config_file = str(sys.argv[1])
-        print('Config file top use: ', config_file)
-
-    # Load config.
+    # Allow selecting configs for experiments, and load it.
+    config_file = Config.choose_from_folder(sys.argv, METRIC_EXP_CONFIG_FOLDER, DEFAULT_CONFIG_FILENAME)
     config = Config()
     config.load(config_file)
 

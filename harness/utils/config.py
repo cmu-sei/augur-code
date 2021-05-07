@@ -45,7 +45,10 @@ class Config(object):
                         print("Config file to use: ", config_file)
                         return config_file
                 except ValueError as ex:
-                    print("Invalid option selected.")
+                    # Assume we are getting a config file name.
+                    config_file = command
+                    print(f"Config file to use: {config_file}")
+                    return config_file
             else:
                 print("No valid command line arguments found.")
         else:
