@@ -17,6 +17,7 @@ CONFIG = Config()
 
 
 class TrainingSet(object):
+    """Represents a subset of data to train."""
     x_train = []
     y_train = []
     x_validation = None
@@ -27,19 +28,21 @@ class TrainingSet(object):
 
 
 def print_and_log(message):
+    """Utility function."""
     print(message, flush=True)
     logging.info(message)
 
 
 def get_callbacks(patience=2):
+    """Gets helper callbacks to save checkpoints and allow early stopping when needed."""
     file_path = ".model_weights.hdf5"
     es = tfcb.EarlyStopping('val_loss', patience=patience, mode="min")
     msave = tfcb.ModelCheckpoint(file_path, save_best_only=True)
     return [es, msave]
 
 
-# Split training set into train and validation (75% to actually train)
 def split_data(dataset):
+    """Split training set into train and validation (75% to actually train)"""
     validation_size = CONFIG.get("hyper_parameters").get("validation_size")
     x_band_t, x_band_v, x_angle_t, x_angle_v, y_train, y_validation = skm.train_test_split(dataset.x_combined_bands,
                                                                                            dataset.x_angle,
@@ -56,6 +59,7 @@ def split_data(dataset):
 
 
 def train(training_set):
+    """Train."""
     print_and_log("TRAINING")
 
     model = augur_model.create_model()
@@ -91,6 +95,7 @@ def train(training_set):
 
 
 def evaluate(model, x_inputs, y_inputs):
+    """Does an evaluation."""
     # Load evaluation dataset and model.
     print_and_log("EVALUATION")
     print("Starting evaluation", flush=True)
@@ -100,8 +105,9 @@ def evaluate(model, x_inputs, y_inputs):
     return scores
 
 
-# k-fold cross-validation to check how model is performing by selecting different sets to train/validate.
 def cross_validate(dataset, num_folds=5):
+    """k-fold cross-validation to check how model is performing by selecting different sets to train/validate."""
+
     # Define the K-fold Cross Validator
     print_and_log("CROSS VALIDATION")
     kfold = KFold(n_splits=num_folds, shuffle=True)

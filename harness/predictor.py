@@ -11,20 +11,20 @@ DEFAULT_CONFIG_FILENAME = "./predictor_config.json"
 METRIC_EXP_CONFIG_FOLDER = "../experiments/metric"
 
 
-# Generates predictions based on model and SAR data.
 def predict(model, x_band_data, x_angle_data):
+    """Generates predictions based on model and SAR data."""
     predictions = model.predict([x_band_data, x_angle_data]).flatten()
     print("Predictions shape:", predictions.shape, flush=True)
     return predictions
 
 
-# Generates predictions based on model and SAR data.
 def classify(predictions, threshold):
+    """Generates predictions based on model and SAR data."""
     return np.where(predictions > threshold, 1, 0)
 
 
-# Saves the ids, predictions and metrics into a JSON file.
 def save_predictions(dataset, predictions, output_filename):
+    """Saves the ids, predictions and metrics into a JSON file."""
     # Turn everything into a DataFrame before turning into JSON.
     print("Creating predictions DataFrame", flush=True)
     output_df = pd.DataFrame()
@@ -39,6 +39,7 @@ def save_predictions(dataset, predictions, output_filename):
 
 
 def save_metrics(metrics, metrics_filename):
+    """Stores the given metrics to an output."""
     print("Creating DataFrame", flush=True)
     output_df = pd.DataFrame()
 
@@ -51,8 +52,8 @@ def save_metrics(metrics, metrics_filename):
     print("Finished saving JSON file", flush=True)
 
 
-# Saves a dataset to a JSON file, adding the given predictions first.
 def save_updated_dataset(dataset, predictions, output_filename):
+    """Saves a dataset to a JSON file, adding the given predictions first."""
     dataset.y_output = predictions
     dataset.save_data(output_filename)
 

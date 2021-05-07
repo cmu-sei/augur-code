@@ -6,9 +6,8 @@ import pandas as pd
 from utils import dataframe_helper
 
 
-# A dataset following the Kaggle competition format of SAR data.
 class DataSet:
-
+    """A dataset following the Kaggle competition format of SAR data."""
     x_ids = np.empty(0, str)
     x_band1 = []
     x_band2 = []
@@ -17,12 +16,13 @@ class DataSet:
     x_combined_bands = []
     x_original_ids = np.empty(0, str)
 
-    # Gets the current size in num of samples.
     def get_number_of_samples(self):
+        """Gets the current size in num of samples."""
         return self.x_ids.size
 
-    # Loads data from a JSON file into this object.
     def load_data(self, dataset_filename, basedataset_filename=None):
+        """Loads data from a JSON file into this object."""
+
         # Load the main dataset from a file into a dataframe.
         dataset_df = dataframe_helper.load_dataframe_from_file(dataset_filename)
 
@@ -37,10 +37,10 @@ class DataSet:
 
         self.prepare_dataset(dataset_df)
 
-    # Go over the original_ids listed in the dataset, and create a new dataframe by appending each of those
-    # rows from the base dataset.
     @staticmethod
     def get_from_base(referencing_df, base_filename):
+        """Go over the original_ids listed in the dataset, and create a new dataframe by appending each of those
+        rows from the base dataset."""
         print("Getting dataset from base.")
         base_dataset_df = dataframe_helper.load_dataframe_from_file(base_filename)
 
@@ -59,11 +59,12 @@ class DataSet:
         #print(final_dataset_df)
         return final_dataset_df
 
-    # Cleans up and prepares dataset data from raw dataset info.
-    # Data for each sample has 3 values: band1, band2, inc_angle. band1 and band2 are 2 radar images,
-    # each consisting of 75x75 "pixels", floats with a dB unit, obtained by pinging
-    # at an angle of inc_angle (band1 and 2 differ on how the response was received).
     def prepare_dataset(self, dataset_df):
+        """Cleans up and prepares dataset data from raw dataset info.
+        Data for each sample has 3 values: band1, band2, inc_angle. band1 and band2 are 2 radar images,
+        each consisting of 75x75 "pixels", floats with a dB unit, obtained by pinging
+        at an angle of inc_angle (band1 and 2 differ on how the response was received)."""
+
         # We set the samples with no info on inc_angle to 0 as its value, to simplify.
         dataset_df.inc_angle = dataset_df.inc_angle.replace('na', 0)
         dataset_df.inc_angle = dataset_df.inc_angle.astype(float).fillna(0.0)
@@ -94,23 +95,23 @@ class DataSet:
 
         return
 
-    # Returns the 2 inputs to be used: the combined bands and the angle.
     def get_full_input(self):
+        """Returns the 2 inputs to be used: the combined bands and the angle."""
         return [self.x_combined_bands, self.x_angle]
 
-    # Adds an original id by reference. Generates automatically a new id.
     def add_by_reference(self, original_id):
+        """Adds an original id by reference. Generates automatically a new id."""
         id = secrets.token_hex(10)
         self.x_ids = np.append(self.x_ids, id)
         self.x_original_ids = np.append(self.x_original_ids, original_id)
 
-    # Adds multiple original ids by reference.
     def add_multiple_by_reference(self, original_ids):
+        """Adds multiple original ids by reference."""
         for id in original_ids:
             self.add_by_reference(id)
 
-    # Stores Numpy arrays with a dataset into a JSON file.
     def save_data(self, output_filename):
+        """Stores Numpy arrays with a dataset into a JSON file."""
         dataset_df = pd.DataFrame()
         dataset_df["id"] = self.x_ids
         dataset_df["band_1"] = self.x_band1
@@ -120,8 +121,8 @@ class DataSet:
 
         dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
 
-    # Saves a dataset by only storing its ids and the references to the original ids it has.
     def save_by_reference(self, output_filename):
+        """Saves a dataset by only storing its ids and the references to the original ids it has."""
         dataset_df = pd.DataFrame()
         dataset_df["id"] = self.x_ids
         dataset_df["original_id"] = self.x_original_ids

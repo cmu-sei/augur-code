@@ -1,30 +1,31 @@
-import sys
 import os
 import json
 
 
-# Handles a JSON configuration.
 class Config(object):
+    """ Handles a JSON configuration."""
     config_data = {}
 
-    # Creates a parser for the default config file, if it wasn't loaded before.
     def load(self, config_filename):
+        """ Creates a parser for the default config file, if it wasn't loaded before."""
         with open(config_filename) as config_file:
             self.config_data = json.load(config_file)
 
-    # Returns a dict with the default values.
     def get(self, key_name):
+        """Returns a dict with the default values.#"""
         if key_name in self.config_data:
             return self.config_data[key_name]
         else:
             raise Exception("Config key not found: " + key_name)
 
-    # Checks whether a specific config is there.
     def contains(self, key_name):
+        """Checks whether a specific config is there."""
         return key_name in self.config_data
 
     @staticmethod
     def choose_from_folder(arguments, config_folder, default_config):
+        """Processes command line arguments to allow for 1) choosing a config from a given folder, or
+        2) to pass a config file name as a parameter."""
         if len(arguments) > 1:
             command = str(arguments[1])
             if command == "--exp":

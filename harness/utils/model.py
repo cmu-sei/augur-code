@@ -1,4 +1,3 @@
-
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Dropout, Input
 from tensorflow.keras.layers import GlobalMaxPooling2D
 from tensorflow.keras.layers import BatchNormalization
@@ -7,8 +6,11 @@ from tensorflow.keras.models import Model
 import tensorflow.keras as keras
 from tensorflow.keras.optimizers import Adam
 
+# Model definition and saving/loading functions.
+
 
 def create_model():
+    """Model to be used, obtained from sample solution."""
     bn_model = 0
     p_activation = "elu"
     input_1 = Input(shape=(75, 75, 3), name="X_1")

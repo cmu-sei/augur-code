@@ -9,8 +9,9 @@ DEFAULT_CONFIG_FILENAME = "./drifter_config.json"
 DRIFT_EXP_CONFIG_FOLDER = "../experiments/drift"
 
 
-# Applies drift on a given dataset
 def apply_drift(input_bins, drift_config):
+    """Applies drift on a given dataset"""
+
     print("Drift condition: " + drift_config.get("condition"), flush=True)
     print("Drift function: " + drift_config.get("method"), flush=True)
     params = drift_config.get("params")
@@ -36,8 +37,9 @@ def apply_drift(input_bins, drift_config):
     return drifted_dataset
 
 
-# Chooses samples for a given timebox size, and from the given current bin index.
 def generate_timebox_samples(drift_module, curr_bin_offset, input_bins, timebox_size, params):
+    """Chooses samples for a given timebox size, and from the given current bin index."""
+
     # Get all values for this timebox.
     timebox_sample_ids = []
     for sample_index in range(0, timebox_size):
