@@ -26,11 +26,25 @@ class DataBin:
     name = ""
     value = None
     ids = []
+    id_queue = []
 
     def __init__(self, new_name, new_value):
         self.name = new_name
         self.value = new_value
         self.ids = []
+
+    def setup_queue(self):
+        self.id_queue = self.ids.copy()
+        random.shuffle(self.id_queue)
+
+    def get_queue_length(self):
+        return len(self.id_queue)
+
+    def pop_from_queue(self):
+        if len(self.id_queue) > 0:
+            return self.id_queue.pop(0)
+        else:
+            return None
 
     def add(self, new_id):
         self.ids.append(new_id)

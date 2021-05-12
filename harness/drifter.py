@@ -21,10 +21,11 @@ def apply_drift(input_bins, drift_config):
     # Import module dynamically.
     drift_module = importlib.import_module(drift_config.get("method"))
 
-    # Loop until we get all samples we want.
     max_num_samples = params.get("max_num_samples")
     timebox_size = params.get("timebox_size")
     drifted_dataset = augur_dataset.DataSet()
+
+    # Loop until we get all samples we want.
     curr_bin_offset = 0
     while drifted_dataset.get_number_of_samples() < max_num_samples:
         print(f"Now getting data for timebox of size {timebox_size}, using bin offset {curr_bin_offset}")
@@ -45,7 +46,12 @@ def generate_timebox_samples(drift_module, curr_bin_offset, input_bins, timebox_
     for sample_index in range(0, timebox_size):
         bin_idx = drift_module.get_bin_index(sample_index, curr_bin_offset, len(input_bins), params)
         print(f"Selecting from bin {bin_idx}")
-        next_sample_id = input_bins[bin_idx].get_random()
+        curr_bin = input_bins[bin_idx]
+
+        if curr_bin.get_queue_length() == 0:
+            print(f"No more items in queue, resetting it.")
+            curr_bin.setup_queue()
+        next_sample_id = curr_bin.pop_from_queue()
         timebox_sample_ids.append(next_sample_id)
     return timebox_sample_ids
 
@@ -69,6 +75,7 @@ def main():
     print("Filled bins: ")
     for bin in bins:
         print(f" - {bin.info()}")
+        bin.setup_queue()
 
     # Apply drift.
     try:
