@@ -62,17 +62,20 @@ def main():
     base_dataset.load_data(config.get("dataset"))
 
     # Sort into bins.
-    bins = databin.sort_into_bins(base_dataset.x_ids, base_dataset.y_output, ["no_iceberg", "iceberg"], [0, 1])
-    print("Bins: ")
+    bin_info_list = config.get("bins")
+    print(f"Bins: {bin_info_list}", flush=True)
+    bins = databin.create_bins(bin_info_list)
+    bins = databin.sort_into_bins(base_dataset.x_ids, base_dataset.y_output, bins)
+    print("Filled bins: ")
     for bin in bins:
-        print(bin.info())
+        print(f" - {bin.info()}")
 
     # Apply drift.
     try:
         drifted_dataset = apply_drift(bins, config.get("drift_scenario"))
         drifted_dataset.save_by_reference(config.get("output"))
     except ModuleNotFoundError:
-        print("Could not find module implemeting drift algorithm: " + config.get("drift_scenario").get("method") + ". Aborting.")
+        print("Could not find module implementing drift algorithm: " + config.get("drift_scenario").get("method") + ". Aborting.")
 
 
 if __name__ == '__main__':
