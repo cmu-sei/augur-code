@@ -1,5 +1,3 @@
-import secrets
-
 import numpy as np
 import pandas as pd
 
@@ -99,17 +97,6 @@ class DataSet:
         """Returns the 2 inputs to be used: the combined bands and the angle."""
         return [self.x_combined_bands, self.x_angle]
 
-    def add_by_reference(self, original_id):
-        """Adds an original id by reference. Generates automatically a new id."""
-        id = secrets.token_hex(10)
-        self.x_ids = np.append(self.x_ids, id)
-        self.x_original_ids = np.append(self.x_original_ids, original_id)
-
-    def add_multiple_by_reference(self, original_ids):
-        """Adds multiple original ids by reference."""
-        for id in original_ids:
-            self.add_by_reference(id)
-
     def save_data(self, output_filename):
         """Stores Numpy arrays with a dataset into a JSON file."""
         dataset_df = pd.DataFrame()
@@ -118,13 +105,5 @@ class DataSet:
         dataset_df["band_2"] = self.x_band2
         dataset_df["inc_angle"] = self.x_angle
         dataset_df["is_iceberg"] = self.y_output
-
-        dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
-
-    def save_by_reference(self, output_filename):
-        """Saves a dataset by only storing its ids and the references to the original ids it has."""
-        dataset_df = pd.DataFrame()
-        dataset_df["id"] = self.x_ids
-        dataset_df["original_id"] = self.x_original_ids
 
         dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)

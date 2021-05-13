@@ -1,6 +1,6 @@
 {
   "dataset": "../output/merged_dataset.json",
-  "output": "../output/drift.json",
+  "output": "../output/math_drift.json",
   "bins":
     [
       ["no_iceberg", 0],
