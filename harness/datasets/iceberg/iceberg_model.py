@@ -3,10 +3,7 @@ from tensorflow.keras.layers import GlobalMaxPooling2D
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.layers import Concatenate
 from tensorflow.keras.models import Model
-import tensorflow.keras as keras
 from tensorflow.keras.optimizers import Adam
-
-# Model definition and saving/loading functions.
 
 
 def create_model():
@@ -48,23 +45,3 @@ def create_model():
     optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
     model.compile(loss="binary_crossentropy", optimizer=optimizer, metrics=["accuracy"])
     return model
-
-
-def save_model_to_file(model, model_filename):
-    model.save(model_filename)
-
-
-def load_model_from_file(model_filename):
-    return keras.models.load_model(model_filename)
-
-
-def add_metric(model, metric):
-    model.compile(optimizer=model.optimizer,
-                  loss=model.loss,
-                  metrics=model.metrics + [metric])
-
-
-def add_metrics(model, metrics):
-    model.compile(optimizer=model.optimizer,
-                  loss=model.loss,
-                  metrics=model.metrics + metrics)

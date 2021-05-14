@@ -1,10 +1,13 @@
 import sys
 import importlib
 
-from utils import ref_dataset
-from utils import dataset
+from datasets import ref_dataset
 from utils.config import Config
 from utils import databin
+from utils import logging
+from utils.logging import print_and_log
+
+from datasets.iceberg import iceberg_dataset
 
 DEFAULT_CONFIG_FILENAME = "./drifter_config.json"
 DRIFT_EXP_CONFIG_FOLDER = "../experiments/drift"
@@ -14,16 +17,16 @@ def load_bins(dataset_filename, bin_params):
     """Loads a dataset into bins"""
 
     # Load dataset to drift.
-    base_dataset = dataset.DataSet()
-    base_dataset.load_data(dataset_filename)
+    base_dataset = iceberg_dataset.IcebergDataSet()
+    base_dataset.load_from_file(dataset_filename)
 
     # Sort into bins.
-    print(f"Bins: {bin_params}", flush=True)
+    print_and_log(f"Bins: {bin_params}")
     bins = databin.create_bins(bin_params)
     bins = databin.sort_into_bins(base_dataset.x_ids, base_dataset.y_output, bins)
-    print("Filled bins: ")
+    print_and_log("Filled bins: ")
     for bin in bins:
-        print(f" - {bin.info()}")
+        print_and_log(f" - {bin.info()}")
         bin.setup_queue()
 
     return bins
@@ -32,11 +35,11 @@ def load_bins(dataset_filename, bin_params):
 def apply_drift(input_bins, drift_config):
     """Applies drift on a given dataset"""
 
-    print("Drift condition: " + drift_config.get("condition"), flush=True)
-    print("Drift function: " + drift_config.get("method"), flush=True)
+    print_and_log("Drift condition: " + drift_config.get("condition"))
+    print_and_log("Drift function: " + drift_config.get("method"))
     params = drift_config.get("params")
-    print("Generating drift with params: ")
-    print(params)
+    print_and_log("Generating drift with params: ")
+    print_and_log(params)
 
     # Import module dynamically.
     drift_module = importlib.import_module(drift_config.get("method"))
@@ -48,13 +51,13 @@ def apply_drift(input_bins, drift_config):
     # Loop until we get all samples we want.
     curr_bin_offset = 0
     while drifted_dataset.get_number_of_samples() < max_num_samples:
-        print(f"Now getting data for timebox of size {timebox_size}, using bin offset {curr_bin_offset}")
+        print_and_log(f"Now getting data for timebox of size {timebox_size}, using bin offset {curr_bin_offset}")
         timebox_sample_ids = generate_timebox_samples(drift_module, curr_bin_offset, input_bins, timebox_size, params)
         drifted_dataset.add_multiple_references(timebox_sample_ids)
 
         # Offset to indicate the starting bin for the condition.
         curr_bin_offset = (curr_bin_offset + 1) % len(input_bins)
-    print("Finished applying drift", flush=True)
+    print_and_log("Finished applying drift")
     return drifted_dataset
 
 
@@ -65,11 +68,11 @@ def generate_timebox_samples(drift_module, curr_bin_offset, input_bins, timebox_
     timebox_sample_ids = []
     for sample_index in range(0, timebox_size):
         bin_idx = drift_module.get_bin_index(sample_index, curr_bin_offset, len(input_bins), params)
-        print(f"Selecting from bin {bin_idx}")
+        print_and_log(f"Selecting from bin {bin_idx}")
         curr_bin = input_bins[bin_idx]
 
         if curr_bin.get_queue_length() == 0:
-            print(f"No more items in queue, resetting it.")
+            print_and_log(f"No more items in queue, resetting it.")
             curr_bin.setup_queue()
         next_sample_id = curr_bin.pop_from_queue()
         timebox_sample_ids.append(next_sample_id)
@@ -78,19 +81,21 @@ def generate_timebox_samples(drift_module, curr_bin_offset, input_bins, timebox_
 
 # Main code.
 def main():
+    logging.setup_logging("drifter.log")
+
     # Allow selecting configs for experiments, and load it.
     config_file = Config.choose_from_folder(sys.argv, DRIFT_EXP_CONFIG_FOLDER, DEFAULT_CONFIG_FILENAME)
     config = Config()
     config.load(config_file)
 
-    bins = load_bins(config.get("dataset"), config.get("bins"))
-
     # Apply drift.
     try:
+        bins = load_bins(config.get("dataset"), config.get("bins"))
         drifted_dataset = apply_drift(bins, config.get("drift_scenario"))
         drifted_dataset.save_to_file(config.get("output"))
     except ModuleNotFoundError:
-        print("Could not find module implementing drift algorithm: " + config.get("drift_scenario").get("method") + ". Aborting.")
+        print_and_log("Could not find module implementing drift algorithm: " + config.get("drift_scenario").get("method") +
+              ". Aborting.")
 
 
 if __name__ == '__main__':

@@ -4,25 +4,27 @@ import numpy as np
 import pandas as pd
 
 from utils import dataframe_helper
+from datasets import dataset
 
 
-class RefDataSet:
+class RefDataSet(dataset.DataSet):
     """A dataset referencing the ids of another dataset."""
-    x_ids = np.empty(0, str)
+    ORIGINAL_ID_KEY = "original_id"
     x_original_ids = np.empty(0, str)
-    base_dataset_filename = None
 
-    def get_number_of_samples(self):
-        """Gets the current size in num of samples."""
-        return self.x_ids.size
+    def get_original_ids(self):
+        return self.x_original_ids
+
+    def get_sample(self, position):
+        """Returns a sample of this id"""
+        sample = super().get_sample(position)
+        if position < len(self.x_original_ids):
+            sample[RefDataSet.ORIGINAL_ID_KEY] = self.x_original_ids[position]
+        return sample
 
     def load_from_file(self, dataset_filename):
         """Loads data from a JSON file into this object."""
-
-        # Load the referencing dataset from a file into a dataframe.
-        dataset_df = dataframe_helper.load_dataframe_from_file(dataset_filename)
-        print("Sample row: ")
-        print(dataset_df.head(1))
+        dataset_df = super().load_ids_from_file(dataset_filename)
 
         self.x_original_ids = np.array(dataset_df["original_id"])
         print("Done loading original ids", flush=True)
@@ -41,7 +43,14 @@ class RefDataSet:
     def save_to_file(self, output_filename):
         """Saves a dataset by only storing its ids and the references to the original ids it has."""
         dataset_df = pd.DataFrame()
-        dataset_df["id"] = self.x_ids
-        dataset_df["original_id"] = self.x_original_ids
+        dataset_df[dataset.DataSet.ID_KEY] = self.x_ids
+        dataset_df[RefDataSet.ORIGINAL_ID_KEY] = self.x_original_ids
 
         dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
+
+    def create_from_reference(self, base_dataset, new_dataset):
+        """Creates a new dataset by getting the full samples of a reference from the base dataset."""
+        for original_id in self.x_original_ids:
+            full_sample = base_dataset.get_sample_by_id(original_id)
+            new_dataset.add_sample(full_sample)
+        return new_dataset
