@@ -3,7 +3,7 @@
   "model": "../output/trained_model",
   "training": "on",
   "cross_validation": "off",
-  "evaluation": "off",
+  "evaluation": "on",
   "hyper_parameters":
   {
     "epochs": 10,
