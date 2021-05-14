@@ -37,20 +37,18 @@ class IcebergDataSet(dataset.DataSet):
         if IcebergDataSet.ICEBERG_KEY in dataset_df.columns:
             self.y_output = np.array(dataset_df[IcebergDataSet.ICEBERG_KEY])
 
-        # Put all training data into X_train (bands 1 and 2), X_angle_train, and y_train.
-        # Load each image from a one-dimension vector into a 74x75 numpy matrix, for both bands
-        x_band1 = np.array([np.array(band).astype(np.float32).reshape(75, 75) for band in dataset_df["band_1"]])
-        x_band2 = np.array([np.array(band).astype(np.float32).reshape(75, 75) for band in dataset_df["band_2"]])
-
-        # Put all training data into X_train (bands 1 and 2), X_angle_train, and y_train.
-        # Not sure how colons are useful here, nor why there is a 3rd array which is
-        # equal to x_band1 (2*x_band1/2).
-        self.x_combined_bands = np.concatenate([x_band1[:, :, :, np.newaxis],
-                                                x_band2[:, :, :, np.newaxis],
-                                                ((x_band1+x_band2)/2)[:, :, :, np.newaxis]
-                                                ], axis=-1)
-
+        # Generate the combined bands.
+        self.combine_bands()
         print("Done loading data into numpy arrays", flush=True)
+
+    def combine_bands(self):
+        # Put all training data into X_train (bands 1 and 2), X_angle_train, and y_train.
+        flat_x_band1 = np.array([np.array(band).astype(np.float32).reshape(75, 75) for band in self.x_band1])
+        flat_x_band2 = np.array([np.array(band).astype(np.float32).reshape(75, 75) for band in self.x_band2])
+        self.x_combined_bands = np.concatenate([flat_x_band1[:, :, :, np.newaxis],
+                                                flat_x_band2[:, :, :, np.newaxis],
+                                                ((flat_x_band1+flat_x_band2)/2)[:, :, :, np.newaxis]
+                                                ], axis=-1)
 
     def add_sample(self, sample):
         """Adds a sample from a dictionary."""
@@ -61,11 +59,9 @@ class IcebergDataSet(dataset.DataSet):
         self.x_angle = np.append(self.x_angle, sample[IcebergDataSet.ANGLE_KEY])
         if IcebergDataSet.ICEBERG_KEY in sample:
             self.y_output = np.append(self.y_output, sample[IcebergDataSet.ICEBERG_KEY])
-        print(f"Len bands: {self.x_band1.size}, {self.x_combined_bands.size}, len angle: {self.x_angle.size}")
 
     def get_sample(self, position):
         """Returns a sample as as dict."""
-        print(f"Base Len bands: {self.x_band1.size}, {self.x_combined_bands.size}, len angle: {self.x_angle.size}")
         sample = super().get_sample(position)
         if len(self.x_band1) > position:
             sample[IcebergDataSet.BAND1_KEY] = self.x_band1[position]
