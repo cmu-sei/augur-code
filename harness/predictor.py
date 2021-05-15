@@ -17,7 +17,6 @@ METRIC_EXP_CONFIG_FOLDER = "../experiments/metric"
 
 def predict(model, model_input):
     """Generates predictions based on model and SAR data."""
-    print(model_input)
     predictions = model.predict(model_input).flatten()
     print_and_log(f"Predictions shape: {predictions.shape}")
     return predictions

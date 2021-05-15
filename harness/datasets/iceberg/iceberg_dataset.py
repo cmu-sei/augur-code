@@ -15,11 +15,15 @@ class IcebergDataSet(dataset.DataSet):
     ICEBERG_KEY = "is_iceberg"
     COMBINED_BANDS_KEY = "merged_bands"
 
+    BAND_WIDTH = 75
+    BAND_HEIGHT = 75
+    BAND_DEPTH = 3
+
     x_band1 = np.empty(0)
     x_band2 = np.empty(0)
     x_angle = np.empty(0)
     y_output = np.empty(0, int)
-    x_combined_bands = np.empty(0)
+    x_combined_bands = np.empty((0, BAND_WIDTH, BAND_HEIGHT, BAND_DEPTH))
 
     def load_from_file(self, dataset_filename):
         """Loads data from a JSON file into this object."""
@@ -38,25 +42,25 @@ class IcebergDataSet(dataset.DataSet):
             self.y_output = np.array(dataset_df[IcebergDataSet.ICEBERG_KEY])
 
         # Generate the combined bands.
-        self.combine_bands()
+        self.post_process_data()
         print("Done loading data into numpy arrays", flush=True)
 
-    def combine_bands(self):
+    def post_process_data(self):
         # Put all training data into X_train (bands 1 and 2), X_angle_train, and y_train.
-        flat_x_band1 = np.array([np.array(band).astype(np.float32).reshape(75, 75) for band in self.x_band1])
-        flat_x_band2 = np.array([np.array(band).astype(np.float32).reshape(75, 75) for band in self.x_band2])
-        self.x_combined_bands = np.concatenate([flat_x_band1[:, :, :, np.newaxis],
-                                                flat_x_band2[:, :, :, np.newaxis],
-                                                ((flat_x_band1+flat_x_band2)/2)[:, :, :, np.newaxis]
+        square_x_band1 = np.array([np.array(band).astype(np.float32).reshape(self.BAND_WIDTH, self.BAND_HEIGHT) for band in self.x_band1])
+        square_x_band2 = np.array([np.array(band).astype(np.float32).reshape(self.BAND_WIDTH, self.BAND_HEIGHT) for band in self.x_band2])
+        self.x_combined_bands = np.concatenate([square_x_band1[:, :, :, np.newaxis],
+                                                square_x_band2[:, :, :, np.newaxis],
+                                                ((square_x_band1+square_x_band2)/2)[:, :, :, np.newaxis]
                                                 ], axis=-1)
 
     def add_sample(self, sample):
         """Adds a sample from a dictionary."""
         super().add_sample(sample)
-        self.x_band1 = np.append(self.x_band1, sample[IcebergDataSet.BAND1_KEY])
-        self.x_band2 = np.append(self.x_band2, sample[IcebergDataSet.BAND2_KEY])
-        self.x_combined_bands = np.append(self.x_combined_bands, sample[IcebergDataSet.COMBINED_BANDS_KEY])
+        self.x_band1 = np.append(self.x_band1, sample[IcebergDataSet.BAND1_KEY], axis=0)
+        self.x_band2 = np.append(self.x_band2, sample[IcebergDataSet.BAND2_KEY], axis=0)
         self.x_angle = np.append(self.x_angle, sample[IcebergDataSet.ANGLE_KEY])
+        self.x_combined_bands = np.append(self.x_combined_bands, [sample[IcebergDataSet.COMBINED_BANDS_KEY]], axis=0)
         if IcebergDataSet.ICEBERG_KEY in sample:
             self.y_output = np.append(self.y_output, sample[IcebergDataSet.ICEBERG_KEY])
 
@@ -66,8 +70,8 @@ class IcebergDataSet(dataset.DataSet):
         if len(self.x_band1) > position:
             sample[IcebergDataSet.BAND1_KEY] = self.x_band1[position]
             sample[IcebergDataSet.BAND2_KEY] = self.x_band2[position]
-            sample[IcebergDataSet.COMBINED_BANDS_KEY] = self.x_combined_bands[position]
             sample[IcebergDataSet.ANGLE_KEY] = self.x_angle[position]
+            sample[IcebergDataSet.COMBINED_BANDS_KEY] = self.x_combined_bands[position]
         if len(self.y_output) > position:
             sample[IcebergDataSet.ICEBERG_KEY] = self.y_output[position]
         return sample
