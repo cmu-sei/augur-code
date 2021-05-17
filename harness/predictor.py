@@ -8,8 +8,7 @@ from datasets import ref_dataset
 from utils.config import Config
 from utils import logging
 from utils.logging import print_and_log
-
-from datasets.iceberg import iceberg_dataset
+from datasets import dataset
 
 DEFAULT_CONFIG_FILENAME = "./predictor_config.json"
 METRIC_EXP_CONFIG_FOLDER = "../experiments/metric"
@@ -59,10 +58,10 @@ def save_metrics(metrics, metrics_filename):
     print_and_log("Finished saving JSON file")
 
 
-def save_updated_dataset(dataset, predictions, output_filename):
+def save_updated_dataset(updated_dataset, predictions, output_filename):
     """Saves a dataset to a JSON file, adding the given predictions first."""
-    dataset.set_output(predictions)
-    dataset.save_to_file(output_filename)
+    updated_dataset.set_output(predictions)
+    updated_dataset.save_to_file(output_filename)
 
 
 # Main code.
@@ -75,16 +74,16 @@ def main():
     config.load(config_file)
 
     # Load dataset to predict on (and base one if needed).
-    full_dataset = iceberg_dataset.IcebergDataSet()
+    full_dataset = dataset.create_dataset_class(config.get("dataset_class"))
     reference_dataset = None
     if config.contains("base_dataset"):
         reference_dataset = ref_dataset.RefDataSet()
         reference_dataset.load_from_file(config.get("dataset"))
 
-        base_dataset = iceberg_dataset.IcebergDataSet()
+        base_dataset = dataset.create_dataset_class(config.get("dataset_class"))
         base_dataset.load_from_file(config.get("base_dataset"))
 
-        full_dataset = iceberg_dataset.IcebergDataSet()
+        full_dataset = dataset.create_dataset_class(config.get("dataset_class"))
         full_dataset = reference_dataset.create_from_reference(base_dataset, full_dataset)
     else:
         full_dataset.load_from_file(config.get("dataset"))

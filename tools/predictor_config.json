@@ -1,4 +1,5 @@
 {
+  "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
   "mode": "predict",
   "dataset": "../output/drift.json",
   "base_dataset": "../output/merged_dataset.json",
