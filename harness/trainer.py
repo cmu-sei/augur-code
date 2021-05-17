@@ -144,7 +144,7 @@ def main():
                       f'validation samples: {len(training_set.x_validation[0])}')
 
         model, history = train(training_set)
-        model.save_model_to_file(model, CONFIG.get("model"))
+        model_utils.save_model_to_file(model, CONFIG.get("model"))
         evaluation_input = training_set.x_validation
         evaluation_output = training_set.y_validation
     if CONFIG.get("cross_validation") == "on":

@@ -6,18 +6,17 @@ from utils.config import Config
 from utils import databin
 from utils import logging
 from utils.logging import print_and_log
-
-from datasets.iceberg import iceberg_dataset
+from datasets import dataset
 
 DEFAULT_CONFIG_FILENAME = "./drifter_config.json"
 DRIFT_EXP_CONFIG_FOLDER = "../experiments/drift"
 
 
-def load_bins(dataset_filename, bin_params):
+def load_bins(dataset_filename, dataset_class_name, bin_params):
     """Loads a dataset into bins"""
 
     # Load dataset to drift.
-    base_dataset = iceberg_dataset.IcebergDataSet()
+    base_dataset = dataset.create_dataset_class(dataset_class_name)
     base_dataset.load_from_file(dataset_filename)
 
     # Sort into bins.
@@ -90,7 +89,7 @@ def main():
 
     # Apply drift.
     try:
-        bins = load_bins(config.get("dataset"), config.get("bins"))
+        bins = load_bins(config.get("dataset"), config.get("dataset_class"), config.get("bins"))
         drifted_dataset = apply_drift(bins, config.get("drift_scenario"))
         drifted_dataset.save_to_file(config.get("output"))
     except ModuleNotFoundError:
