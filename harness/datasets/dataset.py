@@ -3,21 +3,8 @@ import numpy as np
 from utils import dataframe_helper
 
 
-class TrainingSet(object):
-    """Represents a subset of data to train."""
-    x_train = []
-    y_train = []
-    x_validation = None
-    y_validation = None
-    num_train_samples = 0
-    num_validation_samples = 0
-
-    def has_validation(self):
-        return self.x_validation is not None and self.y_validation is not None
-
-
 class DataSet:
-    """A base dataset, only containing ids."""
+    """A base dataset, only containing ids. Meant to be an abstract class for more detailed ones to build on."""
 
     ID_KEY = "id"
     x_ids = np.empty(0, str)
@@ -29,7 +16,7 @@ class DataSet:
     def add_sample(self, sample):
         self.x_ids = np.append(self.x_ids, sample[DataSet.ID_KEY])
 
-    def get_id_position(self, id_to_find):
+    def _get_id_position(self, id_to_find):
         """Gets the position of a given id"""
         position_info = np.where(self.x_ids == id_to_find)
         if len(position_info[0]) == 0:
@@ -38,11 +25,11 @@ class DataSet:
 
     def get_sample_by_id(self, id_to_find):
         """Returns a sample given its id."""
-        position = self.get_id_position(id_to_find)
+        position = self._get_id_position(id_to_find)
         return self.get_sample(position[0])
 
     def get_sample(self, position):
-        """Returns a sample of this id"""
+        """Returns a sample associated to this id, just containing the id, as a dictionary."""
         if position < len(self.x_ids):
             return {DataSet.ID_KEY: self.x_ids[position]}
         else:
@@ -59,6 +46,6 @@ class DataSet:
         print(dataset_df.head(1))
 
         self.x_ids = np.array(dataset_df[id_key])
-        print("Done loading ids", flush=True)
+        print("Done storing ids", flush=True)
 
         return dataset_df

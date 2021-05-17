@@ -1,10 +1,9 @@
 import numpy as np
 import pandas as pd
-import sklearn.model_selection as skm
+
 
 from utils import dataframe_helper
 from datasets import dataset
-from datasets.dataset import TrainingSet
 
 
 class IcebergDataSet(dataset.DataSet):
@@ -46,7 +45,7 @@ class IcebergDataSet(dataset.DataSet):
         print("Done loading data into numpy arrays", flush=True)
 
     def post_process_data(self):
-        # Put all training data into X_train (bands 1 and 2), X_angle_train, and y_train.
+        """Sets up a combined set of inputs containing each separate band, plus a combined image of both bands."""
         square_x_band1 = np.array([np.array(band).astype(np.float32).reshape(self.BAND_WIDTH, self.BAND_HEIGHT) for band in self.x_band1])
         square_x_band2 = np.array([np.array(band).astype(np.float32).reshape(self.BAND_WIDTH, self.BAND_HEIGHT) for band in self.x_band2])
         self.x_combined_bands = np.concatenate([square_x_band1[:, :, :, np.newaxis],
@@ -94,38 +93,12 @@ class IcebergDataSet(dataset.DataSet):
     def save_to_file(self, output_filename):
         """Stores Numpy arrays with a dataset into a JSON file."""
         dataset_df = pd.DataFrame()
-        dataset_df["id"] = self.x_ids
-        dataset_df["band_1"] = self.x_band1
-        dataset_df["band_2"] = self.x_band2
-        dataset_df["inc_angle"] = self.x_angle
-        dataset_df["is_iceberg"] = self.y_output
+        dataset_df[dataset.DataSet.ID_KEY] = self.x_ids
+        dataset_df[IcebergDataSet.BAND1_KEY] = self.x_band1
+        dataset_df[IcebergDataSet.BAND2_KEY] = self.x_band2
+        dataset_df[IcebergDataSet.ANGLE_KEY] = self.x_angle
+        dataset_df[IcebergDataSet.ICEBERG_KEY] = self.y_output
 
         dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
 
-    def split_data(self, validation_percentage):
-        """Split training set into train and validation (75% to actually train)"""
-        x_band_t, x_band_v, x_angle_t, x_angle_v, y_train, y_validation = skm.train_test_split(self.x_combined_bands,
-                                                                                               self.x_angle,
-                                                                                               self.y_output,
-                                                                                               random_state=42,
-                                                                                               test_size=validation_percentage)
-        print("Done splitting validation data from train data", flush=True)
-        training_set = TrainingSet()
-        training_set.x_train = [x_band_t, x_angle_t]
-        training_set.x_validation = [x_band_v, x_angle_v]
-        training_set.y_train = y_train
-        training_set.y_validation = y_validation
-        training_set.num_train_samples = y_train.shape[0]
-        training_set.num_validation_samples = y_validation.shape[0]
-        return training_set
 
-    def get_fold_data(self, train_index, test_index):
-        """Prepares a training set for the given dataset and indexes"""
-        training_set = TrainingSet()
-        training_set.x_train = [self.x_combined_bands[train_index], self.x_angle[train_index]]
-        training_set.y_train = self.y_output[train_index]
-        training_set.x_validation = [self.x_combined_bands[test_index], self.x_angle[test_index]]
-        training_set.y_validation = self.y_output[test_index]
-        training_set.num_train_samples = training_set.y_train.shape[0]
-        training_set.num_validation_samples = training_set.y_validation.shape[0]
-        return training_set

@@ -89,7 +89,7 @@ def cross_validate(dataset, num_folds=5):
         print('------------------------------------------------------------------------')
         print_and_log(f'Training for fold {fold_no} ...')
 
-        training_set = dataset.get_fold_data(train_index, test_index)
+        training_set = iceberg_model.get_fold_data(dataset, train_index, test_index)
 
         # Fit data to model
         print_and_log(f'Training fold samples: {training_set.num_train_samples}')
@@ -133,7 +133,7 @@ def main():
 
     # Run steps depending on config.
     if CONFIG.get("training") == "on":
-        training_set = dataset.split_data(CONFIG.get("hyper_parameters").get("validation_size"))
+        training_set = iceberg_model.split_data(dataset, CONFIG.get("hyper_parameters").get("validation_size"))
         print_and_log(f'Dataset samples {dataset.get_number_of_samples()}, '
                       f'training samples: {len(training_set.x_train[0])}, '
                       f'validation samples: {len(training_set.x_validation[0])}')

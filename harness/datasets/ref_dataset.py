@@ -16,7 +16,7 @@ class RefDataSet(dataset.DataSet):
         return self.x_original_ids
 
     def get_sample(self, position):
-        """Returns a sample of this id"""
+        """Returns a sample at the given position."""
         sample = super().get_sample(position)
         if position < len(self.x_original_ids):
             sample[RefDataSet.ORIGINAL_ID_KEY] = self.x_original_ids[position]
