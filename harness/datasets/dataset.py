@@ -1,6 +1,23 @@
+import importlib
+
 import numpy as np
 
 from utils import dataframe_helper
+
+
+def load_model_module(module_name):
+    """Loads a model module given the name"""
+    return importlib.import_module("datasets." + module_name)
+
+
+def create_dataset_class(full_class_name):
+    """Returns a class instance of the given dataset class name."""
+    parts = full_class_name.rsplit(".", 1)
+    module_name = parts[0]
+    class_name = parts[1]
+    dataset_module = importlib.import_module("datasets." + module_name)
+    dataset_instance = getattr(dataset_module, class_name)()
+    return dataset_instance
 
 
 class DataSet:

@@ -1,4 +1,6 @@
 {
+  "model_module": "iceberg.iceberg_model",
+  "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
   "dataset": "../input/train.json",
   "model": "../output/trained_model",
   "training": "on",

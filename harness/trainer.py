@@ -1,5 +1,6 @@
 import sys
 import logging
+import importlib
 
 import numpy as np
 from sklearn.model_selection import KFold
@@ -9,13 +10,13 @@ from utils import model_utils
 from utils.config import Config
 from utils import logging
 from utils.logging import print_and_log
+from datasets import dataset
 # from utils import plotter
-
-from datasets.iceberg import iceberg_model
-from datasets.iceberg import iceberg_dataset
 
 CONFIG_FILENAME = "./trainer_config.json"
 CONFIG = Config()
+
+MODEL_MODULE = None
 
 
 def get_callbacks(patience=2):
@@ -30,7 +31,7 @@ def train(training_set):
     """Train."""
     print_and_log("TRAINING")
 
-    model = iceberg_model.create_model()
+    model = MODEL_MODULE.create_model()
     # model.summary()
 
     epochs = CONFIG.get("hyper_parameters").get("epochs")
@@ -73,7 +74,7 @@ def evaluate(model, x_inputs, y_inputs):
     return scores
 
 
-def cross_validate(dataset, num_folds=5):
+def cross_validate(full_dataset, num_folds=5):
     """k-fold cross-validation to check how model is performing by selecting different sets to train/validate."""
 
     # Define the K-fold Cross Validator
@@ -84,12 +85,12 @@ def cross_validate(dataset, num_folds=5):
     acc_per_fold = []
     loss_per_fold = []
     fold_no = 1
-    for train_index, test_index in kfold.split(dataset.get_single_input(), dataset.get_output()):
+    for train_index, test_index in kfold.split(full_dataset.get_single_input(), full_dataset.get_output()):
         # Generate a print
         print('------------------------------------------------------------------------')
         print_and_log(f'Training for fold {fold_no} ...')
 
-        training_set = iceberg_model.get_fold_data(dataset, train_index, test_index)
+        training_set = MODEL_MODULE.get_fold_data(full_dataset, train_index, test_index)
 
         # Fit data to model
         print_and_log(f'Training fold samples: {training_set.num_train_samples}')
@@ -123,18 +124,22 @@ def main():
     # Load config.
     CONFIG.load(config_file)
 
+    # Loading model and dataset
+    global MODEL_MODULE
+    MODEL_MODULE = dataset.load_model_module(CONFIG.get("model_module"))
+
     print_and_log("--------------------------------------------------------------------")
     print_and_log("Starting trainer session.")
 
-    dataset = iceberg_dataset.IcebergDataSet()
-    dataset.load_from_file(CONFIG.get("dataset"))
-    evaluation_input = dataset.get_model_input()
-    evaluation_output = dataset.get_output()
+    dataset_instance = dataset.create_dataset_class(CONFIG.get("dataset_class"))
+    dataset_instance.load_from_file(CONFIG.get("dataset"))
+    evaluation_input = dataset_instance.get_model_input()
+    evaluation_output = dataset_instance.get_output()
 
     # Run steps depending on config.
     if CONFIG.get("training") == "on":
-        training_set = iceberg_model.split_data(dataset, CONFIG.get("hyper_parameters").get("validation_size"))
-        print_and_log(f'Dataset samples {dataset.get_number_of_samples()}, '
+        training_set = MODEL_MODULE.split_data(dataset_instance, CONFIG.get("hyper_parameters").get("validation_size"))
+        print_and_log(f'Dataset samples {dataset_instance.get_number_of_samples()}, '
                       f'training samples: {len(training_set.x_train[0])}, '
                       f'validation samples: {len(training_set.x_validation[0])}')
 
@@ -143,7 +148,7 @@ def main():
         evaluation_input = training_set.x_validation
         evaluation_output = training_set.y_validation
     if CONFIG.get("cross_validation") == "on":
-        cross_validate(dataset)
+        cross_validate(dataset_instance)
     if CONFIG.get("evaluation") == "on":
         model = model_utils.load_model_from_file(CONFIG.get("model"))
         evaluate(model, evaluation_input, evaluation_output)
