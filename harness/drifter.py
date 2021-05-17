@@ -16,7 +16,8 @@ def load_bins(dataset_filename, dataset_class_name, bin_params):
     """Loads a dataset into bins"""
 
     # Load dataset to drift.
-    base_dataset = dataset.create_dataset_class(dataset_class_name)
+    dataset_class = dataset.load_dataset_class(dataset_class_name)
+    base_dataset = dataset_class()
     base_dataset.load_from_file(dataset_filename)
 
     # Sort into bins.

@@ -74,16 +74,17 @@ def main():
     config.load(config_file)
 
     # Load dataset to predict on (and base one if needed).
-    full_dataset = dataset.create_dataset_class(config.get("dataset_class"))
+    dataset_class = dataset.load_dataset_class(config.get("dataset_class"))
+    full_dataset = dataset_class()
     reference_dataset = None
     if config.contains("base_dataset"):
         reference_dataset = ref_dataset.RefDataSet()
         reference_dataset.load_from_file(config.get("dataset"))
 
-        base_dataset = dataset.create_dataset_class(config.get("dataset_class"))
+        base_dataset = dataset_class()
         base_dataset.load_from_file(config.get("base_dataset"))
 
-        full_dataset = dataset.create_dataset_class(config.get("dataset_class"))
+        full_dataset = dataset_class()
         full_dataset = reference_dataset.create_from_reference(base_dataset, full_dataset)
     else:
         full_dataset.load_from_file(config.get("dataset"))

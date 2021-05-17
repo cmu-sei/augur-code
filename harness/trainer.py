@@ -131,7 +131,8 @@ def main():
     print_and_log("--------------------------------------------------------------------")
     print_and_log("Starting trainer session.")
 
-    dataset_instance = dataset.create_dataset_class(CONFIG.get("dataset_class"))
+    dataset_class = dataset.load_dataset_class(CONFIG.get("dataset_class"))
+    dataset_instance = dataset_class()
     dataset_instance.load_from_file(CONFIG.get("dataset"))
     evaluation_input = dataset_instance.get_model_input()
     evaluation_output = dataset_instance.get_output()
