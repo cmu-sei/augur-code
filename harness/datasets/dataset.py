@@ -66,3 +66,26 @@ class DataSet:
         print("Done storing ids", flush=True)
 
         return dataset_df
+
+    def load_from_file(self, dataset_filename):
+        """Loads data from a JSON file into this object."""
+        raise NotImplementedError()
+
+    def get_model_input(self):
+        """Returns the inputs to be used."""
+        raise NotImplementedError()
+
+    def get_single_input(self):
+        """For models that have multiple separate inputs, this returns only one of them for sizing purposes.
+        If dataset provides just one input, this should return the same as get_model_input."""
+        return self.get_model_input()
+
+    def get_output(self):
+        raise NotImplementedError()
+
+    def set_output(self, new_output):
+        raise NotImplementedError()
+
+    def save_to_file(self, output_filename):
+        """Stores Numpy arrays with a dataset into a JSON file."""
+        raise NotImplementedError()

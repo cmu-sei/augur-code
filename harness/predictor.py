@@ -9,9 +9,31 @@ from utils.config import Config
 from utils import logging
 from utils.logging import print_and_log
 from datasets import dataset
+from utils.timebox import TimeBox
+import metrics.base_metric as augur_metrics
 
 DEFAULT_CONFIG_FILENAME = "./predictor_config.json"
 METRIC_EXP_CONFIG_FOLDER = "../experiments/metric"
+
+
+def load_datasets(config):
+    """Based on the config, loads the dataset to use, and the reference one if needed."""
+    dataset_class = dataset.load_dataset_class(config.get("dataset_class"))
+    full_dataset = dataset_class()
+    reference_dataset = None
+    if config.contains("base_dataset"):
+        reference_dataset = ref_dataset.RefDataSet()
+        reference_dataset.load_from_file(config.get("dataset"))
+
+        base_dataset = dataset_class()
+        base_dataset.load_from_file(config.get("base_dataset"))
+
+        full_dataset = dataset_class()
+        full_dataset = reference_dataset.create_from_reference(base_dataset, full_dataset)
+    else:
+        full_dataset.load_from_file(config.get("dataset"))
+
+    return full_dataset, reference_dataset
 
 
 def predict(model, model_input):
@@ -24,6 +46,41 @@ def predict(model, model_input):
 def classify(predictions, threshold):
     """Generates predictions based on model and SAR data."""
     return np.where(predictions > threshold, 1, 0)
+
+
+def calculate_metrics(dataset, config):
+    results = []
+    timebox_size = int(config.get("timebox_size"))
+    metrics = config.get("metrics")
+    for metric_info in metrics:
+        metric_name = metric_info.get('name')
+        print(f"Loading metric: {metric_name}")
+        metric = augur_metrics.create_metric(metric_info)
+        metric.load_metric_functions(metric_info)
+        metric.initial_setup(dataset)
+        results.append({"metric": metric_name, "timeboxes": {}})
+
+        curr_sample_idx = 0
+        timebox_id = 0
+        timeboxes = []
+        while curr_sample_idx < dataset.get_num_samples():
+            # Set up timebox.
+            timebox = TimeBox(timebox_id, timebox_size)
+            timebox.set_data(dataset, curr_sample_idx)
+
+            # Calculate metric.
+            metric.step_setup(timebox)
+            metric_value = metric.calculate_metric()
+            timebox.set_metric_value(metric_value)
+
+            # Update for next cycle.
+            timeboxes.append(timebox)
+            curr_sample_idx += timebox_size
+            timebox_id += 1
+
+        results.append({"metric": metric_name, "timeboxes": timeboxes})
+
+    return results
 
 
 def save_predictions(full_dataset, predictions, output_filename, reference_dataset=None):
@@ -74,32 +131,20 @@ def main():
     config.load(config_file)
 
     # Load dataset to predict on (and base one if needed).
-    dataset_class = dataset.load_dataset_class(config.get("dataset_class"))
-    full_dataset = dataset_class()
-    reference_dataset = None
-    if config.contains("base_dataset"):
-        reference_dataset = ref_dataset.RefDataSet()
-        reference_dataset.load_from_file(config.get("dataset"))
+    full_dataset, reference_dataset = load_datasets(config)
 
-        base_dataset = dataset_class()
-        base_dataset.load_from_file(config.get("base_dataset"))
-
-        full_dataset = dataset_class()
-        full_dataset = reference_dataset.create_from_reference(base_dataset, full_dataset)
-    else:
-        full_dataset.load_from_file(config.get("dataset"))
-
-    # Load model and metrics.
+    # Load model.
     model = model_utils.load_model_from_file(config.get("model"))
-    # if config.contains("metrics"):
-    # augur_model.add_metrics(model, config.get("metrics"))
     model.summary()
 
     # Predict.
     predictions = predict(model, full_dataset.get_model_input())
     classified = classify(predictions, config.get("threshold"))
 
-    # Save to file.
+    # Calculate metrics.
+    calculate_metrics(full_dataset, config)
+
+    # Save to file, depending on mode.
     mode = config.get("mode")
     if mode == "predict":
         save_predictions(full_dataset, classified, config.get("output"), reference_dataset)

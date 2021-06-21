@@ -8,6 +8,8 @@ matplotlib = "*"
 tensorflow = ">=2.4.0"
 pandas = "*"
 sklearn = "*"
+numpy = "*"
+scypi = "*"
 
 [dev-packages]
 

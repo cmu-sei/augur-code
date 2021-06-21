@@ -8,15 +8,15 @@
   "threshold": 0.5,
   "timebox_size": 5,
   "metrics":
-    [
+  [
+    {
+      "name": "kl-divergence",
+      "type": "DistanceMetric",
+      "module": "kl_divergence",
+      "params":
       {
-        "name": "kl-divergence",
-        "type": "DistanceMetric",
-        "module": "kl_divergence",
-        "params":
-        {
-          "pdf_params": {"mean":  2, "std_dev":  3}
-        }
+        "pdf_params": {"mean":  2, "std_dev":  3}
       }
-    ]
+    }
+  ]
 }
