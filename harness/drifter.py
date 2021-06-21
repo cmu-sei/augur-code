@@ -36,13 +36,13 @@ def apply_drift(input_bins, drift_config):
     """Applies drift on a given dataset"""
 
     print_and_log("Drift condition: " + drift_config.get("condition"))
-    print_and_log("Drift function: " + drift_config.get("method"))
+    print_and_log("Drift function: " + drift_config.get("module"))
     params = drift_config.get("params")
     print_and_log("Generating drift with params: ")
     print_and_log(params)
 
     # Import module dynamically.
-    drift_module = importlib.import_module(drift_config.get("method"))
+    drift_module = importlib.import_module("drifts." + drift_config.get("module"))
 
     max_num_samples = params.get("max_num_samples")
     timebox_size = params.get("timebox_size")

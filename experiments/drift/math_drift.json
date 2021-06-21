@@ -10,7 +10,7 @@
   "drift_scenario":
   {
     "condition": "random",
-    "method": "drifts.math_drift",
+    "module": "math_drift",
     "params":
     {
       "max_num_samples":  80,
