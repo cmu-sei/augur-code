@@ -80,10 +80,10 @@ def calculate_metrics(dataset, config):
             curr_timebox.set_metric_value(metric_name, metric_value)
 
             # Accumulate results.
-            if timebox.id not in results.keys():
-                results[timebox.id] = timebox.to_dict()
-                results[timebox.id]["metrics"] = []
-            results[timebox.id]["metrics"].append({"name": metric_name, "value": timebox.metric_value})
+            if curr_timebox.id not in results.keys():
+                results[curr_timebox.id] = curr_timebox.to_dict()
+                results[curr_timebox.id]["metrics"] = []
+            results[curr_timebox.id]["metrics"].append({"name": metric_name, "value": curr_timebox.metric_value})
 
             # Update for next cycle.
             curr_sample_idx += timebox_size
