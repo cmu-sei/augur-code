@@ -106,7 +106,7 @@ def save_metrics(metrics, metrics_filename):
     """Stores the given metrics to an output."""
     print_and_log("Saving metrics to JSON file")
     with open(metrics_filename, "w") as outfile:
-        json.dump(metrics, outfile)
+        json.dump(metrics, outfile, indent=4)
     print_and_log("Finished saving JSON file")
 
 
