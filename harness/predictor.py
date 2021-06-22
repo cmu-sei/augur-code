@@ -64,7 +64,7 @@ def calculate_metrics(dataset, config):
         curr_sample_idx = 0
         timebox_id = 0
         timeboxes = []
-        while curr_sample_idx < dataset.get_num_samples():
+        while curr_sample_idx < dataset.get_number_of_samples():
             # Set up timebox.
             timebox = TimeBox(timebox_id, timebox_size)
             timebox.set_data(dataset, curr_sample_idx)
