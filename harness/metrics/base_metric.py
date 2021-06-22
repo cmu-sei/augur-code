@@ -10,7 +10,7 @@ def create_metric(metric_info):
     """Factory method."""
     metric_type = metric_info.get("type")
     if metric_type == "DistanceMetric":
-        metric = DistanceMetric
+        metric = DistanceMetric()
     elif metric_type == "ErrorBased":
         metric = ErrorBased()
     else:
