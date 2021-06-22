@@ -78,7 +78,7 @@ class DistanceMetric(Metric):
     def _calculate_probability_distribution(self, data):
         """Calculates and returns the probability distribution for the given data."""
         if self.check_module_loaded():
-            return self.metric_module.metric_pdf(data, self.metric_params("pdf_params"))
+            return self.metric_module.metric_pdf(data, self.metric_params.get("pdf_params"))
 
     def _set_dimensionality_reduction(self):
         """Reduces dimensionality for the current probability_distribution."""
