@@ -16,12 +16,12 @@ Code for Augur LENS
     * `echo "export PATH=\"~/Library/Python/3.8/bin:$PATH\"" >> ~/.bash_profile`
     
 ### Setup
- * From the project folder, run:
+ * From the `tools/` folder, run:
     * `pipenv install`
     * (For a manual Tensorflow setup, see: https://www.tensorflow.org/install/pip#virtual-environment-install)
 
 ### Usage
-  * From the tools folder, run the tool that you want to run:
+  * From the `tools/` folder, run the tool that you want to run:
     * `bash <tool>.sh`
     * Where <toool> is the name of one of the tools in that folder (i.e., "trainer", "drifter", etc.).
 
