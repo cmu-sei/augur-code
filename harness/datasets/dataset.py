@@ -62,7 +62,10 @@ class DataSet:
         print("Sample row: ")
         print(dataset_df.head(1))
 
-        self.x_ids = np.array(dataset_df[id_key])
+        try:
+            self.x_ids = np.array(dataset_df[id_key])
+        except KeyError as ex:
+            raise Exception(f"Could not load ids from dataset '{dataset_filename}': {str(ex)}")
         print("Done storing ids", flush=True)
 
         return dataset_df
