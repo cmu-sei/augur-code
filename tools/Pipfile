@@ -9,7 +9,7 @@ tensorflow = ">=2.4.0"
 pandas = "*"
 sklearn = "*"
 numpy = "*"
-scypi = "*"
+scipy = "*"
 
 [dev-packages]
 
