@@ -137,10 +137,11 @@ def main():
     classified = classify(predictions, config.get("threshold"))
 
     # Calculate metrics.
-    metric_results = calculate_metrics(full_dataset, config)
+    mode = config.get("mode")
+    if mode == "predict":
+        metric_results = calculate_metrics(full_dataset, config)
 
     # Save to file, depending on mode.
-    mode = config.get("mode")
     if mode == "predict":
         save_predictions(full_dataset, classified, config.get("output"), reference_dataset)
         save_metrics(metric_results, config.get("metrics_output"))
