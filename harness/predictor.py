@@ -49,6 +49,7 @@ def classify(predictions, threshold):
 
 
 def calculate_metrics(dataset, config):
+    """Calculates metrics for the given configs and dataset."""
     results = []
     timebox_size = int(config.get("timebox_size"))
     metrics = config.get("metrics")

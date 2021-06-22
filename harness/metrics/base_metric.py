@@ -75,10 +75,10 @@ class DistanceMetric(Metric):
     probability_distribution = []
     ref_probability_distribution = []
 
-    def _calculate_probability_distribution(self, dataset):
+    def _calculate_probability_distribution(self, data):
         """Calculates and returns the probability distribution for the given data."""
         if self.check_module_loaded():
-            return self.metric_module.metric_pdf(dataset, self.metric_params("pdf_params"))
+            return self.metric_module.metric_pdf(data, self.metric_params("pdf_params"))
 
     def _set_dimensionality_reduction(self):
         """Reduces dimensionality for the current probability_distribution."""
@@ -96,12 +96,12 @@ class DistanceMetric(Metric):
     def initial_setup(self, dataset):
         """Overriden."""
         # Calculate and store the probability distribution for the whole dataset.
-        self.ref_probability_distribution = self._calculate_probability_distribution(dataset)
+        self.ref_probability_distribution = self._calculate_probability_distribution(dataset.get_output())
 
     def step_setup(self, timebox):
         """Overriden."""
         # Calculate the probability distribution for the timebox.
-        self.probability_distribution = self._calculate_probability_distribution(timebox)
+        self.probability_distribution = self._calculate_probability_distribution(timebox.get_output())
         self._set_dimensionality_reduction()
 
     def calculate_metric(self):

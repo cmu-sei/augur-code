@@ -51,7 +51,13 @@ New drift modules can be added to the harness/drifts folder. Each module only ne
 This function should return the index of the bin to select the next sample from, given the current sample index, the current bin being used, the total number of bins, and whatever additional params are needed.
 
 #### Metric Modules
-New metric modules can be added to the harness/metrics folder. Each module needs to implement multiple functions.
+New metric modules can be added to the harness/metrics folder. Each module needs to implement multiple functions, depending on the metric type.
+
+For Distance Metrics, three functions are needed:
+
+ - `def metric_pdf(data, pdf_params)`: Calculates the probability density function for the given data, with the optional given params.
+ - `def metric_reduction(probability_distribution)`: Applies dimensionality reduction to the given probability distribution. May return the same distribution if no reduction is needed.
+ - `def metric_distance(p, q)`: Calculates a distance value between the two given probability distributions.
 
 #### Dataset Structures
 New dataset structures should be added to the harness/datasets folder, to a subfolder with the name of the new structure. Two modules should be added in there: a dataset module and a model module. The recommended naming structure is:
