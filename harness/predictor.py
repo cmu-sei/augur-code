@@ -1,4 +1,5 @@
 import sys
+import json
 
 import pandas as pd
 import numpy as np
@@ -59,7 +60,6 @@ def calculate_metrics(dataset, config):
         metric = augur_metrics.create_metric(metric_info)
         metric.load_metric_functions(metric_info)
         metric.initial_setup(dataset)
-        results.append({"metric": metric_name, "timeboxes": {}})
 
         curr_sample_idx = 0
         timebox_id = 0
@@ -75,7 +75,7 @@ def calculate_metrics(dataset, config):
             timebox.set_metric_value(metric_value)
 
             # Update for next cycle.
-            timeboxes.append(timebox)
+            timeboxes.append(timebox.to_dict())
             curr_sample_idx += timebox_size
             timebox_id += 1
 
@@ -104,15 +104,9 @@ def save_predictions(full_dataset, predictions, output_filename, reference_datas
 
 def save_metrics(metrics, metrics_filename):
     """Stores the given metrics to an output."""
-    print_and_log("Creating DataFrame")
-    output_df = pd.DataFrame()
-
-    # Add in the metrics (assuming a dict with them).
-    for metric_name in metrics.keys():
-        output_df[metric_name] = metrics[metric_name]
-
-    print_and_log("Saving DataFrame to JSON file")
-    output_df.to_json(metrics_filename, orient="records", indent=4)
+    print_and_log("Saving metrics to JSON file")
+    with open(metrics_filename, "w") as outfile:
+        json.dump(metrics, outfile)
     print_and_log("Finished saving JSON file")
 
 
@@ -143,12 +137,13 @@ def main():
     classified = classify(predictions, config.get("threshold"))
 
     # Calculate metrics.
-    calculate_metrics(full_dataset, config)
+    metric_results = calculate_metrics(full_dataset, config)
 
     # Save to file, depending on mode.
     mode = config.get("mode")
     if mode == "predict":
         save_predictions(full_dataset, classified, config.get("output"), reference_dataset)
+        save_metrics(metric_results, config.get("metrics_output"))
     elif mode == "label":
         save_updated_dataset(full_dataset, classified, config.get("output"))
     else:

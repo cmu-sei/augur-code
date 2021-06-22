@@ -27,3 +27,8 @@ class TimeBox:
 
     def set_metric_value(self, value):
         self.metric_value = value
+
+    def to_dict(self):
+        """Returns the main attributes of this timbox as a dictionary."""
+        dictionary = {"timebox_id": self.id, "accuracy": self.accuracy, "metric_value": self.metric_value}
+        return dictionary
