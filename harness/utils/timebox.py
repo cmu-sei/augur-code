@@ -18,7 +18,7 @@ class TimeBox:
 
     def get_output(self):
         """Returns the output for this timebox, slicing it from the dataset given the start idx and size."""
-        return self.dataset.get_output()[self.starting_idx, self.starting_idx + self.size]
+        return self.dataset.get_output()[self.starting_idx:self.starting_idx + self.size]
 
     def calculate_accuracy(self):
         """Calculate the accuracy with the given data and store it."""
