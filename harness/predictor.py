@@ -54,6 +54,8 @@ def calculate_metrics(dataset, config):
     results = []
     timebox_size = int(config.get("timebox_size"))
     metrics = config.get("metrics")
+    results = {}
+    timeboxes = {}
     for metric_info in metrics:
         metric_name = metric_info.get('name')
         print(f"Loading metric: {metric_name}")
@@ -63,23 +65,29 @@ def calculate_metrics(dataset, config):
 
         curr_sample_idx = 0
         timebox_id = 0
-        timeboxes = []
         while curr_sample_idx < dataset.get_number_of_samples():
             # Set up timebox.
-            timebox = TimeBox(timebox_id, timebox_size)
-            timebox.set_data(dataset, curr_sample_idx)
+            if timebox_id not in timeboxes.keys():
+                timebox = TimeBox(timebox_id, timebox_size)
+                timebox.set_data(dataset, curr_sample_idx)
+                timebox.calculate_accuracy()
+                timeboxes[timebox_id] = timebox
 
             # Calculate metric.
-            metric.step_setup(timebox)
+            curr_timebox = timeboxes[timebox_id]
+            metric.step_setup(curr_timebox)
             metric_value = metric.calculate_metric()
-            timebox.set_metric_value(metric_value)
+            curr_timebox.set_metric_value(metric_name, metric_value)
+
+            # Accumulate results.
+            if timebox.id not in results.keys():
+                results[timebox.id] = timebox.to_dict()
+                results[timebox.id]["metrics"] = []
+            results[timebox.id]["metrics"].append({"name": metric_name, "value": timebox.metric_value})
 
             # Update for next cycle.
-            timeboxes.append(timebox.to_dict())
             curr_sample_idx += timebox_size
             timebox_id += 1
-
-        results.append({"metric": metric_name, "timeboxes": timeboxes})
 
     return results
 
