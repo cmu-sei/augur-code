@@ -35,7 +35,7 @@ class Metric:
         else:
             raise Exception("No metric module configured!")
 
-    def initial_setup(self, dataset):
+    def initial_setup(self, dataset, correctness):
         """Method to be called once before starting to work with this metric."""
         raise NotImplementedError()
 
@@ -51,10 +51,13 @@ class Metric:
 class ErrorBased(Metric):
     """Implements an error-based metric that calculates error based on output."""
     timebox = None
+    dataset = None
+    correctness = None
 
-    def initial_setup(self, dataset):
+    def initial_setup(self, dataset, correctness):
         """Overriden."""
-        pass
+        self.dataset = dataset
+        self.correctness = correctness
 
     def step_setup(self, timebox):
         """Overriden."""
@@ -63,7 +66,7 @@ class ErrorBased(Metric):
     """Implements an error-based metric."""
     def _calculate_error(self):
         if self.check_module_loaded():
-            return self.metric_module.metric_error(self.timebox)
+            return self.metric_module.metric_error(self.timebox, self.dataset, self.correctness)
 
     def calculate_metric(self):
         """Overriden."""
@@ -93,7 +96,7 @@ class DistanceMetric(Metric):
         if self.check_module_loaded():
             return self.metric_module.metric_distance(self.probability_distribution, self.ref_probability_distribution)
 
-    def initial_setup(self, dataset):
+    def initial_setup(self, dataset, correctness):
         """Overriden."""
         # Calculate and store the probability distribution for the whole dataset.
         self.ref_probability_distribution = self._calculate_probability_distribution(dataset.get_output())

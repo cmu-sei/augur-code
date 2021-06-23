@@ -1,0 +1,20 @@
+{
+  "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
+  "mode": "predict",
+  "dataset": "../output/drift.json",
+  "base_dataset": "../output/merged_dataset.json",
+  "model": "../output/trained_model",
+  "output": "../output/predictions.json",
+  "metrics_output": "../output/metrics_output.json",
+  "threshold": 0.5,
+  "timebox_size": 10,
+  "metrics":
+  [
+    {
+      "name": "STEPD",
+      "type": "ErrorMetric",
+      "module": "stepd",
+      "params": {}
+    }
+  ]
+}
