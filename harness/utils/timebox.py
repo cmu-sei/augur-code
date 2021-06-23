@@ -1,3 +1,5 @@
+import numpy as np
+
 
 class TimeBox:
     """Represents a bounded subset of data over which metrics are calculated."""
@@ -7,16 +9,16 @@ class TimeBox:
     metric_name = ""
     metric_value = 0
     dataset = None
-    correct = None
+    predictions = None
     starting_idx = 0
 
     def __init__(self, timebox_id, timebox_size):
         self.id = timebox_id
         self.size = timebox_size
 
-    def set_data(self, dataset, correct, starting_idx):
+    def set_data(self, dataset, predictions, starting_idx):
         self.dataset = dataset
-        self.correct = correct
+        self.predictions = predictions
         self.starting_idx = starting_idx
 
     def get_output(self):
@@ -26,9 +28,13 @@ class TimeBox:
     def get_number_of_samples(self):
         return self.size
 
+    def get_predictions(self):
+        """Returns the predictions for this timebox, slicing it from the dataset given the start idx and size."""
+        return self.predictions[self.starting_idx:self.starting_idx + self.size]
+
     def get_correctness(self):
-        """Returns the correctnes of each prediction for this timebox, slicing it from the array given the start idx and size."""
-        return self.correct[self.starting_idx:self.starting_idx + self.size]
+        """Returns the correctnes of each prediction for this timebox."""
+        return np.array_equal(self.get_output(), self.get_predictions())
 
     def calculate_accuracy(self):
         """Calculate the accuracy with the given data and store it."""

@@ -52,12 +52,12 @@ class ErrorBased(Metric):
     """Implements an error-based metric that calculates error based on output."""
     timebox = None
     dataset = None
-    correctness = None
+    predictions = None
 
-    def initial_setup(self, dataset, correctness):
+    def initial_setup(self, dataset, predictions):
         """Overriden."""
         self.dataset = dataset
-        self.correctness = correctness
+        self.predictions = predictions
 
     def step_setup(self, timebox):
         """Overriden."""
@@ -66,7 +66,7 @@ class ErrorBased(Metric):
     """Implements an error-based metric."""
     def _calculate_error(self):
         if self.check_module_loaded():
-            return self.metric_module.metric_error(self.timebox, self.dataset, self.correctness)
+            return self.metric_module.metric_error(self.timebox, self.dataset, self.predictions)
 
     def calculate_metric(self):
         """Overriden."""
@@ -96,15 +96,15 @@ class DistanceMetric(Metric):
         if self.check_module_loaded():
             return self.metric_module.metric_distance(self.probability_distribution, self.ref_probability_distribution)
 
-    def initial_setup(self, dataset, correctness):
+    def initial_setup(self, dataset, predictions):
         """Overriden."""
         # Calculate and store the probability distribution for the whole dataset.
-        self.ref_probability_distribution = self._calculate_probability_distribution(dataset.get_output())
+        self.ref_probability_distribution = self._calculate_probability_distribution(predictions)
 
     def step_setup(self, timebox):
         """Overriden."""
         # Calculate the probability distribution for the timebox.
-        self.probability_distribution = self._calculate_probability_distribution(timebox.get_output())
+        self.probability_distribution = self._calculate_probability_distribution(timebox.get_correctness())
         self._set_dimensionality_reduction()
 
     def calculate_metric(self):

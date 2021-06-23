@@ -1,9 +1,9 @@
 import numpy as np
 
 
-def metric_error(timebox, dataset, correctness):
+def metric_error(timebox, dataset, predictions):
     """Calculates the STEPD error."""
-    r0 = np.count_nonzero(correctness)
+    r0 = np.count_nonzero(np.array_equal(dataset.get_output(), predictions))
     n0 = dataset.get_number_of_samples()
     rr = np.count_nonzero(timebox.get_correctness())
     nr = timebox.get_number_of_samples()

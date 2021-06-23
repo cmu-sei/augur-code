@@ -49,7 +49,7 @@ def classify(predictions, threshold):
     return np.where(predictions > threshold, 1, 0)
 
 
-def calculate_metrics(dataset, correct_predictions, config):
+def calculate_metrics(dataset, predictions, config):
     """Calculates metrics for the given configs and dataset."""
     timebox_size = int(config.get("timebox_size"))
     metrics = config.get("metrics")
@@ -60,7 +60,7 @@ def calculate_metrics(dataset, correct_predictions, config):
         print(f"Loading metric: {metric_name}")
         metric = augur_metrics.create_metric(metric_info)
         metric.load_metric_functions(metric_info)
-        metric.initial_setup(dataset, correct_predictions)
+        metric.initial_setup(dataset, predictions)
 
         curr_sample_idx = 0
         timebox_id = 0
@@ -68,7 +68,7 @@ def calculate_metrics(dataset, correct_predictions, config):
             # Set up timebox.
             if timebox_id not in timeboxes.keys():
                 timebox = TimeBox(timebox_id, timebox_size)
-                timebox.set_data(dataset, correct_predictions, curr_sample_idx)
+                timebox.set_data(dataset, predictions, curr_sample_idx)
                 timebox.calculate_accuracy()
                 timeboxes[timebox_id] = timebox
 
@@ -142,12 +142,11 @@ def main():
     # Predict.
     predictions = predict(model, full_dataset.get_model_input())
     classified = classify(predictions, config.get("threshold"))
-    correctness = np.array_equal(full_dataset.get_output(), classified)
 
     # Calculate metrics.
     mode = config.get("mode")
     if mode == "predict":
-        metric_results = calculate_metrics(full_dataset, correctness, config)
+        metric_results = calculate_metrics(full_dataset, classified, config)
 
     # Save to file, depending on mode.
     if mode == "predict":
