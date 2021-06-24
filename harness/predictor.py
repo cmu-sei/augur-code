@@ -4,7 +4,7 @@ import json
 import pandas as pd
 
 from training import model_utils
-from training.training_results import TrainingResults
+from training.training_results import Predictions
 from datasets import ref_dataset
 from utils.config import Config
 from utils import logging
@@ -136,7 +136,7 @@ def main():
 
     # Predict.
     raw_predictions = predict(model, full_dataset.get_model_input())
-    training_results = TrainingResults(config.get("threshold"))
+    training_results = Predictions(config.get("threshold"))
     training_results.store_raw_predictions(raw_predictions)
     training_results.store_expected_results(full_dataset.get_output())
 

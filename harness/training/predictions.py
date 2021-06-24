@@ -7,7 +7,7 @@ def classify(predictions, threshold):
     return np.where(predictions > threshold, 1, 0)
 
 
-class TrainingResults:
+class Predictions:
     """Class to store and handle prediction results."""
     classification_threshold = 0.5
     raw_predictions = None
@@ -47,7 +47,7 @@ class TrainingResults:
 
     def create_slice(self, starting_idx, size):
         """Creates a new TrainingResults object with a slice of the results in this one."""
-        sliced_training_results = TrainingResults(self.classification_threshold)
+        sliced_training_results = Predictions(self.classification_threshold)
         sliced_training_results.store_expected_results(self.get_expected_results()[starting_idx:starting_idx + size])
         sliced_training_results.store_predictions(self.get_predictions()[starting_idx:starting_idx + size])
         return sliced_training_results
