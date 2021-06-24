@@ -2,9 +2,9 @@ import sys
 import json
 
 import pandas as pd
-import numpy as np
 
-from utils import model_utils
+from training import model_utils
+from training.training_results import TrainingResults
 from datasets import ref_dataset
 from utils.config import Config
 from utils import logging
@@ -44,12 +44,7 @@ def predict(model, model_input):
     return predictions
 
 
-def classify(predictions, threshold):
-    """Generates predictions based on model and SAR data."""
-    return np.where(predictions > threshold, 1, 0)
-
-
-def calculate_metrics(dataset, predictions, config):
+def calculate_metrics(dataset, training_results, config):
     """Calculates metrics for the given configs and dataset."""
     timebox_size = int(config.get("timebox_size"))
     metrics = config.get("metrics")
@@ -60,7 +55,7 @@ def calculate_metrics(dataset, predictions, config):
         print(f"Loading metric: {metric_name}")
         metric = augur_metrics.create_metric(metric_info)
         metric.load_metric_functions(metric_info)
-        metric.initial_setup(dataset, predictions)
+        metric.initial_setup(dataset, training_results.get_predictions())
 
         curr_sample_idx = 0
         timebox_id = 0
@@ -68,7 +63,7 @@ def calculate_metrics(dataset, predictions, config):
             # Set up timebox.
             if timebox_id not in timeboxes.keys():
                 timebox = TimeBox(timebox_id, timebox_size)
-                timebox.set_data(dataset, predictions, curr_sample_idx)
+                timebox.set_data(training_results, curr_sample_idx)
                 timebox.calculate_accuracy()
                 timeboxes[timebox_id] = timebox
 
@@ -140,20 +135,22 @@ def main():
     model.summary()
 
     # Predict.
-    predictions = predict(model, full_dataset.get_model_input())
-    classified = classify(predictions, config.get("threshold"))
+    raw_predictions = predict(model, full_dataset.get_model_input())
+    training_results = TrainingResults(config.get("threshold"))
+    training_results.store_raw_predictions(raw_predictions)
+    training_results.store_expected_results(full_dataset.get_output())
 
     # Calculate metrics.
     mode = config.get("mode")
     if mode == "predict":
-        metric_results = calculate_metrics(full_dataset, classified, config)
+        metric_results = calculate_metrics(full_dataset, training_results, config)
 
     # Save to file, depending on mode.
     if mode == "predict":
-        save_predictions(full_dataset, classified, config.get("output"), reference_dataset)
+        save_predictions(full_dataset, training_results.get_predictions(), config.get("output"), reference_dataset)
         save_metrics(metric_results, config.get("metrics_output"))
     elif mode == "label":
-        save_updated_dataset(full_dataset, classified, config.get("output"))
+        save_updated_dataset(full_dataset, training_results.get_predictions(), config.get("output"))
     else:
         print_and_log("Unsupported mode: " + mode)
 

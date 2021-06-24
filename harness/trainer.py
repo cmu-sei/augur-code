@@ -1,12 +1,11 @@
 import sys
 import logging
-import importlib
 
 import numpy as np
 from sklearn.model_selection import KFold
 import tensorflow.keras.callbacks as tfcb
 
-from utils import model_utils
+from training import model_utils
 from utils.config import Config
 from utils import logging
 from utils.logging import print_and_log
