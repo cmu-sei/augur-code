@@ -4,7 +4,7 @@ import json
 import pandas as pd
 
 from training import model_utils
-from training.training_results import Predictions
+from training.predictions import Predictions
 from datasets import ref_dataset
 from utils.config import Config
 from utils import logging
