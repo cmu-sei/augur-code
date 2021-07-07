@@ -41,6 +41,10 @@ class Predictions:
         if self.conf_matrix is None:
             self._calculate_confusion_matrix()
 
+    def get_raw_predictions(self):
+        """Returns the raw predictions."""
+        return self.raw_predictions
+
     def get_predictions(self):
         """Returns the classified predictions."""
         return self.predictions

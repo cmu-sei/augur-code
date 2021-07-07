@@ -97,7 +97,8 @@ def save_predictions(full_dataset, predictions, output_filename, reference_datas
     else:
         output_df["id"] = full_dataset.x_ids
     output_df["truth"] = full_dataset.y_output
-    output_df["prediction"] = predictions
+    output_df["prediction"] = predictions.get_predictions()
+    output_df["raw_prediction"] = predictions.get_raw_predictions()
 
     print_and_log("Saving predictions DataFrame to JSON file")
     output_df.to_json(output_filename, orient="records", indent=4)
@@ -106,6 +107,10 @@ def save_predictions(full_dataset, predictions, output_filename, reference_datas
 
 def save_metrics(metrics, metrics_filename):
     """Stores the given metrics to an output."""
+    if len(metrics) == 0:
+        print("No metrics to store to file.")
+        return
+
     print_and_log("Saving metrics to JSON file")
     with open(metrics_filename, "w") as outfile:
         json.dump(metrics, outfile, indent=4)
@@ -136,21 +141,18 @@ def main():
 
     # Predict.
     raw_predictions = predict(model, full_dataset.get_model_input())
-    training_results = Predictions(config.get("threshold"))
-    training_results.store_raw_predictions(raw_predictions)
-    training_results.store_expected_results(full_dataset.get_output())
+    predictions = Predictions(config.get("threshold"))
+    predictions.store_raw_predictions(raw_predictions)
+    predictions.store_expected_results(full_dataset.get_output())
 
-    # Calculate metrics.
+    # Save to file, depending on mode, and calculate metrics if needed.
     mode = config.get("mode")
     if mode == "predict":
-        metric_results = calculate_metrics(full_dataset, training_results, config)
-
-    # Save to file, depending on mode.
-    if mode == "predict":
-        save_predictions(full_dataset, training_results.get_predictions(), config.get("output"), reference_dataset)
+        metric_results = calculate_metrics(full_dataset, predictions, config)
+        save_predictions(full_dataset, predictions, config.get("output"), reference_dataset)
         save_metrics(metric_results, config.get("metrics_output"))
     elif mode == "label":
-        save_updated_dataset(full_dataset, training_results.get_predictions(), config.get("output"))
+        save_updated_dataset(full_dataset, predictions.get_predictions(), config.get("output"))
     else:
         print_and_log("Unsupported mode: " + mode)
 
