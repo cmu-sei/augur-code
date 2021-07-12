@@ -53,7 +53,7 @@ def apply_drift(input_bins, drift_config):
     timebox_id = 0
     while drifted_dataset.get_number_of_samples() < max_num_samples:
         print_and_log(f"Now getting data for timebox of size {timebox_size}, using bin offset {curr_bin_offset}")
-        timebox_sample_ids = generate_timebox_samples(drift_module, curr_bin_offset, input_bins, timebox_size, params)
+        timebox_sample_ids = generate_timebox_samples(drift_module, timebox_id, curr_bin_offset, input_bins, timebox_size, params)
         drifted_dataset.add_multiple_references(timebox_sample_ids, timebox_id)
 
         # Offset to indicate the starting bin for the condition.
@@ -63,13 +63,13 @@ def apply_drift(input_bins, drift_config):
     return drifted_dataset
 
 
-def generate_timebox_samples(drift_module, curr_bin_offset, input_bins, timebox_size, params):
+def generate_timebox_samples(drift_module, timebox_id, curr_bin_offset, input_bins, timebox_size, params):
     """Chooses samples for a given timebox size, and from the given current bin index."""
 
     # Get all values for this timebox.
     timebox_sample_ids = []
     for sample_index in range(0, timebox_size):
-        bin_idx = drift_module.get_bin_index(sample_index, curr_bin_offset, len(input_bins), params)
+        bin_idx = drift_module.get_bin_index(sample_index, timebox_id, curr_bin_offset, len(input_bins), params)
         print_and_log(f"Selecting from bin {bin_idx}")
         curr_bin = input_bins[bin_idx]
 

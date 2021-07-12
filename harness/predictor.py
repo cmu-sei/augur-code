@@ -1,8 +1,6 @@
 import sys
 import json
 
-import pandas as pd
-
 from training import model_utils
 from training.predictions import Predictions
 from datasets import ref_dataset

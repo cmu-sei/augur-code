@@ -46,9 +46,9 @@ Code for Augur LENS
 #### Drift Modules
 New drift modules can be added to the harness/drifts folder. Each module only needs to have one function, with the following signature:
 
-`def get_bin_index(index, curr_bin_idx, num_total_bins, params):`
+`def get_bin_index(sample_index, timebox_id, curr_bin_idx, num_total_bins, params):`
 
-This function should return the index of the bin to select the next sample from, given the current sample index, the current bin being used, the total number of bins, and whatever additional params are needed.
+This function should return the index of the bin to select the next sample from, given the current sample index, the current timebox id, the current bin being used, the total number of bins, and whatever additional params are needed.
 
 #### Metric Modules
 New metric modules can be added to the harness/metrics folder. Each module needs to implement multiple functions, depending on the metric type.
