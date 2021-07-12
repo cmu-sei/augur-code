@@ -1,0 +1,22 @@
+{
+  "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
+  "dataset": "../output/merged_dataset.json",
+  "output": "../output/oversample_drift.json",
+  "bins":
+    [
+      ["no_iceberg", 0],
+      ["iceberg", 1]
+    ],
+  "drift_scenario":
+  {
+    "condition": "random",
+    "module": "oversample_drift",
+    "params":
+    {
+      "max_num_samples":  120,
+      "timebox_size": 20,
+      "prevalence_bin": 1,
+      "prevalences": [65, 63, 60, 55, 45, 40]
+    }
+  }
+}
