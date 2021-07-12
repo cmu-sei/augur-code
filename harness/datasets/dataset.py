@@ -1,6 +1,7 @@
 import importlib
 
 import numpy as np
+import pandas as pd
 
 from utils import dataframe_helper
 
@@ -68,6 +69,12 @@ class DataSet:
             raise Exception(f"Could not load ids from dataset '{dataset_filename}': {type(ex).__name__}: {str(ex)}")
         print("Done storing ids", flush=True)
 
+        return dataset_df
+
+    def as_basic_dataframe(self):
+        """Adds internal data to a new dataframe."""
+        dataset_df = pd.DataFrame()
+        dataset_df[DataSet.ID_KEY] = self.x_ids
         return dataset_df
 
     def load_from_file(self, dataset_filename):

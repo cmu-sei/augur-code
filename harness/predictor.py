@@ -90,12 +90,10 @@ def save_predictions(full_dataset, predictions, output_filename, reference_datas
     """Saves the ids, predictions and metrics into a JSON file."""
     # Turn everything into a DataFrame before turning into JSON.
     print_and_log("Creating predictions DataFrame")
-    output_df = pd.DataFrame()
     if reference_dataset:
-        output_df["id"] = reference_dataset.x_ids
-        output_df["original_id"] = reference_dataset.x_original_ids
+        output_df = reference_dataset.as_dataframe()
     else:
-        output_df["id"] = full_dataset.x_ids
+        output_df = full_dataset.as_basic_dataframe()
     output_df["truth"] = full_dataset.y_output
     output_df["prediction"] = predictions.get_predictions()
     output_df["raw_prediction"] = predictions.get_raw_predictions()

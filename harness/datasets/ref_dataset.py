@@ -4,13 +4,16 @@ import numpy as np
 import pandas as pd
 
 from utils import dataframe_helper
-from datasets import dataset
+from datasets.dataset import DataSet
 
 
-class RefDataSet(dataset.DataSet):
+class RefDataSet(DataSet):
     """A dataset referencing the ids of another dataset."""
     ORIGINAL_ID_KEY = "original_id"
     x_original_ids = np.empty(0, str)
+
+    TIMEBOX_ID_KEY = "timebox_id"
+    timebox_ids = np.empty(0, str)
 
     def get_original_ids(self):
         return self.x_original_ids
@@ -20,33 +23,41 @@ class RefDataSet(dataset.DataSet):
         sample = super().get_sample(position)
         if position < len(self.x_original_ids):
             sample[RefDataSet.ORIGINAL_ID_KEY] = self.x_original_ids[position]
+            sample[RefDataSet.TIMEBOX_ID_KEY] = self.timebox_ids[position]
         return sample
 
     def load_from_file(self, dataset_filename):
         """Loads data from a JSON file into this object."""
         dataset_df = super().load_ids_from_file(dataset_filename)
 
-        self.x_original_ids = np.array(dataset_df["original_id"])
+        self.x_original_ids = np.array(dataset_df[RefDataSet.ORIGINAL_ID_KEY])
+        self.timebox_ids = np.array(dataset_df[RefDataSet.TIMEBOX_ID_KEY])
         print("Done loading original ids", flush=True)
 
-    def add_reference(self, original_id):
+    def add_reference(self, original_id, timebox_id=0):
         """Adds an original id by reference. Generates automatically a new id."""
         id = secrets.token_hex(10)
         self.x_ids = np.append(self.x_ids, id)
         self.x_original_ids = np.append(self.x_original_ids, original_id)
+        self.timebox_ids = np.append(self.timebox_ids, timebox_id)
 
-    def add_multiple_references(self, original_ids):
+    def add_multiple_references(self, original_ids, timebox_id=0):
         """Adds multiple original ids by reference."""
         for id in original_ids:
-            self.add_reference(id)
+            self.add_reference(id, timebox_id)
 
     def save_to_file(self, output_filename):
         """Saves a dataset by only storing its ids and the references to the original ids it has."""
-        dataset_df = pd.DataFrame()
-        dataset_df[dataset.DataSet.ID_KEY] = self.x_ids
-        dataset_df[RefDataSet.ORIGINAL_ID_KEY] = self.x_original_ids
-
+        dataset_df = self.as_dataframe()
         dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
+
+    def as_dataframe(self):
+        """Adds internal data to a new dataframe."""
+        dataset_df = pd.DataFrame()
+        dataset_df[DataSet.ID_KEY] = self.x_ids
+        dataset_df[RefDataSet.ORIGINAL_ID_KEY] = self.x_original_ids
+        dataset_df[RefDataSet.TIMEBOX_ID_KEY] = self.timebox_ids
+        return dataset_df
 
     def create_from_reference(self, base_dataset, new_dataset):
         """Creates a new dataset by getting the full samples of a reference from the base dataset."""

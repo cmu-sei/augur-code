@@ -50,13 +50,15 @@ def apply_drift(input_bins, drift_config):
 
     # Loop until we get all samples we want.
     curr_bin_offset = 0
+    timebox_id = 0
     while drifted_dataset.get_number_of_samples() < max_num_samples:
         print_and_log(f"Now getting data for timebox of size {timebox_size}, using bin offset {curr_bin_offset}")
         timebox_sample_ids = generate_timebox_samples(drift_module, curr_bin_offset, input_bins, timebox_size, params)
-        drifted_dataset.add_multiple_references(timebox_sample_ids)
+        drifted_dataset.add_multiple_references(timebox_sample_ids, timebox_id)
 
         # Offset to indicate the starting bin for the condition.
         curr_bin_offset = (curr_bin_offset + 1) % len(input_bins)
+        timebox_id += 1
     print_and_log("Finished applying drift")
     return drifted_dataset
 
