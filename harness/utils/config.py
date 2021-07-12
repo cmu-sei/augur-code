@@ -38,8 +38,8 @@ class Config(object):
                         config_files.append(filename)
                         print(f"{file_idx}. {filename}")
                 try:
-                    option = int(input("Which file would you use? (Indicate a number): "))
-                    if option not in range(1, file_idx):
+                    option = int(input(f"Which file would you use? (Indicate a number between 1 and {file_idx}): "))
+                    if int(option) not in range(1, file_idx+1):
                         print("No valid config file selected.")
                     else:
                         config_file = os.path.join(config_folder, config_files[option-1])
