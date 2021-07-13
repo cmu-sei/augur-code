@@ -1,5 +1,7 @@
 import random
 
+import numpy
+
 # Tracks how many samples have been added from each bin for the current timebox.
 selected_samples_by_bin = []
 
@@ -38,3 +40,21 @@ def randrange_with_exclusions(range_max, exclusions):
     """Recursive function to get random values from a range avoiding excluded items."""
     selection = random.randrange(range_max)
     return randrange_with_exclusions(range_max, exclusions) if selection in exclusions else selection
+
+
+def test(full_dataset, params):
+    """Tests that the given dataset was properly drifted."""
+    prevalence_array = params.get("prevalences")
+    timebox_size = params.get("timebox_size")
+    num_samples = full_dataset.get_number_of_samples()
+    num_timeboxes = int(num_samples / timebox_size)
+
+    labelled_output = full_dataset.get_output()
+    for curr_timebox_id in range(0, num_timeboxes):
+        curr_timebox_starting_idx = curr_timebox_id * timebox_size
+        timebox_samples = labelled_output[curr_timebox_starting_idx:curr_timebox_starting_idx + timebox_size]
+        unique, counts = numpy.unique(timebox_samples, return_counts=True)
+        prevalences = counts / timebox_size
+        real_prevalence = dict(zip(unique, counts))
+        print(f"Timebox {curr_timebox_id} prevalences: {real_prevalence}")
+

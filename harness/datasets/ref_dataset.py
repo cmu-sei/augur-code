@@ -7,6 +7,20 @@ from utils import dataframe_helper
 from datasets.dataset import DataSet
 
 
+def load_full_from_ref_and_base(dataset_class, ref_dataset_file, base_dataset_file):
+    """Given filenames for ref and base datasets, creates a full one based on them."""
+    reference_dataset = RefDataSet()
+    reference_dataset.load_from_file(ref_dataset_file)
+
+    base_dataset = dataset_class()
+    base_dataset.load_from_file(base_dataset_file)
+
+    full_dataset = dataset_class()
+    full_dataset = reference_dataset.create_from_reference(base_dataset, full_dataset)
+
+    return full_dataset
+
+
 class RefDataSet(DataSet):
     """A dataset referencing the ids of another dataset."""
     ORIGINAL_ID_KEY = "original_id"

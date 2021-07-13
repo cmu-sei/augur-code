@@ -7,3 +7,7 @@ def get_bin_index(index, timebox_id, curr_bin_idx, num_total_bins, params):
         return curr_bin_idx
     else:
         return (curr_bin_idx + 1) % num_total_bins
+
+
+def test(full_dataset, params):
+    raise NotImplementedError("Test not implemented for this drift.")

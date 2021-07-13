@@ -18,18 +18,11 @@ METRIC_EXP_CONFIG_FOLDER = "../experiments/metric"
 def load_datasets(config):
     """Based on the config, loads the dataset to use, and the reference one if needed."""
     dataset_class = dataset.load_dataset_class(config.get("dataset_class"))
-    full_dataset = dataset_class()
     reference_dataset = None
     if config.contains("base_dataset"):
-        reference_dataset = ref_dataset.RefDataSet()
-        reference_dataset.load_from_file(config.get("dataset"))
-
-        base_dataset = dataset_class()
-        base_dataset.load_from_file(config.get("base_dataset"))
-
-        full_dataset = dataset_class()
-        full_dataset = reference_dataset.create_from_reference(base_dataset, full_dataset)
+        full_dataset = ref_dataset.load_full_from_ref_and_base(dataset_class, config.get("dataset"), config.get("base_dataset"))
     else:
+        full_dataset = dataset_class()
         full_dataset.load_from_file(config.get("dataset"))
 
     return full_dataset, reference_dataset
