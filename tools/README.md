@@ -62,3 +62,14 @@ The Predictor tool configuration has the following fields:
 The bash scripts for this tool include:
 - **predictor.sh**: uses the `predictor_config.json` file, default for predicting and generating metrics.
 - **labeller.sh**: uses the `labeller_config.json` file, uses the "label" mode to create an updated dataset with the predictions as its labels.
+
+## Merger Tool
+
+This is a separate, simpler tool. Its configuration has the following fields:
+
+ - **dataset1**: path to first JSON dataset to merge.
+ - **dataset2**: path to second JSON dataset to merge.
+ - **output**: path to JSON file with merged dataset.
+
+The bash scripts for this tool include:
+- **merger.sh**: uses the `merger_config.json` file, default for merging two datasets.
