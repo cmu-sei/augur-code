@@ -1,4 +1,5 @@
 {
+  "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
   "mode": "label",
   "dataset": "../input/test.json",
   "model": "../output/trained_model",

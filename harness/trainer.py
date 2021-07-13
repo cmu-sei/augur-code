@@ -118,7 +118,7 @@ def main():
     config_file = CONFIG_FILENAME
     if len(sys.argv) > 1:
         config_file = str(sys.argv[1])
-        print('Config file top use: ', config_file)
+        print('Config file to use: ', config_file)
 
     # Load config.
     CONFIG.load(config_file)

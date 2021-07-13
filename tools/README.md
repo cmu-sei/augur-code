@@ -52,8 +52,8 @@ The Predictor tool configuration has the following fields:
  - **output**: relative path to JSON file where the predictions will be stored.
  - **metrics_output**: relative path to the JSON file where the metric information will be stored.
  - **threshold**: value between 0 and 1 that will convert a raw prediction into a classification.
- - **timebox_size**: size of the timebox for analyzing the metrics, should match timebox used when creating a drifted dataset.
- - **metrics**: array containing objects describing the metrics to analyze. Each metric object contains:
+ - **timebox_size**: size of the timebox for analyzing the metrics, should match timebox used when creating a drifted dataset. Only needed if "predict" mode is enabled.
+ - **metrics**: array containing objects describing the metrics to analyze. Only needed if "predict" mode is enabled. Each metric object contains:
    - **name**: a friendly name for the metric.
    - **type**: the metric type (can only be ErrorMetric or DistanceMetric).
    - **module**: name of the Python module inside the `harness/drifts` folder implementing this drift (see general README for more details).

@@ -30,15 +30,17 @@ class Config(object):
         if len(arguments) < 2:
             print("No command line arguments.")
         else:
-            command = str(arguments[1])
-            if command == "--exp":
+            argument = str(arguments[1])
+            if argument == "--exp":
                 if len(arguments) >= 3:
                     config_file = os.path.join(config_folder, str(arguments[2]))
                     print(f"Using command line argument as config file name: {config_file}")
                 else:
                     config_file = Config.get_file_option_from_user(config_folder)
             else:
-                print("No valid command line arguments found.")
+                # Assume first argument is config file in same folder (or with path).
+                config_file = argument
+                print(f"Using config passed as argument: {config_file}")
 
         if config_file is None:
             print("Using default config: " + default_config)
