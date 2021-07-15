@@ -105,7 +105,7 @@ class DistanceMetric(Metric):
         """Overriden."""
         # Calculate the probability distribution for the timebox.
         if len(self.curr_probability_distribution) > 0:
-            # Only set P to Q when we already have a Q (since in the first loop P is intialized in the initial_setup).
+            # Only set P to Q when we already have a Q (since in the first loop P is initialized in the initial_setup).
             self.prev_probability_distribution = self.curr_probability_distribution
         self.curr_probability_distribution = self._calculate_probability_distribution(timebox.get_predictions())
         self._set_dimensionality_reduction()

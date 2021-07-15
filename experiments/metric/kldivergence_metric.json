@@ -16,7 +16,6 @@
       "module": "kl_divergence",
       "params":
       {
-        "pdf_params": {"mean":  2, "std_dev":  3}
       }
     }
   ]
