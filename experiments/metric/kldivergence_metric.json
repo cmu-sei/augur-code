@@ -16,6 +16,11 @@
       "module": "kl_divergence",
       "params":
       {
+        "pdf_params":
+        {
+          "range_start": -1,
+          "range_end": 2
+        }
       }
     }
   ]
