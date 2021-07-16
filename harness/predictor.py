@@ -53,6 +53,7 @@ def calculate_metrics(dataset, predictions, config):
         while curr_sample_idx < dataset.get_number_of_samples():
             # Set up timebox.
             if timebox_id not in timeboxes.keys():
+                print(f"Setting up timebox with id: {timebox_id}")
                 timebox = TimeBox(timebox_id, timebox_size)
                 timebox.set_data(predictions, curr_sample_idx)
                 timebox.calculate_accuracy()
