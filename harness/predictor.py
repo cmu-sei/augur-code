@@ -35,7 +35,7 @@ def predict(model, model_input):
     return predictions
 
 
-def calculate_metrics(dataset, training_results, config):
+def calculate_metrics(dataset, predictions, config):
     """Calculates metrics for the given configs and dataset."""
     timebox_size = int(config.get("timebox_size"))
     metrics = config.get("metrics")
@@ -46,7 +46,7 @@ def calculate_metrics(dataset, training_results, config):
         print(f"Loading metric: {metric_name}")
         metric = augur_metrics.create_metric(metric_info)
         metric.load_metric_functions(metric_info)
-        metric.initial_setup(dataset, training_results.get_predictions())
+        metric.initial_setup(dataset, predictions.get_predictions())
 
         curr_sample_idx = 0
         timebox_id = 0
@@ -54,7 +54,7 @@ def calculate_metrics(dataset, training_results, config):
             # Set up timebox.
             if timebox_id not in timeboxes.keys():
                 timebox = TimeBox(timebox_id, timebox_size)
-                timebox.set_data(training_results, curr_sample_idx)
+                timebox.set_data(predictions, curr_sample_idx)
                 timebox.calculate_accuracy()
                 timeboxes[timebox_id] = timebox
 

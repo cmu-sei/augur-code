@@ -25,7 +25,7 @@ class Predictions:
             self._calculate_confusion_matrix()
 
     def get_expected_results(self):
-        """Returns the classified predictions."""
+        """Returns the ground truth classification."""
         return self.expected_results
 
     def store_raw_predictions(self, raw_predictions):
