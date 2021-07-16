@@ -107,7 +107,7 @@ class DistanceMetric(Metric):
         if len(self.curr_probability_distribution) > 0:
             # Only set P to Q when we already have a Q (since in the first loop P is initialized in the initial_setup).
             self.prev_probability_distribution = self.curr_probability_distribution
-        self.curr_probability_distribution = self._calculate_probability_distribution(timebox.get_predictions())
+        self.curr_probability_distribution = self._calculate_probability_distribution(timebox.get_expected_results())
         self._set_dimensionality_reduction()
 
     def calculate_metric(self):
