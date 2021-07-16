@@ -1,7 +1,7 @@
 {
   "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
   "mode": "predict",
-  "dataset": "../output/drift.json",
+  "dataset": "../output/oversample_drift.json",
   "base_dataset": "../output/merged_dataset.json",
   "model": "../output/trained_model",
   "output": "../output/predictions.json",
