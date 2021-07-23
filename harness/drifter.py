@@ -35,7 +35,7 @@ def load_bins(dataset_filename, dataset_class_name, bin_params):
 def load_drift_config(drift_config):
     """Loads the drift module and params from the drift configuration."""
     print_and_log("Drift condition: " + drift_config.get("condition"))
-    print_and_log("Drift function: " + drift_config.get("module"))
+    print_and_log("Drift module: " + drift_config.get("module"))
     params = drift_config.get("params")
     print_and_log("Drift  params: ")
     print_and_log(params)

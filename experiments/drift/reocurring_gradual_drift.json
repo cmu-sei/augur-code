@@ -2,7 +2,7 @@
   "mode": "drift",
   "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
   "dataset": "../output/merged_dataset.json",
-  "output": "../output/oversampling_drift.json",
+  "output": "../output/reocurring_gradual_drift.json",
   "bins":
     [
       ["no_iceberg", 0],
@@ -10,15 +10,15 @@
     ],
   "drift_scenario":
   {
-    "condition": "oversampling",
+    "condition": "reocurring gradual",
     "module": "prevalence_drift",
     "params":
     {
-      "max_num_samples":  12000,
+      "max_num_samples": 12000,
       "timebox_size": 1000,
       "prevalence_bin": 1,
-      "prevalences": [65, 63, 60, 55, 45, 40],
-      "prevalence_repeat": true
+      "prevalences": [65, 55, 45, 30, 40, 50, 60, 50, 40, 30, 45, 55],
+      "prevalence_repeat": false
     }
   }
 }
