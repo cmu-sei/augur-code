@@ -29,7 +29,7 @@ The Drifter tool configuration has the following fields:
  - **mode**: "drift" to generated drifted dataset, "test" to test an already generated one.
  - **dataset_class**: same as config field in Trainer tool.
  - **dataset**: relative path to a JSON file with the labelled dataset to use for generating a drifted one.
- - **output**: relative path to a JSON file that will contain the drifted dataset, referencing the **dataset** above by containing only new ids and original_ids pointing to samples in it.
+ - **output**: relative path to a JSON file that will contain the drifted dataset, referencing the **dataset** above by containing only new ids and original_ids pointing to samples in it. In test mode, this is the tested dataset.
  - **bins**: array defining bins to split the **dataset** into when generating drift. Each item in the array will also be an array, containing first the bin name, and then the bin order (i.e, ["no_iceberg", 0])
  - **drift_scenario**: information about the drift being generated.
    - **condition**: friendly name for the drift type. 

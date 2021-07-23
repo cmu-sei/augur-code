@@ -28,18 +28,35 @@ def get_bin_index(sample_index, timebox_id, curr_bin_idx, num_total_bins, params
     if prevalence_bin_id > num_total_bins:
         raise Exception(f"Bin selected as prevalence forcer is not a valid bin id ({prevalence_bin_id}")
     timebox_size = params.get("timebox_size")
-    curr_prevalence = selected_samples_by_bin[prevalence_bin_id] / timebox_size * 100
 
     # Get the next bin id, ensuring we don't go over the target prevalence.
-    print(f"TB: {timebox_id}, Curr prevalence: {curr_prevalence}, target: {target_prevalence}")
-    if curr_prevalence < target_prevalence:
-        next_bin_id = prevalence_bin_id
-    else:
-        exclusions = [prevalence_bin_id]
-        next_bin_id = randrange_with_exclusions(num_total_bins, exclusions)
+    print(f"TB: {timebox_id}")
+    next_bin_id = get_random_bin_with_prevalence(num_total_bins, timebox_size, prevalence_bin_id, target_prevalence)
 
     selected_samples_by_bin[next_bin_id] += 1
     last_timebox_id = timebox_id
+    return next_bin_id
+
+
+def get_random_bin_with_prevalence(num_total_bins, timebox_size, main_prevalence_bin_id, target_prevalence):
+    """Gets the next bin randomly, but ensuring we don't go over the max prevalence."""
+    all_prevalences = [selected_samples_by_bin[curr_id] / timebox_size * 100 for curr_id in range(num_total_bins)]
+    main_prevalence = all_prevalences[main_prevalence_bin_id]
+    other_prevalences_sum = sum([prevalence for bin_id, prevalence in enumerate(all_prevalences) if bin_id != main_prevalence_bin_id])
+    print(f"All prevalences: {all_prevalences}, Main prevalence: {main_prevalence}, target: {target_prevalence}")
+
+    # Get random bins, except if 1) we already have enough of the prevalence one, or 2) we got so many of the others
+    # that we need to force getting the prevalence one.
+    if main_prevalence >= target_prevalence:
+        print("Selecting from non-main bins")
+        next_bin_id = randrange_with_exclusions(num_total_bins, [main_prevalence_bin_id])
+    elif other_prevalences_sum >= (100 - target_prevalence):
+        print("Selecting main bin")
+        next_bin_id = main_prevalence_bin_id
+    else:
+        print("Selecting random bin")
+        next_bin_id = randrange_with_exclusions(num_total_bins, [])
+
     return next_bin_id
 
 
