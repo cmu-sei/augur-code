@@ -2,6 +2,8 @@ import random
 
 import numpy
 
+from utils.logging import print_and_log
+
 # Tracks how many samples have been added from each bin for the current timebox.
 selected_samples_by_bin = []
 last_timebox_id = -1
@@ -32,7 +34,7 @@ def get_bin_index(sample_index, timebox_id, curr_bin_idx, num_total_bins, params
     timebox_size = params.get("timebox_size")
 
     # Get the next bin id, ensuring we don't go over the target prevalence.
-    print(f"TB: {timebox_id}")
+    print_and_log(f"Timebox id: {timebox_id}")
     next_bin_id = get_random_bin_with_prevalence(num_total_bins, timebox_size, prevalence_bin_id, target_prevalence)
 
     selected_samples_by_bin[next_bin_id] += 1
@@ -50,31 +52,33 @@ def prepare_prevalence_array(params):
             num_init_prevs = len(prevalence_array)
             num_timeboxes = int(params.get("max_num_samples") / params.get("timebox_size"))
             random_rep_range = params.get("prevalence_repeat_range")
-            print(f"Generating repetitions for timeboxes (total timeboxes: {num_timeboxes})")
+            print_and_log(f"Generating repetitions for timeboxes (total timeboxes: {num_timeboxes})")
+            full_prev_array = prevalence_array.copy()
             for i in range(num_init_prevs, num_timeboxes, num_init_prevs):
                 repetition_prev_array = [prevalence + random.randrange(random_rep_range[0], random_rep_range[1]) \
                                          for prevalence in prevalence_array]
-                prevalence_array += repetition_prev_array
-        print(f"Prevalences array: {prevalence_array}")
+                full_prev_array += repetition_prev_array
+            prevalence_array = full_prev_array
+        print_and_log(f"Prevalences array: {prevalence_array}")
 
 
 def get_random_bin_with_prevalence(num_total_bins, timebox_size, main_prevalence_bin_id, target_prevalence):
     """Gets the next bin randomly, but ensuring we don't go over the max prevalence."""
-    all_prevalences = [round(selected_samples_by_bin[curr_id] / timebox_size) * 100 for curr_id in range(num_total_bins)]
+    all_prevalences = [round(selected_samples_by_bin[curr_id] / timebox_size, 2) * 100 for curr_id in range(num_total_bins)]
     main_prevalence = all_prevalences[main_prevalence_bin_id]
     other_prevalences_sum = sum([prevalence for bin_id, prevalence in enumerate(all_prevalences) if bin_id != main_prevalence_bin_id])
-    print(f"All prevalences: {all_prevalences}, Main prevalence: {main_prevalence}, target: {target_prevalence}")
+    print_and_log(f"All prevalences: {all_prevalences}, Main prevalence: {main_prevalence}, target: {target_prevalence}")
 
     # Get random bins, except if 1) we already have enough of the prevalence one, or 2) we got so many of the others
     # that we need to force getting the prevalence one.
     if main_prevalence >= target_prevalence:
-        print("Selecting from non-main bins")
+        print_and_log("Selecting from non-main bins")
         next_bin_id = randrange_with_exclusions(num_total_bins, [main_prevalence_bin_id])
     elif other_prevalences_sum >= (100 - target_prevalence):
-        print("Selecting main bin")
+        print_and_log("Selecting main bin")
         next_bin_id = main_prevalence_bin_id
     else:
-        print("Selecting random bin")
+        print_and_log("Selecting random bin")
         next_bin_id = randrange_with_exclusions(num_total_bins, [])
 
     return next_bin_id
