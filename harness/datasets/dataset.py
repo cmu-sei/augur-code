@@ -25,14 +25,21 @@ class DataSet:
     """A base dataset, only containing ids. Meant to be an abstract class for more detailed ones to build on."""
 
     ID_KEY = "id"
-    x_ids = np.empty(0, str)
+    x_ids = np.empty(0, dtype=str)
+
+    def allocate_space(self, size):
+        """Pre-allocates the space for this dataset to avoid scalability issues, when the size is known."""
+        self.x_ids = np.empty(size, dtype=str)
 
     def get_number_of_samples(self):
         """Gets the current size in num of samples."""
         return self.x_ids.size
 
-    def add_sample(self, sample):
-        self.x_ids = np.append(self.x_ids, sample[DataSet.ID_KEY])
+    def add_sample(self, position, sample):
+        """Adds a sample in the given position."""
+        if position >= self.x_ids.size:
+            raise Exception(f"Invalid position ({position}) given when adding sample (size is {self.x_ids.size})")
+        self.x_ids[position] = sample[DataSet.ID_KEY]
 
     def _get_id_position(self, id_to_find):
         """Gets the position of a given id"""

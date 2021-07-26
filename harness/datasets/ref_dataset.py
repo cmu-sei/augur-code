@@ -9,12 +9,15 @@ from datasets.dataset import DataSet
 
 def load_full_from_ref_and_base(dataset_class, ref_dataset_file, base_dataset_file):
     """Given filenames for ref and base datasets, creates a full one based on them."""
+    print("Loading ref dataset...", flush=True)
     reference_dataset = RefDataSet()
     reference_dataset.load_from_file(ref_dataset_file)
 
+    print("Loading base dataset...", flush=True)
     base_dataset = dataset_class()
     base_dataset.load_from_file(base_dataset_file)
 
+    print("Creating full dataset from both...", flush=True)
     full_dataset = dataset_class()
     full_dataset = reference_dataset.create_from_reference(base_dataset, full_dataset)
 
@@ -75,7 +78,14 @@ class RefDataSet(DataSet):
 
     def create_from_reference(self, base_dataset, new_dataset):
         """Creates a new dataset by getting the full samples of a reference from the base dataset."""
+        position = 0
+        new_dataset_size = self.x_original_ids.size
+        new_dataset.allocate_space(new_dataset_size)
         for original_id in self.x_original_ids:
+            # Only show print update every 500 ids.
+            if position % 500 == 0:
+                print(f"Finished preparing {position} samples out of {new_dataset_size}", flush=True)
             full_sample = base_dataset.get_sample_by_id(original_id)
-            new_dataset.add_sample(full_sample)
+            new_dataset.add_sample(position, full_sample)
+            position += 1
         return new_dataset

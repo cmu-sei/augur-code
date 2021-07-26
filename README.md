@@ -78,7 +78,8 @@ The dataset module needs to implement a class that derives from `dataset.DataSet
  - `def load_from_file(self, dataset_filename)`: (override) loads the dataset from the given JSON file.
  - `def save_to_file(self, output_filename)`: (override) stores the dataset to the given JSON file.
  - `def get_sample(self, position)`: (override) returns a sample as a dictionary.
- - `def add_sample(self, sample)`: (override) adds a sample received as a dictionary.
+ - `def allocate_space(self, size)`: (override) pre-sets enough space for a dataset, useful when creating a full one from a reference, to make it work fast.  
+ - `def add_sample(self, position, sample)`: (override) adds a sample received as a dictionary to the given position.
  - `def get_model_input(self)`: returns the input needed for the corresponding model.
  - `def get_single_input(self)`: if model has multiple inputs, returns only one of them (any). Otherwise, returns the same as get_model_input.
  - `def get_output(self)`: returns the labelled output of the model.
