@@ -1,2 +1,2 @@
 #!/bin/bash
-pipenv run python3 ../harness/predictor.py labeller_config.json
+pipenv run python3 ../harness/predictor.py --config labeller_config.json

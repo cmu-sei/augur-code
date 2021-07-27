@@ -26,7 +26,6 @@ The bash scripts for this tool include:
 
 The Drifter tool configuration has the following fields:
 
- - **mode**: "drift" to generated drifted dataset, "test" to test an already generated one.
  - **dataset_class**: same as config field in Trainer tool.
  - **dataset**: relative path to a JSON file with the labelled dataset to use for generating a drifted one.
  - **output**: relative path to a JSON file that will contain the drifted dataset, referencing the **dataset** above by containing only new ids and original_ids pointing to samples in it. In test mode, this is the tested dataset.

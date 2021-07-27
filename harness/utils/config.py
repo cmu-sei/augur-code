@@ -23,26 +23,17 @@ class Config(object):
         return key_name in self.config_data
 
     @staticmethod
-    def choose_from_folder(arguments, config_folder, default_config):
-        """Processes command line arguments to allow for 1) choosing a config from a given folder, or
-        2) to pass a config file name as a parameter."""
-        config_file = None
-        if len(arguments) < 2:
-            print("No command line arguments.")
+    def get_config_file(arguments, config_folder, default_config):
+        """"Gets the config file to use, either deafult, argument, from exp folder, or from user selection."""
+        if arguments.config:
+            config_file = arguments.config
+            print(f"Using config passed as argument: {config_file}")
+        elif arguments.exp_config:
+            config_file = os.path.join(config_folder, arguments.exp_config)
+            print(f"Using config file from experiments folder: {config_file}")
+        elif arguments.exp_user:
+            config_file = Config.get_file_option_from_user(config_folder)
         else:
-            argument = str(arguments[1])
-            if argument == "--exp":
-                if len(arguments) >= 3:
-                    config_file = os.path.join(config_folder, str(arguments[2]))
-                    print(f"Using command line argument as config file name: {config_file}")
-                else:
-                    config_file = Config.get_file_option_from_user(config_folder)
-            else:
-                # Assume first argument is config file in same folder (or with path).
-                config_file = argument
-                print(f"Using config passed as argument: {config_file}")
-
-        if config_file is None:
             print("Using default config: " + default_config)
             config_file = default_config
 

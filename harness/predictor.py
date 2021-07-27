@@ -1,10 +1,10 @@
-import sys
 import json
 
 from training import model_utils
 from training.predictions import Predictions
 from datasets import ref_dataset
 from utils.config import Config
+from utils import arguments
 from utils import logging
 from utils.logging import print_and_log
 from datasets import dataset
@@ -118,7 +118,8 @@ def main():
     logging.setup_logging("predictor.log")
 
     # Allow selecting configs for experiments, and load it.
-    config_file = Config.choose_from_folder(sys.argv, METRIC_EXP_CONFIG_FOLDER, DEFAULT_CONFIG_FILENAME)
+    args = arguments.get_parsed_arguments()
+    config_file = Config.get_config_file(args, METRIC_EXP_CONFIG_FOLDER, DEFAULT_CONFIG_FILENAME)
     config = Config()
     config.load(config_file)
 

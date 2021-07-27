@@ -1,5 +1,4 @@
 {
-  "mode": "drift",
   "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
   "dataset": "../output/merged_dataset.json",
   "output": "../output/reocurring_gradual_drift.json",

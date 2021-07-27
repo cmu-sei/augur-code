@@ -2,6 +2,7 @@ import sys
 import importlib
 
 from datasets import ref_dataset
+from utils import arguments
 from utils.config import Config
 from utils import databin
 from utils import logging
@@ -109,23 +110,21 @@ def main():
     logging.setup_logging("drifter.log")
 
     # Allow selecting configs for experiments, and load it.
-    config_file = Config.choose_from_folder(sys.argv, DRIFT_EXP_CONFIG_FOLDER, DEFAULT_CONFIG_FILENAME)
+    args = arguments.get_parsed_arguments()
+    config_file = Config.get_config_file(args, DRIFT_EXP_CONFIG_FOLDER, DEFAULT_CONFIG_FILENAME)
     config = Config()
     config.load(config_file)
 
     # Load scenario data.
     drift_module, params = load_drift_config(config.get("drift_scenario"))
 
-    mode = config.get("mode")
-    if mode == "drift":
+    if args.test:
+        test_drift(config, drift_module, params)
+    else:
         # Apply drift.
         bins = load_bins(config.get("dataset"), config.get("dataset_class"), config.get("bins"))
         drifted_dataset = apply_drift(bins, drift_module, params)
         drifted_dataset.save_to_file(config.get("output"))
-    elif mode == "test":
-        test_drift(config, drift_module, params)
-    else:
-        print(f"Unknown mode: {mode}")
 
 
 if __name__ == '__main__':

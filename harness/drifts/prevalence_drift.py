@@ -104,7 +104,7 @@ def test(full_dataset, params):
         curr_timebox_starting_idx = curr_timebox_id * timebox_size
         timebox_samples = labelled_output[curr_timebox_starting_idx:curr_timebox_starting_idx + timebox_size]
         unique, counts = numpy.unique(timebox_samples, return_counts=True)
-        prevalences = (counts / timebox_size * 100).astype(int)
+        prevalences = numpy.round((100 * counts) / timebox_size, 2)
         timebox_prevalences = dict(zip(unique, prevalences))
 
         print(f"Timebox {curr_timebox_id} real prevalences: {timebox_prevalences}")
