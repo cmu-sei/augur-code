@@ -1,4 +1,5 @@
 import importlib
+import random
 
 from datasets import ref_dataset
 from utils import arguments
@@ -64,6 +65,9 @@ def apply_drift(input_bins, drift_module, params):
     while drifted_dataset.get_number_of_samples() < max_num_samples:
         print_and_log(f"Now getting data for timebox of size {timebox_size}, using bin offset {curr_bin_offset}")
         timebox_sample_ids = generate_timebox_samples(drift_module, timebox_id, curr_bin_offset, input_bins, timebox_size, params)
+
+        # Randomize results in timebox to avoid stacking bin results at the end.
+        random.shuffle(timebox_sample_ids)
         drifted_dataset.add_multiple_references(timebox_sample_ids, timebox_id)
 
         # Offset to indicate the starting bin for the condition.

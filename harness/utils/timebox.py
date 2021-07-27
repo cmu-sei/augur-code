@@ -16,7 +16,7 @@ class TimeBox:
         self.size = timebox_size
 
     def set_data(self, full_predictions, starting_idx):
-        """Stores the data from full training results, for this specific timebox."""
+        """Stores the data from full predictions, for this specific timebox."""
         self.starting_idx = starting_idx
         self.predictions = full_predictions.create_slice(self.starting_idx, self.size)
 
