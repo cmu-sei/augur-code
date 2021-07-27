@@ -1,0 +1,27 @@
+{
+  "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
+  "mode": "predict",
+  "dataset": "../output/sudden_drift.json",
+  "base_dataset": "../output/merged_dataset.json",
+  "model": "../output/trained_model",
+  "output": "../output/sudden_kl_predictions.json",
+  "metrics_output": "../output/sudden_kl_metrics_output.json",
+  "threshold": 0.5,
+  "timebox_size": 20,
+  "metrics":
+  [
+    {
+      "name": "kl-divergence",
+      "type": "DistanceMetric",
+      "module": "kl_divergence",
+      "params":
+      {
+        "pdf_params":
+        {
+          "range_start": -1,
+          "range_end": 2
+        }
+      }
+    }
+  ]
+}

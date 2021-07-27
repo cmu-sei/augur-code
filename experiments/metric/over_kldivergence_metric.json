@@ -4,8 +4,8 @@
   "dataset": "../output/oversample_drift.json",
   "base_dataset": "../output/merged_dataset.json",
   "model": "../output/trained_model",
-  "output": "../output/predictions.json",
-  "metrics_output": "../output/metrics_output.json",
+  "output": "../output/oversample_predictions.json",
+  "metrics_output": "../output/oversample_metrics_output.json",
   "threshold": 0.5,
   "timebox_size": 20,
   "metrics":
