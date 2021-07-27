@@ -43,7 +43,7 @@ def calculate_metrics(dataset, predictions, config):
     timeboxes = {}
     for metric_info in metrics:
         metric_name = metric_info.get('name')
-        print(f"Loading metric: {metric_name}")
+        print_and_log(f"Loading metric: {metric_name}")
         metric = augur_metrics.create_metric(metric_info)
         metric.load_metric_functions(metric_info)
         metric.initial_setup(dataset, predictions.get_predictions())
@@ -53,7 +53,7 @@ def calculate_metrics(dataset, predictions, config):
         while curr_sample_idx < dataset.get_number_of_samples():
             # Set up timebox.
             if timebox_id not in timeboxes.keys():
-                print(f"Setting up timebox with id: {timebox_id}")
+                print(f"Setting up timebox with id: {timebox_id}", flush=True)
                 timebox = TimeBox(timebox_id, timebox_size)
                 timebox.set_data(predictions, curr_sample_idx)
                 timebox.calculate_accuracy()
@@ -98,7 +98,7 @@ def save_predictions(full_dataset, predictions, output_filename, reference_datas
 def save_metrics(metrics, metrics_filename):
     """Stores the given metrics to an output."""
     if len(metrics) == 0:
-        print("No metrics to store to file.")
+        print_and_log("No metrics to store to file.")
         return
 
     print_and_log("Saving metrics to JSON file")
