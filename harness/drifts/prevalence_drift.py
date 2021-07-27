@@ -55,7 +55,7 @@ def prepare_prevalence_array(params):
             print_and_log(f"Generating repetitions for timeboxes (total timeboxes: {num_timeboxes})")
             full_prev_array = prevalence_array.copy()
             for i in range(num_init_prevs, num_timeboxes, num_init_prevs):
-                repetition_prev_array = [prevalence + random.randrange(random_rep_range[0], random_rep_range[1]) \
+                repetition_prev_array = [prevalence + random.randrange(random_rep_range[0], random_rep_range[1])
                                          for prevalence in prevalence_array]
                 full_prev_array += repetition_prev_array
             prevalence_array = full_prev_array
@@ -64,7 +64,7 @@ def prepare_prevalence_array(params):
 
 def get_random_bin_with_prevalence(num_total_bins, timebox_size, main_prevalence_bin_id, target_prevalence):
     """Gets the next bin randomly, but ensuring we don't go over the max prevalence."""
-    all_prevalences = [round(selected_samples_by_bin[curr_id] / timebox_size, 2) * 100 for curr_id in range(num_total_bins)]
+    all_prevalences = [round((100 * selected_samples_by_bin[curr_id]) / timebox_size, 2) for curr_id in range(num_total_bins)]
     main_prevalence = all_prevalences[main_prevalence_bin_id]
     other_prevalences_sum = sum([prevalence for bin_id, prevalence in enumerate(all_prevalences) if bin_id != main_prevalence_bin_id])
     print_and_log(f"All prevalences: {all_prevalences}, Main prevalence: {main_prevalence}, target: {target_prevalence}")
