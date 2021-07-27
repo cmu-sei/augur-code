@@ -1,4 +1,3 @@
-import sys
 import importlib
 
 from datasets import ref_dataset
