@@ -1,2 +1,2 @@
 #!/bin/bash
-pipenv run python3 ../harness/trainer.py eval_config.json
+pipenv run python3 ../harness/trainer.py --config eval_config.json

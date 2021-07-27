@@ -8,11 +8,12 @@ import tensorflow.keras.callbacks as tfcb
 from training import model_utils
 from utils.config import Config
 from utils import logging
+from utils import arguments
 from utils.logging import print_and_log
 from datasets import dataset
 # from utils import plotter
 
-CONFIG_FILENAME = "./trainer_config.json"
+DEFAULT_CONFIG_FILENAME = "./trainer_config.json"
 CONFIG = Config()
 
 MODEL_MODULE = None
@@ -114,13 +115,9 @@ def main():
     np.random.seed(555)
     logging.setup_logging("training.log")
 
-    # See if we'll use the default or a special config file.
-    config_file = CONFIG_FILENAME
-    if len(sys.argv) > 1:
-        config_file = str(sys.argv[1])
-        print('Config file to use: ', config_file)
-
-    # Load config.
+    # Parse args and load config.
+    args = arguments.get_parsed_arguments()
+    config_file = Config.get_config_file(args, "./", DEFAULT_CONFIG_FILENAME)
     CONFIG.load(config_file)
 
     # Loading model and dataset

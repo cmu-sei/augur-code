@@ -22,14 +22,14 @@ Code for Augur LENS
 
 ### Usage
   * From the `tools/` folder, run the tool that you want to run:
-    * `bash <tool>.sh  [params]`
+    * `bash <tool>.sh [params]`
     * Where 
       * "tool" is the name of one of the tools in that folder (i.e., "trainer", "drifter", etc.).
      * [params]: optional, it can be either:
-        * A config file name (with path if needed)
-        * "--exp" to use configurations for experiments. This has two modes:
-            * If no further arguments are passed, a menu is presented to select from config files in the experiments folder.
-            * If there is another argument, it is treated as a config file name (without path) from the experiments folder to be used.
+        * "--config", followed by a config file name (path relative to current folder)
+        * "--exp_config" to use experiment configurations, followed by a config file name and path relative to the experiments folder.
+        * "--exp_user": a menu is presented to select from config files in the experiments folder.
+        * "--test": runs the tool in test mode (if available).
 
 ## Containerized Version
 ### Prerequisites
