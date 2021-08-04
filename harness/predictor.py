@@ -12,7 +12,7 @@ from utils.timebox import TimeBox
 import metrics.base_metric as augur_metrics
 
 DEFAULT_CONFIG_FILENAME = "./predictor_config.json"
-METRIC_EXP_CONFIG_FOLDER = "../experiments/metric"
+METRIC_EXP_CONFIG_FOLDER = "../experiments/predictor"
 
 
 def load_datasets(config):

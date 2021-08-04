@@ -10,7 +10,7 @@ from utils.logging import print_and_log
 from datasets import dataset
 
 DEFAULT_CONFIG_FILENAME = "./drifter_config.json"
-DRIFT_EXP_CONFIG_FOLDER = "../experiments/drift"
+DRIFT_EXP_CONFIG_FOLDER = "../experiments/drifter"
 
 
 def load_bins(dataset_filename, dataset_class_name, bin_params):
