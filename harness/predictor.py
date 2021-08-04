@@ -20,7 +20,7 @@ def load_datasets(config):
     dataset_class = dataset.load_dataset_class(config.get("dataset_class"))
     reference_dataset = None
     if config.contains("base_dataset"):
-        full_dataset = ref_dataset.load_full_from_ref_and_base(dataset_class, config.get("dataset"), config.get("base_dataset"))
+        full_dataset, reference_dataset = ref_dataset.load_full_from_ref_and_base(dataset_class, config.get("dataset"), config.get("base_dataset"))
     else:
         full_dataset = dataset_class()
         full_dataset.load_from_file(config.get("dataset"))
@@ -84,8 +84,10 @@ def save_predictions(full_dataset, predictions, output_filename, reference_datas
     print_and_log("Creating predictions DataFrame")
     if reference_dataset:
         output_df = reference_dataset.as_dataframe()
+        print(output_df)
     else:
         output_df = full_dataset.as_basic_dataframe()
+        print(output_df)
     output_df["truth"] = full_dataset.y_output
     output_df["prediction"] = predictions.get_predictions()
     output_df["raw_prediction"] = predictions.get_raw_predictions()

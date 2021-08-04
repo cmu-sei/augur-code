@@ -21,7 +21,7 @@ def load_full_from_ref_and_base(dataset_class, ref_dataset_file, base_dataset_fi
     full_dataset = dataset_class()
     full_dataset = reference_dataset.create_from_reference(base_dataset, full_dataset)
 
-    return full_dataset
+    return full_dataset, reference_dataset
 
 
 class RefDataSet(DataSet):

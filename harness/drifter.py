@@ -103,7 +103,7 @@ def test_drift(config, drift_module, params):
     base_dataset_file = config.get("dataset")
 
     dataset_class = dataset.load_dataset_class(dataset_class_name)
-    full_dataset = ref_dataset.load_full_from_ref_and_base(dataset_class, drifted_dataset_file, base_dataset_file)
+    full_dataset, reference_dataset = ref_dataset.load_full_from_ref_and_base(dataset_class, drifted_dataset_file, base_dataset_file)
 
     drift_module.test(full_dataset, params)
 
