@@ -13,8 +13,8 @@
     "module": "prevalence_drift",
     "params":
     {
-      "max_num_samples":  12000,
-      "timebox_size": 1000,
+      "max_num_samples":  10026,
+      "timebox_size": 1671,
       "prevalence_bin": 1,
       "prevalences": [65, 63, 60, 55, 45, 40],
       "prevalence_repeat": false
