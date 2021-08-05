@@ -84,7 +84,6 @@ def save_predictions(full_dataset, predictions, output_filename, reference_datas
     print_and_log("Creating predictions DataFrame")
     if reference_dataset:
         output_df = reference_dataset.as_dataframe()
-        print(output_df)
     else:
         output_df = full_dataset.as_basic_dataframe()
         print(output_df)

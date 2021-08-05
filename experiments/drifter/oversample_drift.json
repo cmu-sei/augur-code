@@ -1,7 +1,7 @@
 {
   "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
   "dataset": "../output/merged_dataset.json",
-  "output": "../output/oversampling_drift.json",
+  "output": "../output/oversample_drift.json",
   "bins":
     [
       ["no_iceberg", 0],

@@ -7,7 +7,7 @@
   "output": "../output/oversample_predictions.json",
   "metrics_output": "../output/oversample_metrics_output.json",
   "threshold": 0.5,
-  "timebox_size": 20,
+  "timebox_size": 1000,
   "metrics":
   [
     {
