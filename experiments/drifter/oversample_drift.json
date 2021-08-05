@@ -17,7 +17,7 @@
       "timebox_size": 1000,
       "prevalence_bin": 1,
       "prevalences": [65, 63, 60, 55, 45, 40],
-      "prevalence_repeat": true
+      "prevalence_repeat": false
     }
   }
 }
