@@ -1,4 +1,7 @@
 import json
+import os
+import shutil
+import datetime
 
 from training import model_utils
 from training.predictions import Predictions
@@ -13,6 +16,7 @@ import metrics.base_metric as augur_metrics
 
 DEFAULT_CONFIG_FILENAME = "./predictor_config.json"
 METRIC_EXP_CONFIG_FOLDER = "../experiments/predictor"
+PACKAGED_FOLDER_BASE = "../output/packaged/"
 
 
 def load_datasets(config):
@@ -114,6 +118,30 @@ def save_updated_dataset(updated_dataset, predictions, output_filename):
     updated_dataset.save_to_file(output_filename)
 
 
+def package_results(config):
+    """Copies all results to a date-time folder to store experiment results."""
+    dataset = config.get("dataset")
+    model = config.get("model")
+    predictions = config.get("output")
+    metrics = config.get("metrics_output")
+
+    print("Storing exp results in folder.")
+    package_folder_name = "exp-" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    full_folder_path = os.path.join(PACKAGED_FOLDER_BASE, package_folder_name)
+    if os.path.exists(full_folder_path):
+        shutil.rmtree(full_folder_path)
+    os.makedirs(full_folder_path)
+
+    shutil.copy(dataset, full_folder_path)
+    shutil.copytree(model, os.path.join(full_folder_path, os.path.basename(os.path.normpath(model))))
+    shutil.copy(predictions, full_folder_path)
+    shutil.copy(metrics, full_folder_path)
+
+    # Create zip as well.
+    print("Storing exp results in zip file.")
+    shutil.make_archive(full_folder_path, "zip", full_folder_path)
+
+
 # Main code.
 def main():
     logging.setup_logging("predictor.log")
@@ -143,6 +171,10 @@ def main():
         metric_results = calculate_metrics(full_dataset, predictions, config)
         save_predictions(full_dataset, predictions, config.get("output"), reference_dataset)
         save_metrics(metric_results, config.get("metrics_output"))
+
+        # If requested, package this experiment results.
+        if args.store:
+            package_results(config)
     elif mode == "label":
         save_updated_dataset(full_dataset, predictions.get_predictions(), config.get("output"))
     else:
