@@ -94,7 +94,7 @@ class DistanceMetric(Metric):
     def _calculate_distance(self):
         """Calculates the distance defined for the current prob dist and the reference one."""
         if self.check_module_loaded():
-            return self.metric_module.metric_distance(self.curr_probability_distribution, self.prev_probability_distribution)
+            return self.metric_module.metric_distance(self.prev_probability_distribution, self.curr_probability_distribution)
 
     def initial_setup(self, dataset, predictions):
         """Overriden."""
