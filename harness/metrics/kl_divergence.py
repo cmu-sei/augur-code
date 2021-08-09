@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import norm
+from scipy.stats import entropy
 
 RANGE_STEP = 0.001
 dist_range = None
@@ -12,6 +13,7 @@ def metric_pdf(data, pdf_params):
         dist_range = np.arange(pdf_params.get("range_start"), pdf_params.get("range_end"), RANGE_STEP)
     mean = np.mean(data)
     std_dev = np.std(data)
+    print(f"Mean: {mean}, Std Dev: {std_dev}")
     return norm.pdf(dist_range, mean, std_dev)
 
 
@@ -22,4 +24,7 @@ def metric_reduction(probability_distribution):
 
 def metric_distance(p, q):
     """Calculates KL-divergence."""
-    return np.sum(np.where(p != 0, p * np.log(p/q), 0))
+    kl_div = np.sum(np.where(p != 0, p * np.log2(p/q), 0))
+    print(f"KL div: {kl_div}")
+    print(f"Entropy: {entropy(p, q)}")
+    return kl_div
