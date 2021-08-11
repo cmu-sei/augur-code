@@ -163,11 +163,11 @@ def main():
     raw_predictions = predict(model, full_dataset.get_model_input())
     predictions = Predictions(config.get("threshold"))
     predictions.store_raw_predictions(raw_predictions)
-    predictions.store_expected_results(full_dataset.get_output())
 
     # Save to file, depending on mode, and calculate metrics if needed.
     mode = config.get("mode")
     if mode == "predict":
+        predictions.store_expected_results(full_dataset.get_output())
         metric_results = calculate_metrics(full_dataset, predictions, config)
         save_predictions(full_dataset, predictions, config.get("output"), reference_dataset)
         save_metrics(metric_results, config.get("metrics_output"))
