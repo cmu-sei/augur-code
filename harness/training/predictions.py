@@ -72,4 +72,4 @@ class Predictions:
     def get_accuracy(self):
         """Calculates the accuracy and returns it"""
         tn, fp, fn, tp = self._get_true_false_positives_negatives()
-        return (tn + tp) / (tn + tn + fp + fn)
+        return (tn + tp) / (tn + tp + fp + fn)
