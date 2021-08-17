@@ -126,7 +126,8 @@ def package_results(config):
     metrics = config.get("metrics_output")
 
     print("Storing exp results in folder.")
-    package_folder_name = "exp-" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    exp_descriptor = os.path.splitext(os.path.basename(config.config_filename))[0]
+    package_folder_name = "exp-" + exp_descriptor + "-" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     full_folder_path = os.path.join(PACKAGED_FOLDER_BASE, package_folder_name)
     if os.path.exists(full_folder_path):
         shutil.rmtree(full_folder_path)

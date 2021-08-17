@@ -5,11 +5,13 @@ import json
 class Config(object):
     """ Handles a JSON configuration."""
     config_data = {}
+    config_filename = ""
 
     def load(self, config_filename):
         """ Creates a parser for the default config file, if it wasn't loaded before."""
         with open(config_filename) as config_file:
             self.config_data = json.load(config_file)
+        self.config_filename = config_filename
 
     def get(self, key_name):
         """Returns a dict with the default values.#"""
