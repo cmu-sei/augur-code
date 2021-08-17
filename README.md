@@ -67,6 +67,10 @@ For Distance Metrics, three functions are needed:
  - `def metric_reduction(probability_distribution)`: Applies dimensionality reduction to the given probability distribution. May return the same distribution if no reduction is needed.
  - `def metric_distance(p, q)`: Calculates a distance value between the two given probability distributions.
 
+ For Error Metrics, at least one function is needed:
+
+  - `def metric_error(timebox, dataset, predictions)`: Calculates the error for the given timebox, knowing the ground truth from the dataset, and the predictions as a parameter, if needed.
+
 #### Dataset Structures
 New dataset structures should be added to the harness/datasets folder, to a subfolder with the name of the new structure. Two modules should be added in there: a dataset module and a model module. The recommended naming structure is:
 
