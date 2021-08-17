@@ -1,5 +1,8 @@
 import importlib
 import random
+import datetime
+import os
+import shutil
 
 from datasets import ref_dataset
 from utils import arguments
@@ -108,6 +111,14 @@ def test_drift(config, drift_module, params):
     drift_module.test(full_dataset, params)
 
 
+def get_drift_stamped_name(config_filename):
+    """Returns a time-stamped name to save the drift to."""
+    folder = os.path.dirname(config_filename)
+    descriptor = os.path.splitext(os.path.basename(config_filename))[0]
+    drift_file_name = "drift-" + descriptor + "-" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    return os.path.join(folder, drift_file_name + ".json")
+
+
 # Main code.
 def main():
     logging.setup_logging("drifter.log")
@@ -127,7 +138,11 @@ def main():
         # Apply drift.
         bins = load_bins(config.get("dataset"), config.get("dataset_class"), config.get("bins"))
         drifted_dataset = apply_drift(bins, drift_module, params)
+
+        # Save it to regular file, and timestamped file.
         drifted_dataset.save_to_file(config.get("output"))
+        print("Copying output file to timestamped backup.")
+        shutil.copyfile(config.get("output"), get_drift_stamped_name(config.get("output")))
 
 
 if __name__ == '__main__':
