@@ -1,4 +1,6 @@
 import importlib
+import numpy as np
+from scipy.stats import norm
 
 
 def load_metric_module(module_name):
@@ -78,10 +80,29 @@ class DistanceMetric(Metric):
     prev_probability_distribution = []  # P
     curr_probability_distribution = []  # Q
 
+    # For calculating and storing basic distributions.
+    DIST_RANGE_STEP = 0.001
+    dist_range = None
+
+    def _default_metric_pdf(self, data, pdf_params):
+        """Default PDF function, calculates the normal distribution on the dataset."""
+        if self.dist_range is None:
+            self.dist_range = np.arange(pdf_params.get("range_start"), pdf_params.get("range_end"), self.DIST_RANGE_STEP)
+        mean = np.mean(data)
+        std_dev = np.std(data)
+        print(f"Mean: {mean}, Std Dev: {std_dev}")
+        return norm.pdf(self.dist_range, mean, std_dev)
+
     def _calculate_probability_distribution(self, data):
         """Calculates and returns the probability distribution for the given data."""
         if self.check_module_loaded():
-            return self.metric_module.metric_pdf(data, self.metric_params.get("pdf_params"))
+            try:
+                distribution = self.metric_module.metric_pdf(data, self.metric_params.get("pdf_params"))
+            except AttributeError:
+                print("Using default pdf.")
+                distribution = self._default_metric_pdf(data, self.metric_params.get("pdf_params"))
+
+            return distribution
 
     def _set_dimensionality_reduction(self):
         """Reduces dimensionality for the current probability_distribution."""
