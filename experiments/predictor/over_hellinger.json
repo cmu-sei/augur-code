@@ -1,0 +1,27 @@
+{
+  "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
+  "mode": "predict",
+  "dataset": "../output/oversample_drift.json",
+  "base_dataset": "../output/merged_dataset.json",
+  "model": "../output/trained_model",
+  "output": "../output/oversample_hellinger_predictions.json",
+  "metrics_output": "../output/oversample_hellinger_metrics.json",
+  "threshold": 0.5,
+  "timebox_size": 1671,
+  "metrics":
+  [
+    {
+      "name": "hellinger",
+      "type": "DistanceMetric",
+      "module": "hellinger",
+      "params":
+      {
+        "pdf_params":
+        {
+          "range_start": -1,
+          "range_end": 2
+        }
+      }
+    }
+  ]
+}
