@@ -125,6 +125,7 @@ def package_results(config):
     predictions = config.get("output")
     metrics = config.get("metrics_output")
 
+    # Create time-stamped folder to store results.
     print("Storing exp results in folder.")
     exp_descriptor = os.path.splitext(os.path.basename(config.config_filename))[0]
     package_folder_name = "exp-" + exp_descriptor + "-" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
@@ -133,6 +134,12 @@ def package_results(config):
         shutil.rmtree(full_folder_path)
     os.makedirs(full_folder_path)
 
+    # Create subfolder for config.
+    config_folder = os.path.join(full_folder_path, "predictor_config")
+    os.makedirs(config_folder)
+
+    # Copy all files to the folder to be zipped.
+    shutil.copy(config.config_filename, config_folder)
     shutil.copy(dataset, full_folder_path)
     shutil.copytree(model, os.path.join(full_folder_path, os.path.basename(os.path.normpath(model))))
     shutil.copy(predictions, full_folder_path)
