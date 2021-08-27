@@ -43,6 +43,15 @@ class RefDataSet(DataSet):
             sample[RefDataSet.TIMEBOX_ID_KEY] = self.timebox_ids[position]
         return sample
 
+    def get_num_timeboxes(self):
+        """Gets the number of timeboxes in this dataset."""
+        return np.unique(self.timebox_ids).size
+
+    def get_timebox_size(self):
+        """Gets the size of each timebox. All timeboxes assumed to have the same size."""
+        unique, counts = np.unique(self.timebox_ids, return_counts=True)
+        return counts[0]
+
     def load_from_file(self, dataset_filename):
         """Loads data from a JSON file into this object."""
         dataset_df = super().load_ids_from_file(dataset_filename)

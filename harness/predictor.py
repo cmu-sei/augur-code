@@ -39,9 +39,8 @@ def predict(model, model_input):
     return predictions
 
 
-def calculate_metrics(dataset, predictions, config):
+def calculate_metrics(dataset, predictions, config, timebox_size):
     """Calculates metrics for the given configs and dataset."""
-    timebox_size = int(config.get("timebox_size"))
     metrics = config.get("metrics")
     results = {}
     timeboxes = {}
@@ -175,8 +174,10 @@ def main():
     # Save to file, depending on mode, and calculate metrics if needed.
     mode = config.get("mode")
     if mode == "predict":
+        timebox_size = reference_dataset.get_timebox_size()
+        print(f"Timebox size: {timebox_size}")
         predictions.store_expected_results(full_dataset.get_output())
-        metric_results = calculate_metrics(full_dataset, predictions, config)
+        metric_results = calculate_metrics(full_dataset, predictions, config, timebox_size)
         save_predictions(full_dataset, predictions, config.get("output"), reference_dataset)
         save_metrics(metric_results, config.get("metrics_output"))
 
