@@ -63,7 +63,7 @@ New metric modules can be added to the harness/metrics folder. Each module needs
 
 For Distance Metrics, three functions are needed:
 
- - `def metric_pdf(data, pdf_params)` - OPTIONAL: Calculates the probability density function for the given data (a numpy array), with the optional given params (a dictionary). If not implemented, system will use a default pdf.
+ - `def metric_density(data, density_params)` - OPTIONAL: Calculates the probability density function for the given data (a numpy array), with the optional given params (a dictionary). If not implemented, system will use a default pdf.
  - `def metric_reduction(probability_distribution)` - OPTIONAL: Applies dimensionality reduction to the given probability distribution. Doesn't need to be implemented if no reduction is required.
  - `def metric_distance(p, q)`: Calculates a distance value between the two given probability distributions (numpy arrays).
 

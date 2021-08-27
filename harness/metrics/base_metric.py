@@ -75,32 +75,52 @@ class ErrorBased(Metric):
         return self._calculate_error()
 
 
-class DistanceMetric(Metric):
-    """Implements a distance-based metric that can load metric-specific functions from a config."""
-    prev_probability_distribution = []  # P
-    curr_probability_distribution = []  # Q
+class DensityEstimator:
+    """Implements most common density functions."""
 
     # For calculating and storing basic distributions.
     DIST_RANGE_STEP = 0.001
     dist_range = None
 
-    def _default_metric_pdf(self, data, pdf_params):
+    def metric_density_function(self, data, density_params):
         """Default PDF function, calculates the normal distribution on the dataset."""
-        if self.dist_range is None:
-            self.dist_range = np.arange(pdf_params.get("range_start"), pdf_params.get("range_end"), self.DIST_RANGE_STEP)
-        mean = np.mean(data)
-        std_dev = np.std(data)
-        print(f"Mean: {mean}, Std Dev: {std_dev}")
-        return norm.pdf(self.dist_range, mean, std_dev)
+        function = density_params.get("density_function")
+        print(f"Using density function: {function}")
+        if function == "pdf" or function == "cdf":
+            if self.dist_range is None:
+                self.dist_range = np.arange(density_params.get("range_start"), density_params.get("range_end"), self.DIST_RANGE_STEP)
+
+            mean = np.mean(data)
+            std_dev = np.std(data)
+            print(f"Mean: {mean}, Std Dev: {std_dev}")
+
+            distribution = density_params.get("distribution")
+            print(f"Using distribution: {distribution}")
+            if distribution == "normal":
+                if function == "pdf":
+                    return norm.pdf(self.dist_range, mean, std_dev)
+                elif function == "cdf":
+                    return norm.cdf(self.dist_range, mean, std_dev)
+            else:
+                raise Exception(f"Unsupported distribution type: {distribution}")
+        else:
+            raise Exception(f"Unsupported density function: {function}")
+
+
+class DistanceMetric(Metric):
+    """Implements a distance-based metric that can load metric-specific functions from a config."""
+    prev_probability_distribution = []  # P
+    curr_probability_distribution = []  # Q
+    density_estimator = DensityEstimator()
 
     def _calculate_probability_distribution(self, data):
         """Calculates and returns the probability distribution for the given data."""
         if self.check_module_loaded():
             try:
-                distribution = self.metric_module.metric_pdf(data, self.metric_params.get("pdf_params"))
+                distribution = self.metric_module.metric_density(data, self.metric_params.get("density_params"))
             except AttributeError:
-                print("Using default pdf.")
-                distribution = self._default_metric_pdf(data, self.metric_params.get("pdf_params"))
+                print("Using default density functions.")
+                distribution = self.density_estimator.metric_density_function(data, self.metric_params.get("density_params"))
 
             return distribution
 

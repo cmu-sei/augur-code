@@ -57,7 +57,7 @@ The Predictor tool configuration has the following fields:
    - **name**: a friendly name for the metric.
    - **type**: the metric type (can only be ErrorMetric or DistanceMetric).
    - **module**: name of the Python module inside the `harness/drifts` folder implementing this drift (see general README for more details).
-   - **params**: dictionary containing drift module specific parameters. For DistanceType metrics, this can contain a **pdf_params** parameter which itself contains PDF-specific parameters.
+   - **params**: dictionary containing drift module specific parameters. For DistanceType metrics, this can contain a **density_params** parameter which itself contains density-function-specific parameters.
 
 The bash scripts for this tool include:
 - **predictor.sh**: uses the `predictor_config.json` file, default for predicting and generating metrics.

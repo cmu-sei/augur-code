@@ -1,8 +1,6 @@
 import numpy as np
 from scipy.stats import entropy
 
-# Uses default metric_pdf and metric_reduction functions.
-
 
 def metric_distance(p, q):
     """Calculates KL-divergence."""
