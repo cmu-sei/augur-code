@@ -13,3 +13,4 @@ if __name__ == "__main__":
     q = np.random.random(n)
     hellinger_dist = metric_distance(p,q)
     print(f"Length of return is {hellinger_dist.size}")
+    
