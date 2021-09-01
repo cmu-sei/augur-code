@@ -8,8 +8,11 @@ def metric_distance(p, q):
     return hellinger_dist
 
 if __name__ == "__main__":
-    n = 100
+    n = 1000
     p = np.random.random(n)
     q = np.random.random(n)
+    p = p / np.sum(p)
+    p = q / np.sum(q)
     hellinger_dist = metric_distance(p,q)
     print(f"Length of return is {hellinger_dist.size}")
+    
