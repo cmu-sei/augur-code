@@ -2,7 +2,7 @@ import numpy as np
 from scipy.stats import ks_2samp
 
 
-def metric_error(timebox):
+def metric_error(timebox, dataset, predictions):
     """Calculates the Kolmogorov-Smirnov error."""
     ks_stat = ks_2samp(timebox.get_expected_results(), timebox.get_predictions()).statistic
     print(f"KS Test: {ks_stat}")
