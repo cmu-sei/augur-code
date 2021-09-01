@@ -2,24 +2,26 @@ import numpy as np
 from scipy.stats import ks_2samp
 
 
-def metric_error(timebox, dataset, predictions):
+def metric_error(timebox):
     """Calculates the Kolmogorov-Smirnov error."""
-    ks_stat = ks_2samp(dataset.get_output(), predictions).statistic
+    ks_stat = ks_2samp(timebox.get_expected_results(), timebox.get_predictions()).statistic
     print(f"KS Test: {ks_stat}")
     return ks_stat
 
 if __name__ == "__main__":
-    class Dataset:
+    class Timebox:
 
-        def __init__(self, data):
-            self.data = data
+        def __init__(self, samples):
+            self.samples = samples
 
-        def get_output(self):
-            return self.data
+        def get_expected_results(self):
+            return np.random.random(self.samples)
+
+        def get_predictions(self):
+            return np.random.random(self.samples)
 
     n = 100
-    dataset = Dataset(np.random.random(n))
-    predictions = np.random.random(n)
-    kstest = metric_error(None, dataset, predictions)
+    timebox = Timebox(n)
+    kstest = metric_error(timebox)
     print(f"Length of return is {np.array(kstest).size}")
     
