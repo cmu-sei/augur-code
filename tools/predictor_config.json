@@ -17,7 +17,6 @@
         {
           "density_params":
           {
-            "density_function": "pdf",
             "distribution": "normal",
             "range_start": -1,
             "range_end": 2

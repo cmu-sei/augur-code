@@ -83,31 +83,22 @@ class DensityEstimator:
     dist_range = None
 
     def metric_density_function(self, data, density_params):
-        """Default PDF function, calculates the normal distribution on the dataset."""
-        function = density_params.get("density_function")
-        print(f"Using density function: {function}")
-        if function == "pdf" or function == "cdf":
-            if self.dist_range is None:
-                self.dist_range = np.arange(density_params.get("range_start"), density_params.get("range_end"), self.DIST_RANGE_STEP)
+        """Default density function, calculates the PDF for the given distribution."""
+        if self.dist_range is None:
+            self.dist_range = np.arange(density_params.get("range_start"), density_params.get("range_end"), self.DIST_RANGE_STEP)
 
+        distribution = density_params.get("distribution")
+        print(f"Using distribution: {distribution}")
+        if distribution == "normal":
             mean = np.mean(data)
             std_dev = np.std(data)
             print(f"Mean: {mean}, Std Dev: {std_dev}")
-
-            distribution = density_params.get("distribution")
-            print(f"Using distribution: {distribution}")
-            if distribution == "normal":
-                if function == "pdf":
-                    return norm.pdf(self.dist_range, mean, std_dev)
-                elif function == "cdf":
-                    return norm.cdf(self.dist_range, mean, std_dev)
-            elif distribution == "kernel_density":
-                kernel = stats.gaussian_kde(data)
-                return kernel.evaluate(self.dist_range)
-            else:
-                raise Exception(f"Unsupported distribution type: {distribution}")
+            return norm.pdf(self.dist_range, mean, std_dev)
+        elif distribution == "kernel_density":
+            kernel = gaussian_kde(data)
+            return kernel.evaluate(self.dist_range)
         else:
-            raise Exception(f"Unsupported density function: {function}")
+            raise Exception(f"Unsupported distribution type: {distribution}")
 
 
 class DistanceMetric(Metric):
