@@ -1,6 +1,6 @@
 import importlib
 import numpy as np
-from scipy.stats import norm
+from scipy.stats import norm, gaussian_kde
 
 
 def load_metric_module(module_name):
@@ -101,6 +101,9 @@ class DensityEstimator:
                     return norm.pdf(self.dist_range, mean, std_dev)
                 elif function == "cdf":
                     return norm.cdf(self.dist_range, mean, std_dev)
+            elif distribution == "kernel_density":
+                kernel = stats.gaussian_kde(data)
+                return kernel.evaluate(self.dist_range)
             else:
                 raise Exception(f"Unsupported distribution type: {distribution}")
         else:
