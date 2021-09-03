@@ -8,20 +8,20 @@
   "metrics_output": "../output/metrics_output.json",
   "threshold": 0.5,
   "metrics":
-    [
+  [
+    {
+      "name": "kl-divergence",
+      "type": "DistanceMetric",
+      "module": "kl_divergence",
+      "params":
       {
-        "name": "kl-divergence",
-        "type": "DistanceMetric",
-        "module": "kl_divergence",
-        "params":
+        "density_params":
         {
-          "density_params":
-          {
-            "distribution": "normal",
-            "range_start": -1,
-            "range_end": 2
-          }
+          "distribution": "normal",
+          "range_start": -1,
+          "range_end": 2
         }
       }
-    ]
+    }
+  ]
 }
