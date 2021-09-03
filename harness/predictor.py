@@ -19,15 +19,15 @@ METRIC_EXP_CONFIG_FOLDER = "../experiments/predictor"
 PACKAGED_FOLDER_BASE = "../output/packaged/"
 
 
-def load_datasets(config):
+def load_datasets(input_config):
     """Based on the config, loads the dataset to use, and the reference one if needed."""
-    dataset_class = dataset.load_dataset_class(config.get("dataset_class"))
+    dataset_class = dataset.load_dataset_class(input_config.get("dataset_class"))
     reference_dataset = None
-    if config.contains("base_dataset"):
-        full_dataset, reference_dataset = ref_dataset.load_full_from_ref_and_base(dataset_class, config.get("dataset"), config.get("base_dataset"))
+    if "base_dataset" in input_config:
+        full_dataset, reference_dataset = ref_dataset.load_full_from_ref_and_base(dataset_class, input_config.get("dataset"), input_config.get("base_dataset"))
     else:
         full_dataset = dataset_class()
-        full_dataset.load_from_file(config.get("dataset"))
+        full_dataset.load_from_file(input_config.get("dataset"))
 
     return full_dataset, reference_dataset
 
@@ -160,10 +160,10 @@ def main():
     config.load(config_file)
 
     # Load dataset to predict on (and base one if needed).
-    full_dataset, reference_dataset = load_datasets(config)
+    full_dataset, reference_dataset = load_datasets(config.get("input"))
 
     # Load model.
-    model = model_utils.load_model_from_file(config.get("model"))
+    model = model_utils.load_model_from_file(config.get("input").get("model"))
     model.summary()
 
     # Predict.
@@ -178,14 +178,14 @@ def main():
         print(f"Timebox size: {timebox_size}")
         predictions.store_expected_results(full_dataset.get_output())
         metric_results = calculate_metrics(full_dataset, predictions, config, timebox_size)
-        save_predictions(full_dataset, predictions, config.get("output"), reference_dataset)
-        save_metrics(metric_results, config.get("metrics_output"))
+        save_predictions(full_dataset, predictions, config.get("output").get("predictions_output"), reference_dataset)
+        save_metrics(metric_results, config.get("output").get("metrics_output"))
 
         # If requested, package this experiment results.
         if args.store:
             package_results(config)
     elif mode == "label":
-        save_updated_dataset(full_dataset, predictions.get_predictions(), config.get("output"))
+        save_updated_dataset(full_dataset, predictions.get_predictions(), config.get("output").get("labelled_output"))
     else:
         print_and_log("Unsupported mode: " + mode)
 

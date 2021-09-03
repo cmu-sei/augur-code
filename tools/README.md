@@ -44,15 +44,17 @@ The bash scripts for this tool include:
 
 The Predictor tool configuration has the following fields:
 
- - **dataset_class**: same as config field in Trainer tool.
- - **dataset**: relative path to a JSON file that will contain the dataset to predict on (which can be a full dataset or a reference dataset).
- - **base_dataset**: relative path to a JSON file for a dataset. If present, it means **dataset** is a reference dataset, and this is the base it is referencing. If abset, **dataset** is a full dataset.
- - **model**: relative path to the folder where the trained Tensorflow SaveModel to be used is stored.
  - **mode**: can be "predict", which will execute the model and output predictions and metrics, or "label", which will execute the model but write an updated labelled dataset with that output.
- - **output**: relative path to JSON file where the predictions will be stored.
- - **metrics_output**: relative path to the JSON file where the metric information will be stored.
  - **threshold**: value between 0 and 1 that will convert a raw prediction into a classification.
- - **timebox_size**: size of the timebox for analyzing the metrics, should match timebox used when creating a drifted dataset. Only needed if "predict" mode is enabled.
+ - **input**: section for input file and formats.
+     - **dataset_class**: same as config field in Trainer tool.
+     - **dataset**: relative path to a JSON file that will contain the dataset to predict on (which can be a full dataset or a reference dataset).
+     - **base_dataset**: relative path to a JSON file for a dataset. If present, it means **dataset** is a reference dataset, and this is the base it is referencing. If absent, **dataset** is a full dataset.
+     - **model**: relative path to the folder where the trained Tensorflow SaveModel to be used is stored.
+ - **output**: section for output files.
+     - **predictions_output**: relative path to JSON file where the predictions will be stored. Only needed in "predict" mode.
+     - **metrics_output**: relative path to the JSON file where the metric information will be stored. Only needed in "predict" mode.
+     - **labelled_output**: relative path to JSON file where the labelled output will be stored. Only needed in "label" mode.
  - **metrics**: array containing objects describing the metrics to analyze. Only needed if "predict" mode is enabled. Each metric object contains:
    - **name**: a friendly name for the metric.
    - **type**: the metric type (can only be ErrorMetric or DistanceMetric).

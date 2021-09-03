@@ -1,12 +1,18 @@
 {
-  "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
   "mode": "predict",
-  "dataset": "../output/sudden_drift.json",
-  "base_dataset": "../output/merged_dataset.json",
-  "model": "../output/trained_model",
-  "output": "../output/sudden_kl_predictions.json",
-  "metrics_output": "../output/sudden_kl_metrics_output.json",
   "threshold": 0.5,
+  "input":
+  {
+    "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
+    "dataset": "../output/sudden_drift.json",
+    "base_dataset": "../output/merged_dataset.json",
+    "model": "../output/trained_model"
+  },
+  "output":
+  {
+    "predictions_output": "../output/sudden_kl_predictions.json",
+    "metrics_output": "../output/sudden_kl_metrics_output.json"
+  },
   "metrics":
   [
     {
