@@ -1,7 +1,9 @@
 import logging
+import os
 
 
 def setup_logging(logfile):
+    os.remove(logfile)
     logging.basicConfig(filename=logfile, format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 

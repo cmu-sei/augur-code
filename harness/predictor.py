@@ -17,6 +17,7 @@ import metrics.base_metric as augur_metrics
 DEFAULT_CONFIG_FILENAME = "./predictor_config.json"
 METRIC_EXP_CONFIG_FOLDER = "../experiments/predictor"
 PACKAGED_FOLDER_BASE = "../output/packaged/"
+LOG_FILE_NAME = "predictor.log"
 
 
 def load_datasets(input_config):
@@ -56,7 +57,7 @@ def calculate_metrics(dataset, predictions, config, timebox_size):
         while curr_sample_idx < dataset.get_number_of_samples():
             # Set up timebox.
             if timebox_id not in timeboxes.keys():
-                print(f"Setting up timebox with id: {timebox_id}", flush=True)
+                print_and_log(f"Setting up timebox with id: {timebox_id}")
                 timebox = TimeBox(timebox_id, timebox_size)
                 timebox.set_data(predictions, curr_sample_idx)
                 timebox.calculate_accuracy()
@@ -89,7 +90,7 @@ def save_predictions(full_dataset, predictions, output_filename, reference_datas
         output_df = reference_dataset.as_dataframe()
     else:
         output_df = full_dataset.as_basic_dataframe()
-        print(output_df)
+        print_and_log(output_df)
     output_df["truth"] = full_dataset.y_output
     output_df["prediction"] = predictions.get_predictions()
     output_df["raw_prediction"] = predictions.get_raw_predictions()
@@ -119,13 +120,13 @@ def save_updated_dataset(updated_dataset, predictions, output_filename):
 
 def package_results(config):
     """Copies all results to a date-time folder to store experiment results."""
-    dataset = config.get("dataset")
-    model = config.get("model")
-    predictions = config.get("output")
-    metrics = config.get("metrics_output")
+    dataset = config.get("input").get("dataset")
+    model = config.get("input").get("model")
+    predictions = config.get("output").get("predictions_output")
+    metrics = config.get("output").get("metrics_output")
 
     # Create time-stamped folder to store results.
-    print("Storing exp results in folder.")
+    print_and_log("Storing exp results in folder.")
     exp_descriptor = os.path.splitext(os.path.basename(config.config_filename))[0]
     package_folder_name = "exp-" + exp_descriptor + "-" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     full_folder_path = os.path.join(PACKAGED_FOLDER_BASE, package_folder_name)
@@ -143,15 +144,16 @@ def package_results(config):
     shutil.copytree(model, os.path.join(full_folder_path, os.path.basename(os.path.normpath(model))))
     shutil.copy(predictions, full_folder_path)
     shutil.copy(metrics, full_folder_path)
+    shutil.copy(LOG_FILE_NAME, full_folder_path)
 
     # Create zip as well.
-    print("Storing exp results in zip file.")
+    print_and_log("Storing exp results in zip file.")
     shutil.make_archive(full_folder_path, "zip", full_folder_path)
 
 
 # Main code.
 def main():
-    logging.setup_logging("predictor.log")
+    logging.setup_logging(LOG_FILE_NAME)
 
     # Allow selecting configs for experiments, and load it.
     args = arguments.get_parsed_arguments()
@@ -175,7 +177,7 @@ def main():
     mode = config.get("mode")
     if mode == "predict":
         timebox_size = reference_dataset.get_timebox_size()
-        print(f"Timebox size: {timebox_size}")
+        print_and_log(f"Timebox size: {timebox_size}")
         predictions.store_expected_results(full_dataset.get_output())
         metric_results = calculate_metrics(full_dataset, predictions, config, timebox_size)
         save_predictions(full_dataset, predictions, config.get("output").get("predictions_output"), reference_dataset)
