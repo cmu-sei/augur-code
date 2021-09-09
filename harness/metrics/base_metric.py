@@ -1,6 +1,9 @@
 import importlib
+
 import numpy as np
 from scipy.stats import norm, gaussian_kde
+
+from utils.logging import print_and_log
 
 
 def load_metric_module(module_name):
@@ -88,11 +91,11 @@ class DensityEstimator:
             self.dist_range = np.arange(density_params.get("range_start"), density_params.get("range_end"), self.DIST_RANGE_STEP)
 
         distribution = density_params.get("distribution")
-        print(f"Using distribution: {distribution}")
+        print_and_log(f"Using distribution: {distribution}")
         if distribution == "normal":
             mean = np.mean(data)
             std_dev = np.std(data)
-            print(f"Mean: {mean}, Std Dev: {std_dev}")
+            print_and_log(f"Mean: {mean}, Std Dev: {std_dev}")
             return norm.pdf(self.dist_range, mean, std_dev)
         elif distribution == "kernel_density":
             kernel = gaussian_kde(data)
@@ -113,7 +116,7 @@ class DistanceMetric(Metric):
             try:
                 distribution = self.metric_module.metric_density(data, self.metric_params.get("density_params"))
             except AttributeError:
-                print("Using default density functions.")
+                print_and_log("Using default density functions.")
                 distribution = self.density_estimator.metric_density_function(data, self.metric_params.get("density_params"))
 
             return distribution
@@ -124,7 +127,7 @@ class DistanceMetric(Metric):
             try:
                 self.curr_probability_distribution = self.metric_module.metric_reduction(self.curr_probability_distribution)
             except AttributeError:
-                print("Dimensionality reduction not available for this metric.")
+                print_and_log("Dimensionality reduction not available for this metric.")
 
     def _calculate_distance(self):
         """Calculates the distance defined for the current prob dist and the reference one."""
