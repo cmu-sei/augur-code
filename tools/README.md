@@ -59,7 +59,10 @@ The Predictor tool configuration has the following fields:
    - **name**: a friendly name for the metric.
    - **type**: the metric type (can only be ErrorMetric or DistanceMetric).
    - **module**: name of the Python module inside the `harness/drifts` folder implementing this drift (see general README for more details).
-   - **params**: dictionary containing drift module specific parameters. For DistanceType metrics, this can contain a **density_params** parameter which itself contains density-function-specific parameters.
+   - **params**: dictionary containing drift module specific parameters.
+        - For DistanceType metrics, it has to contain at least these parameters:
+            - **distribution**: the distribution to use. Supported values are "normal" and "kernel_density". Another option is to use "custom" as a value, which means that the metric module will implement the actual density function (see general README for more details).
+            - "range_start" and "range_end": limits for the helper array of potential valid values for this distribution.
 
 The bash scripts for this tool include:
 - **predictor.sh**: uses the `predictor_config.json` file, default for predicting and generating metrics.

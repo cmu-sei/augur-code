@@ -21,12 +21,9 @@
       "module": "hellinger",
       "params":
       {
-        "density_params":
-        {
-          "distribution": "normal",
-          "range_start": -1,
-          "range_end": 2
-        }
+        "distribution": "normal",
+        "range_start": -1,
+        "range_end": 2
       }
     }
   ]

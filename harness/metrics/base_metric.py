@@ -81,27 +81,38 @@ class ErrorBased(Metric):
 class DensityEstimator:
     """Implements most common density functions."""
 
-    # For calculating and storing basic distributions.
+    # Helper array with range of potential valid values used to calculate distributions.
     DIST_RANGE_STEP = 0.001
     dist_range = None
 
-    def metric_density_function(self, data, density_params):
-        """Default density function, calculates the PDF for the given distribution."""
-        if self.dist_range is None:
-            self.dist_range = np.arange(density_params.get("range_start"), density_params.get("range_end"), self.DIST_RANGE_STEP)
+    def setup_valid_range(self, params):
+        """ Compute the auto_range based on the mean, standard deviation, and spread """
+        range_start = params.get("range_start")
+        range_end = params.get("range_end")
+        print_and_log(f"Range: {range_start} to {range_end}")
+        self.dist_range = np.arange(range_start, range_end, self.DIST_RANGE_STEP)
 
-        distribution = density_params.get("distribution")
-        print_and_log(f"Using distribution: {distribution}")
-        if distribution == "normal":
-            mean = np.mean(data)
-            std_dev = np.std(data)
-            print_and_log(f"Mean: {mean}, Std Dev: {std_dev}")
-            return norm.pdf(self.dist_range, mean, std_dev)
-        elif distribution == "kernel_density":
-            kernel = gaussian_kde(data)
-            return kernel.evaluate(self.dist_range)
-        else:
-            raise Exception(f"Unsupported distribution type: {distribution}")
+    def calculate_custom_dist(self, data, metric_module, params):
+        """Calls custom density function implemented in defined module."""
+        try:
+            print_and_log("Using custom density function.")
+            return metric_module.metric_density(data, self.dist_range, params)
+        except AttributeError:
+            error_msg = "Custom distribution density function not implemented, aborting."
+            print_and_log(error_msg)
+            raise Exception(error_msg)
+
+    def calculate_normal_dist(self, data):
+        """Normal dist calculation."""
+        mean = np.mean(data)
+        std_dev = np.std(data)
+        print_and_log(f"Mean: {mean}, Std Dev: {std_dev}")
+        return norm.pdf(self.dist_range, mean, std_dev)
+
+    def calculate_kde_dist(self, data):
+        """KDE estimator dist calculation."""
+        kernel = gaussian_kde(data)
+        return kernel.evaluate(self.dist_range)
 
 
 class DistanceMetric(Metric):
@@ -112,14 +123,17 @@ class DistanceMetric(Metric):
 
     def _calculate_probability_distribution(self, data):
         """Calculates and returns the probability distribution for the given data."""
-        if self.check_module_loaded():
-            try:
-                distribution = self.metric_module.metric_density(data, self.metric_params.get("density_params"))
-            except AttributeError:
-                print_and_log("Using default density functions.")
-                distribution = self.density_estimator.metric_density_function(data, self.metric_params.get("density_params"))
-
-            return distribution
+        distribution = self.metric_params.get("distribution")
+        print_and_log(f"Using distribution: {distribution}")
+        if distribution == "custom":
+            if self.check_module_loaded():
+                return self.density_estimator.calculate_custom_dist(data, self.metric_module, self.metric_params)
+        elif distribution == "normal":
+            return self.density_estimator.calculate_normal_dist(data)
+        elif distribution == "kernel_density":
+            return self.density_estimator.calculate_kde_dist(data)
+        else:
+            raise Exception(f"Unsupported distribution type: {distribution}")
 
     def _set_dimensionality_reduction(self):
         """Reduces dimensionality for the current probability_distribution."""
@@ -137,6 +151,7 @@ class DistanceMetric(Metric):
     def initial_setup(self, dataset, predictions):
         """Overriden."""
         # Calculate and store the probability distribution for the whole dataset.
+        self.density_estimator.setup_valid_range(self.metric_params)
         self.prev_probability_distribution = self._calculate_probability_distribution(dataset.get_output())
 
     def step_setup(self, timebox):
