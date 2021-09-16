@@ -1,7 +1,14 @@
 {
   "mode": "label",
-  "dataset": "../input/test.json",
-  "model": "../output/trained_model",
-  "output": "../output/labelled_test.json",
-  "threshold": 0.5
+  "threshold": 0.5,
+  "input":
+  {
+    "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
+    "dataset": "../input/test.json",
+    "model": "../output/trained_model"
+  },
+  "output":
+  {
+    "labelled_output": "../output/labelled_test.json"
+  }
 }

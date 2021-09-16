@@ -6,7 +6,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 import sklearn.model_selection as skm
 
-from datasets.training_set import TrainingSet
+from training.training_set import TrainingSet
 
 
 def create_model():

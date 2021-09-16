@@ -10,11 +10,11 @@
   "drift_scenario":
   {
     "condition": "random",
-    "method": "drifts.random_drift",
+    "module": "random_drift",
     "params":
     {
-      "max_num_samples":  100,
-      "timebox_size": 10
+      "max_num_samples":  20,
+      "timebox_size": 5
     }
   }
 }

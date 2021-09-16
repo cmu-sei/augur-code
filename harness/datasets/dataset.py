@@ -1,6 +1,7 @@
 import importlib
 
 import numpy as np
+import pandas as pd
 
 from utils import dataframe_helper
 
@@ -24,14 +25,21 @@ class DataSet:
     """A base dataset, only containing ids. Meant to be an abstract class for more detailed ones to build on."""
 
     ID_KEY = "id"
-    x_ids = np.empty(0, str)
+    x_ids = np.empty(0, dtype=str)
+
+    def allocate_space(self, size):
+        """Pre-allocates the space for this dataset to avoid scalability issues, when the size is known."""
+        self.x_ids = np.empty(size, dtype=str)
 
     def get_number_of_samples(self):
         """Gets the current size in num of samples."""
         return self.x_ids.size
 
-    def add_sample(self, sample):
-        self.x_ids = np.append(self.x_ids, sample[DataSet.ID_KEY])
+    def add_sample(self, position, sample):
+        """Adds a sample in the given position."""
+        if position >= self.x_ids.size:
+            raise Exception(f"Invalid position ({position}) given when adding sample (size is {self.x_ids.size})")
+        self.x_ids[position] = sample[DataSet.ID_KEY]
 
     def _get_id_position(self, id_to_find):
         """Gets the position of a given id"""
@@ -62,7 +70,39 @@ class DataSet:
         print("Sample row: ")
         print(dataset_df.head(1))
 
-        self.x_ids = np.array(dataset_df[id_key])
+        try:
+            self.x_ids = np.array(dataset_df[id_key])
+        except KeyError as ex:
+            raise Exception(f"Could not load ids from dataset '{dataset_filename}': {type(ex).__name__}: {str(ex)}")
         print("Done storing ids", flush=True)
 
         return dataset_df
+
+    def as_basic_dataframe(self):
+        """Adds internal data to a new dataframe."""
+        dataset_df = pd.DataFrame()
+        dataset_df[DataSet.ID_KEY] = self.x_ids
+        return dataset_df
+
+    def load_from_file(self, dataset_filename):
+        """Loads data from a JSON file into this object."""
+        raise NotImplementedError()
+
+    def get_model_input(self):
+        """Returns the inputs to be used."""
+        raise NotImplementedError()
+
+    def get_single_input(self):
+        """For models that have multiple separate inputs, this returns only one of them for sizing purposes.
+        If dataset provides just one input, this should return the same as get_model_input."""
+        return self.get_model_input()
+
+    def get_output(self):
+        raise NotImplementedError()
+
+    def set_output(self, new_output):
+        raise NotImplementedError()
+
+    def save_to_file(self, output_filename):
+        """Stores Numpy arrays with a dataset into a JSON file."""
+        raise NotImplementedError()

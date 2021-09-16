@@ -4,14 +4,14 @@
   "input":
   {
     "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
-    "dataset": "../output/drift.json",
+    "dataset": "../output/sudden_drift.json",
     "base_dataset": "../output/merged_dataset.json",
-    "model": "../output/trained_model",
+    "model": "../output/trained_model"
   },
   "output":
   {
-    "predictions_output": "../output/predictions.json",
-    "metrics_output": "../output/metrics_output.json"
+    "predictions_output": "../output/sudden_kl_predictions.json",
+    "metrics_output": "../output/sudden_kl_metrics_output.json"
   },
   "metrics":
   [

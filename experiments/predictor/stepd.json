@@ -1,0 +1,25 @@
+{
+  "mode": "predict",
+  "threshold": 0.5,
+  "input":
+  {
+    "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
+    "dataset": "../output/oversample_drift.json",
+    "base_dataset": "../output/merged_dataset.json",
+    "model": "../output/trained_model"
+  },
+  "output":
+  {
+    "predictions_output": "../output/oversample_stepd_predictions.json",
+    "metrics_output": "../output/oversample_stepd_metrics_output.json"
+  },
+  "metrics":
+  [
+    {
+      "name": "STEPD",
+      "type": "ErrorMetric",
+      "module": "stepd",
+      "params": {}
+    }
+  ]
+}

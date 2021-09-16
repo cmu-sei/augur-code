@@ -4,21 +4,21 @@
   "input":
   {
     "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
-    "dataset": "../output/drift.json",
+    "dataset": "../output/oversample_drift.json",
     "base_dataset": "../output/merged_dataset.json",
-    "model": "../output/trained_model",
+    "model": "../output/trained_model"
   },
   "output":
   {
-    "predictions_output": "../output/predictions.json",
-    "metrics_output": "../output/metrics_output.json"
+    "predictions_output": "../output/oversample_hellinger_predictions.json",
+    "metrics_output": "../output/oversample_hellinger_metrics.json"
   },
   "metrics":
   [
     {
-      "name": "kl-divergence",
+      "name": "hellinger",
       "type": "DistanceMetric",
-      "module": "kl_divergence",
+      "module": "hellinger",
       "params":
       {
         "distribution": "normal",
@@ -28,3 +28,4 @@
     }
   ]
 }
+

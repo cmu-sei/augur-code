@@ -53,15 +53,26 @@ class IcebergDataSet(dataset.DataSet):
                                                 ((square_x_band1+square_x_band2)/2)[:, :, :, np.newaxis]
                                                 ], axis=-1)
 
-    def add_sample(self, sample):
-        """Adds a sample from a dictionary."""
-        super().add_sample(sample)
-        self.x_band1 = np.append(self.x_band1, sample[IcebergDataSet.BAND1_KEY], axis=0)
-        self.x_band2 = np.append(self.x_band2, sample[IcebergDataSet.BAND2_KEY], axis=0)
-        self.x_angle = np.append(self.x_angle, sample[IcebergDataSet.ANGLE_KEY])
-        self.x_combined_bands = np.append(self.x_combined_bands, [sample[IcebergDataSet.COMBINED_BANDS_KEY]], axis=0)
+    def allocate_space(self, size):
+        """Pre-allocates the space for this dataset to avoid scalability issues, when the size is known."""
+        super().allocate_space(size)
+        self.x_band1 = np.zeros((size, self.BAND_WIDTH * self.BAND_HEIGHT))
+        self.x_band2 = np.zeros((size, self.BAND_WIDTH * self.BAND_HEIGHT))
+        self.x_angle = np.zeros(size)
+        self.y_output = np.zeros(size, dtype=int)
+        self.x_combined_bands = np.zeros((size, self.BAND_WIDTH, self.BAND_HEIGHT, self.BAND_DEPTH))
+
+    def add_sample(self, position, sample):
+        """Adds a sample from a dictionary to a given position."""
+        super().add_sample(position, sample)
+        if position >= self.x_band1.size:
+            raise Exception(f"Invalid position ({position}) given when adding sample (size is {self.x_band1.size})")
+        self.x_band1[position] = sample[IcebergDataSet.BAND1_KEY]
+        self.x_band2[position] = sample[IcebergDataSet.BAND2_KEY]
+        self.x_angle[position] = sample[IcebergDataSet.ANGLE_KEY]
+        self.x_combined_bands[position] = sample[IcebergDataSet.COMBINED_BANDS_KEY]
         if IcebergDataSet.ICEBERG_KEY in sample:
-            self.y_output = np.append(self.y_output, sample[IcebergDataSet.ICEBERG_KEY])
+            self.y_output[position] = sample[IcebergDataSet.ICEBERG_KEY]
 
     def get_sample(self, position):
         """Returns a sample as as dict."""
