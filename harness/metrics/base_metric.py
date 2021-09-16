@@ -16,8 +16,8 @@ def create_metric(metric_info):
     metric_type = metric_info.get("type")
     if metric_type == "DistanceMetric":
         metric = DistanceMetric()
-    elif metric_type == "ErrorBased":
-        metric = ErrorBased()
+    elif metric_type == "ErrorMetric":
+        metric = ErrorMetric()
     else:
         raise Exception(f"Non-supported metric type: {metric_type}")
     return metric
