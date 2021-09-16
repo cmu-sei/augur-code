@@ -30,6 +30,7 @@ Code for Augur LENS
         * "--exp_config" to use experiment configurations, followed by a config file name and path relative to the experiments folder.
         * "--exp_user": a menu is presented to select from config files in the experiments folder.
         * "--test": runs the tool in test mode (if available).
+        * "--store": for the Predictor, generates a folder and a zip file in the output/packaged subfolder contained information about the run. More specifically, it contains 1) predictions JSON output, 2) metrics JSON output, 3) drifted ids JSON input, 4) trained model input, 5) log, 6) config file used.
 
 ## Containerized Version
 ### Prerequisites
