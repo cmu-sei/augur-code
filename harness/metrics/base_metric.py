@@ -53,7 +53,7 @@ class Metric:
         raise NotImplementedError()
 
 
-class ErrorBased(Metric):
+class ErrorMetric(Metric):
     """Implements an error-based metric that calculates error based on output."""
     timebox = None
     dataset = None
