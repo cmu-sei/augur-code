@@ -12,17 +12,18 @@ def classify(predictions, threshold):
 
 class Predictions:
     """Class to store and handle prediction results."""
+    DEFAULT_THRESHOLD = 0.5
     TRUTH_KEY = "truth"
     PREDICTIONS_KEY = "prediction"
     RAW_PREDICTIONS_LEY = "raw_prediction"
 
-    classification_threshold = 0.5
+    classification_threshold = 0
     raw_predictions = None
     predictions = None
     expected_results = None
     conf_matrix = None
 
-    def __init__(self, classification_threshold):
+    def __init__(self, classification_threshold=DEFAULT_THRESHOLD):
         self.classification_threshold = classification_threshold
 
     def store_expected_results(self, expected_output):
