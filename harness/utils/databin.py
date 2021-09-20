@@ -9,12 +9,11 @@ def create_bins(bin_info_list):
     return bins
 
 
-def sort_into_bins(ids, outputs, bins):
-    """Sorts the ids into bins, based on their outputs matching bin values."""
-    # Go over all samples and then check which bin value matches it, to move sample into that bin.
-    for sample_idx, output in enumerate(outputs):
+def sort_into_bins(ids, values, bins):
+    """Sorts the ids into bins, based on the given values matching bin values."""
+    for sample_idx, value in enumerate(values):
         for bin_idx, bin in enumerate(bins):
-            if output == bin.value:
+            if value == bin.value:
                 bins[bin_idx].add(ids[sample_idx])
                 break
 
