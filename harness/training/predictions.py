@@ -1,5 +1,8 @@
 import numpy as np
+import pandas as pd
 from sklearn.metrics import confusion_matrix
+
+from utils import dataframe_helper
 
 
 def classify(predictions, threshold):
@@ -65,6 +68,7 @@ class Predictions:
         """Given a set of predictions, returns the true/false positives/negatives as a dict."""
         if self.conf_matrix is not None:
             tn, fp, fn, tp = self.conf_matrix.ravel()
+            print(f"TN: {tn}, TP: {tp}, FN: {fn}, FP: {fp}")
             return tn, fp, fn, tp
         else:
             raise Exception("Confusion matrix has not been computed yet.")
@@ -73,3 +77,18 @@ class Predictions:
         """Calculates the accuracy and returns it"""
         tn, fp, fn, tp = self._get_true_false_positives_negatives()
         return (tn + tp) / (tn + tp + fp + fn)
+
+    def as_dataframe(self, dataframe=None):
+        """Returns a dataframe with this predictions object, adding to existing argument if received."""
+        if dataframe is None:
+            dataframe = pd.DataFrame()
+
+        dataframe["truth"] = self.get_expected_results()
+        dataframe["prediction"] = self.get_predictions()
+        dataframe["raw_prediction"] = self.get_raw_predictions()
+        return dataframe
+
+    def save_to_file(self, output_filename, base_df=None):
+        """Saves this prediction object to file"""
+        full_df = self.as_dataframe(base_df)
+        dataframe_helper.save_dataframe_to_file(full_df, output_filename)

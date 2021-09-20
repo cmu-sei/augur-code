@@ -91,20 +91,13 @@ def calculate_metrics(dataset, predictions, config, reference_dataset):
 
 def save_predictions(full_dataset, predictions, output_filename, reference_dataset=None):
     """Saves the ids, predictions and metrics into a JSON file."""
-    # Turn everything into a DataFrame before turning into JSON.
     print_and_log("Creating predictions DataFrame")
     if reference_dataset:
         output_df = reference_dataset.as_dataframe()
     else:
         output_df = full_dataset.as_basic_dataframe()
-        print_and_log(output_df)
-    output_df["truth"] = full_dataset.y_output
-    output_df["prediction"] = predictions.get_predictions()
-    output_df["raw_prediction"] = predictions.get_raw_predictions()
 
-    print_and_log("Saving predictions DataFrame to JSON file")
-    output_df.to_json(output_filename, orient="records", indent=4)
-    print_and_log("Finished saving predictions JSON file")
+    predictions.save_to_file(output_filename, output_df)
 
 
 def save_metrics(metrics, metrics_filename):
