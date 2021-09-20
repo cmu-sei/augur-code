@@ -1,0 +1,23 @@
+{
+  "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
+  "dataset": "../output/merged_dataset.json",
+  "output": "../output/15_reocurring_gradual_drift_aggressive.json",
+  "bins":
+    [
+      ["no_iceberg", 0],
+      ["iceberg", 1]
+    ],
+  "drift_scenario":
+  {
+    "condition": "reocurring gradual aggressive",
+    "module": "prevalence_drift",
+    "params":
+    {
+      "max_num_samples": 12000,
+      "timebox_size": 1000,
+      "prevalence_bin": 1,
+      "prevalences": [65, 45, 35, 20, 30, 60, 70, 60, 30, 20, 35, 45],
+      "prevalence_repeat": false
+    }
+  }
+}
