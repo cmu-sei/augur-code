@@ -12,6 +12,10 @@ def classify(predictions, threshold):
 
 class Predictions:
     """Class to store and handle prediction results."""
+    TRUTH_KEY = "truth"
+    PREDICTIONS_KEY = "prediction"
+    RAW_PREDICTIONS_LEY = "raw_prediction"
+
     classification_threshold = 0.5
     raw_predictions = None
     predictions = None
@@ -83,12 +87,22 @@ class Predictions:
         if dataframe is None:
             dataframe = pd.DataFrame()
 
-        dataframe["truth"] = self.get_expected_results()
-        dataframe["prediction"] = self.get_predictions()
-        dataframe["raw_prediction"] = self.get_raw_predictions()
+        dataframe[self.TRUTH_KEY] = self.get_expected_results()
+        dataframe[self.PREDICTIONS_KEY] = self.get_predictions()
+        dataframe[self.RAW_PREDICTIONS_LEY] = self.get_raw_predictions()
         return dataframe
 
     def save_to_file(self, output_filename, base_df=None):
         """Saves this prediction object to file"""
         full_df = self.as_dataframe(base_df)
         dataframe_helper.save_dataframe_to_file(full_df, output_filename)
+
+    def load_from_file(self, predictions_filename):
+        """Loads predictions info from a file."""
+        dataset_df = dataframe_helper.load_dataframe_from_file(predictions_filename)
+        self.store_expected_results(np.array(dataset_df[self.TRUTH_KEY]))
+        self.store_raw_predictions(np.array(dataset_df[self.RAW_PREDICTIONS_LEY]))
+        self.store_predictions(np.array(dataset_df[self.PREDICTIONS_KEY]))
+
+        self._calculate_confusion_matrix()
+        self.get_accuracy()
