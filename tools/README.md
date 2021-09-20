@@ -67,6 +67,7 @@ The Predictor tool configuration has the following fields:
 The bash scripts for this tool include:
 - **predictor.sh**: uses the `predictor_config.json` file, default for predicting and generating metrics.
 - **labeller.sh**: uses the `labeller_config.json` file, uses the "label" mode to create an updated dataset with the predictions as its labels.
+- **predictor_fullds.sh**: uses the `predictor_fullds_config.json` file, calculates only predictions for a full dataset.
 
 ## Merger Tool
 

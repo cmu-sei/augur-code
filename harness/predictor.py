@@ -40,8 +40,15 @@ def predict(model, model_input):
     return predictions
 
 
-def calculate_metrics(dataset, predictions, config, timebox_size):
+def calculate_metrics(dataset, predictions, config, reference_dataset):
     """Calculates metrics for the given configs and dataset."""
+    if not config.contains("metrics"):
+        print_and_log("No metrics configured.")
+        return None
+
+    timebox_size = reference_dataset.get_timebox_size()
+    print_and_log(f"Timebox size: {timebox_size}")
+
     metrics = config.get("metrics")
     results = {}
     timeboxes = {}
@@ -176,12 +183,14 @@ def main():
     # Save to file, depending on mode, and calculate metrics if needed.
     mode = config.get("mode")
     if mode == "predict":
-        timebox_size = reference_dataset.get_timebox_size()
-        print_and_log(f"Timebox size: {timebox_size}")
         predictions.store_expected_results(full_dataset.get_output())
-        metric_results = calculate_metrics(full_dataset, predictions, config, timebox_size)
         save_predictions(full_dataset, predictions, config.get("output").get("predictions_output"), reference_dataset)
-        save_metrics(metric_results, config.get("output").get("metrics_output"))
+
+        # We can only calculate metrics if we have a ref dataset, since they are calculated by timebox,
+        # which are only defined in a reference datasets.
+        if reference_dataset is not None:
+            metric_results = calculate_metrics(full_dataset, predictions, config, reference_dataset)
+            save_metrics(metric_results, config.get("output").get("metrics_output"))
 
         # If requested, package this experiment results.
         if args.store:
