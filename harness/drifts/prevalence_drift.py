@@ -40,7 +40,7 @@ class TargetPrevalences:
                                          for prevalence in prevalence_array]
                 full_prev_array += repetition_prev_array
             prevalence_array = full_prev_array
-        print_and_log(f"Prevalences array for bin {bin_idx}: {prevalence_array}")
+        print_and_log(f"Target prevalences for bin {bin_idx}: {prevalence_array}")
 
         return prevalence_array
 
@@ -139,28 +139,36 @@ def randrange_with_exclusions(range_max, exclusions):
     return randrange_with_exclusions(range_max, exclusions) if selection in exclusions else selection
 
 
-def test(full_dataset, params):
-    # TODO: Fix this to work with restructure.
+def test(full_dataset, drift_params, bin_params):
     """Tests that the given dataset was properly drifted."""
-    pass
-    #configured_prevalences.load_prevalence_arrays(params, num_total_bins)
+    num_total_bins = len(bin_params)
+    configured_prevalences.load_prevalence_arrays(drift_params, num_total_bins)
 
-    #timebox_size = params.get("timebox_size")
-    #num_samples = full_dataset.get_number_of_samples()
-    #num_timeboxes = int(num_samples / timebox_size)
+    timebox_size = drift_params.get("timebox_size")
+    num_samples = full_dataset.get_number_of_samples()
+    num_timeboxes = int(num_samples / timebox_size)
 
-    #real_prevalences = [0] * num_timeboxes
-    #labelled_output = full_dataset.get_output()
-    #for curr_timebox_id in range(0, num_timeboxes):
+    # TODO: Change this to support bins values other than by dataset results.
+    labelled_output = full_dataset.get_output()
+    all_timebox_prevalences = {}
+    for curr_timebox_id in range(0, num_timeboxes):
         # For a given timebox, count percentage of samples by result.
-    #    curr_timebox_starting_idx = curr_timebox_id * timebox_size
-    #    timebox_samples = labelled_output[curr_timebox_starting_idx:curr_timebox_starting_idx + timebox_size]
-    #    unique, counts = numpy.unique(timebox_samples, return_counts=True)
-    #    prevalences = numpy.round((100 * counts) / timebox_size, 2)
-    #    timebox_prevalences = dict(zip(unique, prevalences))
+        curr_timebox_starting_idx = curr_timebox_id * timebox_size
+        timebox_samples = labelled_output[curr_timebox_starting_idx:curr_timebox_starting_idx + timebox_size]
+        unique, counts = numpy.unique(timebox_samples, return_counts=True)
+        prevalences = numpy.round((100 * counts) / timebox_size, 2)
+        timebox_prevalences = dict(zip(unique, prevalences))
 
-     #   print(f"Timebox {curr_timebox_id} real prevalences: {timebox_prevalences}")
-     #   real_prevalences[curr_timebox_id] = timebox_prevalences.get(prevalence_bin_id)
+        print(f"Timebox {curr_timebox_id} real prevalences: {timebox_prevalences}")
+        all_timebox_prevalences[curr_timebox_id] = timebox_prevalences
 
-    #print(f"Expected prevalences by timebox and bin: {configured_prevalences.get_all_prevalences()}")
-    #print(f"Obtained prevalences by timebox for bin {prevalence_bin_id}: {real_prevalences}")
+    prevalences_by_bin = {}
+    for timebox_id, timebox_prevalences in all_timebox_prevalences.items():
+        print(timebox_prevalences, flush=True)
+        for bin_idx, bin_prevalence in timebox_prevalences.items():
+            if bin_idx not in prevalences_by_bin:
+                prevalences_by_bin[bin_idx] = []
+            prevalences_by_bin[bin_idx].append(bin_prevalence)
+
+    print(f"Expected prevalences by timebox and bin: {configured_prevalences.get_all_prevalences()}")
+    print(f"Obtained prevalences by timebox and bin: {prevalences_by_bin}")
