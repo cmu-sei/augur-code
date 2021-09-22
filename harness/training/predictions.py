@@ -13,6 +13,12 @@ def classify(predictions, threshold):
 class Predictions:
     """Class to store and handle prediction results."""
     DEFAULT_THRESHOLD = 0.5
+    ACCURACY_TRUE_POSITIVE = "tp"
+    ACCURACY_TRUE_NEGATIVE = "tn"
+    ACCURACY_FALSE_POSITIVE = "fp"
+    ACCURACY_FALSE_NEGATIVE = "fn"
+    POSITIVE_CLASS = 1
+
     TRUTH_KEY = "truth"
     PREDICTIONS_KEY = "prediction"
     RAW_PREDICTIONS_LEY = "raw_prediction"
@@ -21,7 +27,11 @@ class Predictions:
     raw_predictions = None
     predictions = None
     expected_results = None
-    conf_matrix = None
+    tf_pn_by_sample = None
+    total_true_positives = 0
+    total_true_negatives = 0
+    total_false_positives = 0
+    total_false_negatives = 0
 
     def __init__(self, classification_threshold=DEFAULT_THRESHOLD):
         self.classification_threshold = classification_threshold
@@ -29,8 +39,8 @@ class Predictions:
     def store_expected_results(self, expected_output):
         """Stores expected results and confusion matrix."""
         self.expected_results = expected_output
-        if self.conf_matrix is None:
-            self._calculate_confusion_matrix()
+        if self.tf_pn_by_sample is None:
+            self._calculate_true_false_positives_negatives()
 
     def get_expected_results(self):
         """Returns the ground truth classification."""
@@ -39,15 +49,17 @@ class Predictions:
     def store_raw_predictions(self, raw_predictions):
         """Stores raw and classified predicitons."""
         self.raw_predictions = raw_predictions
-        self.predictions = classify(self.raw_predictions, self.classification_threshold)
-        if self.conf_matrix is None:
-            self._calculate_confusion_matrix()
+
+    def classify_raw_predictions(self):
+        """Generates classified predictions based on the raw ones."""
+        if self.raw_predictions is not None:
+            self.store_predictions(classify(self.raw_predictions, self.classification_threshold))
 
     def store_predictions(self, predictions):
         """Stores already classified predictions."""
         self.predictions = predictions
-        if self.conf_matrix is None:
-            self._calculate_confusion_matrix()
+        if self.tf_pn_by_sample is None:
+            self._calculate_true_false_positives_negatives()
 
     def get_raw_predictions(self):
         """Returns the raw predictions."""
@@ -64,24 +76,32 @@ class Predictions:
         sliced_training_results.store_predictions(self.get_predictions()[starting_idx:starting_idx + size])
         return sliced_training_results
 
-    def _calculate_confusion_matrix(self):
-        """Calculates the confusion matrix."""
+    def _calculate_true_false_positives_negatives(self):
+        """Calculates confusion matrix, and for each sample if it was a true/false positive/negative."""
         if self.expected_results is not None and self.predictions is not None:
-            self.conf_matrix = confusion_matrix(self.expected_results, self.predictions)
+            conf_matrix = confusion_matrix(self.expected_results, self.predictions)
+            self.total_true_negatives, self.total_false_positives, self.total_false_negatives, self.total_true_positives \
+                = conf_matrix.ravel()
+            print(f"TN: {self.total_true_negatives}, TP: {self.total_true_positives}, "
+                  f"FN: {self.total_false_negatives}, FP: {self.total_false_positives}")
 
-    def _get_true_false_positives_negatives(self):
-        """Given a set of predictions, returns the true/false positives/negatives as a dict."""
-        if self.conf_matrix is not None:
-            tn, fp, fn, tp = self.conf_matrix.ravel()
-            print(f"TN: {tn}, TP: {tp}, FN: {fn}, FP: {fp}")
-            return tn, fp, fn, tp
-        else:
-            raise Exception("Confusion matrix has not been computed yet.")
+            self.tf_pn_by_sample = []
+            for idx, truth in enumerate(self.expected_results):
+                if truth == self.predictions[idx]:
+                    if truth == self.POSITIVE_CLASS:
+                        self.tf_pn_by_sample.append(self.ACCURACY_TRUE_POSITIVE)
+                    else:
+                        self.tf_pn_by_sample.append(self.ACCURACY_TRUE_NEGATIVE)
+                else:
+                    if truth == self.POSITIVE_CLASS:
+                        self.tf_pn_by_sample.append(self.ACCURACY_FALSE_POSITIVE)
+                    else:
+                        self.tf_pn_by_sample.append(self.ACCURACY_FALSE_NEGATIVE)
 
     def get_accuracy(self):
         """Calculates the accuracy and returns it"""
-        tn, fp, fn, tp = self._get_true_false_positives_negatives()
-        return (tn + tp) / (tn + tp + fp + fn)
+        return (self.total_true_negatives + self.total_true_positives) / \
+               (self.total_true_negatives + self.total_true_positives + self.total_false_positives + self.total_false_negatives)
 
     def as_dataframe(self, dataframe=None):
         """Returns a dataframe with this predictions object, adding to existing argument if received."""
@@ -104,6 +124,3 @@ class Predictions:
         self.store_expected_results(np.array(dataset_df[self.TRUTH_KEY]))
         self.store_raw_predictions(np.array(dataset_df[self.RAW_PREDICTIONS_LEY]))
         self.store_predictions(np.array(dataset_df[self.PREDICTIONS_KEY]))
-
-        self._calculate_confusion_matrix()
-        self.get_accuracy()

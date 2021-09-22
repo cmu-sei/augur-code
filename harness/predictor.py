@@ -172,6 +172,7 @@ def main():
     raw_predictions = predict(model, full_dataset.get_model_input())
     predictions = Predictions(config.get("threshold"))
     predictions.store_raw_predictions(raw_predictions)
+    predictions.classify_raw_predictions()
 
     # Save to file, depending on mode, and calculate metrics if needed.
     mode = config.get("mode")
