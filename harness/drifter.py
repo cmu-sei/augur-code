@@ -29,6 +29,7 @@ def load_bins(dataset_filename, dataset_class_name, bin_params, predictions_file
     if predictions_filename is not None:
         preds = predictions.Predictions()
         preds.load_from_file(predictions_filename)
+        # TODO: Connect predictions with full dataset. Assumption right now is that samples are in the same order.
 
     # Sort into bins.
     print_and_log(f"Bins: {bin_params}")
@@ -141,8 +142,13 @@ def main():
     if args.test:
         test_drift(config, drift_module, params)
     else:
+        # Check optional predictions input.
+        full_predictions = None
+        if config.contains("predictions"):
+            full_predictions = config.get("predictions")
+
         # Apply drift.
-        bins = load_bins(config.get("dataset"), config.get("dataset_class"), config.get("bins"), config.get("predictions"))
+        bins = load_bins(config.get("dataset"), config.get("dataset_class"), config.get("bins"), full_predictions)
         drifted_dataset = apply_drift(bins, drift_module, params)
 
         # Save it to regular file, and timestamped file.

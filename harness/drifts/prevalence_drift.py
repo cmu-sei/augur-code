@@ -1,57 +1,38 @@
 import random
-
 import numpy
 
 from utils.logging import print_and_log
 
-# Tracks how many samples have been added from each bin for the current timebox.
-selected_samples_by_bin = []
-last_timebox_id = -1
-prevalence_array = None
 
+class TargetPrevalences:
+    """Target prevalences defined in configuration."""
+    target_prevalences = None
 
-def get_bin_index(sample_index, timebox_id, curr_bin_idx, num_total_bins, params):
-    """Selects samples to have a given prevalence between options."""
-    # Initialize the sample tracker each time we change timebox.
-    global selected_samples_by_bin
-    global last_timebox_id
-    if last_timebox_id != timebox_id:
-        selected_samples_by_bin = []
-        for i in range(0, num_total_bins):
-            selected_samples_by_bin.append(0)
+    def get_all_prevalences(self):
+        return self.target_prevalences
 
-    # Get the current target prevalence we are using.
-    if prevalence_array is None:
-        prepare_prevalence_array(params)
-    if timebox_id >= len(prevalence_array):
-        raise Exception(f"There are too few prevalences ({len(prevalence_array)}) configured for the timeboxes (currently ({timebox_id+1})")
-    target_prevalence = prevalence_array[timebox_id]
+    def load_prevalence_arrays(self, params, num_total_bins):
+        """Load and init the configured target prevalences arrays by bin, if needed."""
+        if self.target_prevalences is None:
+            self.target_prevalences = {}
+            num_timeboxes = int(params.get("max_num_samples") / params.get("timebox_size"))
+            configured_prevalences = params.get("prevalences")
+            for bin_idx, bin_prevalence_params in configured_prevalences.items():
+                bin_idx = int(bin_idx)
+                if bin_idx > num_total_bins:
+                    raise Exception(f"Configured bin id is higher than total of bins ({bin_idx}/{num_total_bins}")
 
-    # Get the prevalence we have so far.
-    prevalence_bin_id = params.get("prevalence_bin")
-    if prevalence_bin_id > num_total_bins:
-        raise Exception(f"Bin selected as prevalence forcer is not a valid bin id ({prevalence_bin_id}")
-    timebox_size = params.get("timebox_size")
+                bin_prevalence_array = self.prepare_prevalence_array(bin_idx, bin_prevalence_params, num_timeboxes)
+                self.target_prevalences[bin_idx] = bin_prevalence_array
 
-    # Get the next bin id, ensuring we don't go over the target prevalence.
-    print_and_log(f"Timebox id: {timebox_id}")
-    next_bin_id = get_random_bin_with_prevalence(num_total_bins, timebox_size, prevalence_bin_id, target_prevalence)
-
-    selected_samples_by_bin[next_bin_id] += 1
-    last_timebox_id = timebox_id
-    return next_bin_id
-
-
-def prepare_prevalence_array(params):
-    """Prepares the prevalences array, loading it from config, and filling repetitions if needed."""
-    global prevalence_array
-    if prevalence_array is None:
-        prevalence_array = params.get("prevalences")
-        prevalence_repeat = params.get("prevalence_repeat")
+    @staticmethod
+    def prepare_prevalence_array(bin_idx, bin_prevalence_params, num_timeboxes):
+        """Prepares the prevalences array, loading it from config, and filling repetitions if needed."""
+        prevalence_array = bin_prevalence_params.get("percentages_by_timebox")
+        prevalence_repeat = bin_prevalence_params.get("prevalence_repeat")
         if prevalence_repeat:
             num_init_prevs = len(prevalence_array)
-            num_timeboxes = int(params.get("max_num_samples") / params.get("timebox_size"))
-            random_rep_range = params.get("prevalence_repeat_range")
+            random_rep_range = bin_prevalence_params.get("prevalence_repeat_range")
             print_and_log(f"Generating repetitions for timeboxes (total timeboxes: {num_timeboxes})")
             full_prev_array = prevalence_array.copy()
             for i in range(num_init_prevs, num_timeboxes, num_init_prevs):
@@ -59,27 +40,95 @@ def prepare_prevalence_array(params):
                                          for prevalence in prevalence_array]
                 full_prev_array += repetition_prev_array
             prevalence_array = full_prev_array
-        print_and_log(f"Prevalences array: {prevalence_array}")
+        print_and_log(f"Prevalences array for bin {bin_idx}: {prevalence_array}")
+
+        return prevalence_array
 
 
-def get_random_bin_with_prevalence(num_total_bins, timebox_size, main_prevalence_bin_id, target_prevalence):
-    """Gets the next bin randomly, but ensuring we don't go over the max prevalence."""
-    all_prevalences = [round((100 * selected_samples_by_bin[curr_id]) / timebox_size, 2) for curr_id in range(num_total_bins)]
-    main_prevalence = all_prevalences[main_prevalence_bin_id]
-    other_prevalences_sum = sum([prevalence for bin_id, prevalence in enumerate(all_prevalences) if bin_id != main_prevalence_bin_id])
-    print_and_log(f"All prevalences: {all_prevalences}, Main prevalence: {main_prevalence}, target: {target_prevalence}")
+class TimeboxSampleCounter:
+    """Tracks how many samples have been added from each bin for the current timebox."""
+    timebox_id = -1
+    samples_by_bin_counter = []
+    num_total_bins = 0
+    timebox_size = 0
+    target_prevalences_by_bin = {}
 
-    # Get random bins, except if 1) we already have enough of the prevalence one, or 2) we got so many of the others
-    # that we need to force getting the prevalence one.
-    if main_prevalence >= target_prevalence:
-        print_and_log("Selecting from non-main bins")
-        next_bin_id = randrange_with_exclusions(num_total_bins, [main_prevalence_bin_id])
-    elif other_prevalences_sum >= (100 - target_prevalence):
-        print_and_log("Selecting main bin")
-        next_bin_id = main_prevalence_bin_id
-    else:
-        print_and_log("Selecting random bin")
-        next_bin_id = randrange_with_exclusions(num_total_bins, [])
+    def reset_if_needed(self, new_timebox_id, num_total_bins, timebox_size, target_prevalences):
+        """Initialize the sample tracker if we changed timeboxes."""
+        if new_timebox_id != self.timebox_id:
+            self.samples_by_bin_counter = [0] * num_total_bins
+            self.timebox_id = new_timebox_id
+            self.num_total_bins = num_total_bins
+            self.timebox_size = timebox_size
+
+            for bin_idx in target_prevalences:
+                if self.timebox_id > len(target_prevalences[bin_idx]):
+                    raise Exception(f"Configured bin prevalences not properly set up for timebox ({self.timebox_id}")
+                self.target_prevalences_by_bin[bin_idx] = target_prevalences[bin_idx][self.timebox_id]
+
+    def update(self, next_bin_id):
+        """Updates the selected sample"""
+        self.samples_by_bin_counter[next_bin_id] += 1
+
+    def get_num_samples(self, bin_idx):
+        """Returns the number of samples currently collected by bin idx given."""
+        if bin_idx > len(self.samples_by_bin_counter):
+            raise Exception(f"Invalid bin index retrieving number of samples: {bin_idx}")
+        return self.samples_by_bin_counter[bin_idx]
+
+    def get_curr_prevalences(self):
+        """Returns an array with the % of prevalences for the samples currently selected, by bin."""
+        curr_prevalences = [round((100 * self.get_num_samples(bin_idx)) / self.timebox_size, 2) for bin_idx in range(self.num_total_bins)]
+        return curr_prevalences
+
+    def get_timebox_target_prevalences(self):
+        """Gets the target prevalences by bin for the current timebox."""
+        return self.target_prevalences_by_bin
+
+
+# Global storage for configured target prevalences.
+configured_prevalences = TargetPrevalences()
+
+# Global counter for samples per bin for current timebox.
+sample_counter = TimeboxSampleCounter()
+
+
+def get_bin_index(sample_index, timebox_id, curr_bin_idx, num_total_bins, params):
+    """Implements the interface. Selects samples to have a given prevalence between options."""
+    # Load and init the target prevalences arrays by bin, if needed (only done once).
+    global configured_prevalences
+    configured_prevalences.load_prevalence_arrays(params, num_total_bins)
+
+    # Initialize the sample tracker each time we change timeboxes (once per timebox).
+    global sample_counter
+    timebox_size = params.get("timebox_size")
+    sample_counter.reset_if_needed(timebox_id, num_total_bins, timebox_size, configured_prevalences.get_all_prevalences())
+
+    # Get the next bin id, ensuring we don't go over the target prevalences.
+    print_and_log(f"Timebox id: {timebox_id}")
+    next_bin_id = get_random_bin_with_prevalence(num_total_bins, sample_counter.get_timebox_target_prevalences())
+
+    # Update internal tracker and return.
+    sample_counter.update(next_bin_id)
+    return next_bin_id
+
+
+def get_random_bin_with_prevalence(num_total_bins, target_prevalences_by_bin):
+    """Gets next bin, getting first from the target prevalence ones, and then randomly."""
+    curr_prevalences = sample_counter.get_curr_prevalences()
+    print_and_log(f"Curr prevalences: {curr_prevalences}, Target prevalences: {target_prevalences_by_bin}")
+
+    # Select next bin that has a targeted prevalence not yet reached.
+    next_bin_id = None
+    for bin_idx in target_prevalences_by_bin.keys():
+        if curr_prevalences[bin_idx] < target_prevalences_by_bin[bin_idx]:
+            print_and_log(f"Selecting from targeted bin with idx {bin_idx}.")
+            next_bin_id = bin_idx
+            break
+
+    if next_bin_id is None:
+        print_and_log(f"Selecting random bin with exclusions {target_prevalences_by_bin.keys()}")
+        next_bin_id = randrange_with_exclusions(num_total_bins, target_prevalences_by_bin.keys())
 
     return next_bin_id
 
@@ -91,24 +140,26 @@ def randrange_with_exclusions(range_max, exclusions):
 
 
 def test(full_dataset, params):
-    """Tests that the given dataset was properly drifted."""
-    prevalence_array = params.get("prevalences")
-    prevalence_bin_id = params.get("prevalence_bin")
-    timebox_size = params.get("timebox_size")
-    num_samples = full_dataset.get_number_of_samples()
-    num_timeboxes = int(num_samples / timebox_size)
+    # TODO: Fix this to work with restructure.
+    #"""Tests that the given dataset was properly drifted."""
+    #configured_prevalences.load_prevalence_arrays(params, num_total_bins)
 
-    real_prevalences = [0] * num_timeboxes
-    labelled_output = full_dataset.get_output()
-    for curr_timebox_id in range(0, num_timeboxes):
-        curr_timebox_starting_idx = curr_timebox_id * timebox_size
-        timebox_samples = labelled_output[curr_timebox_starting_idx:curr_timebox_starting_idx + timebox_size]
-        unique, counts = numpy.unique(timebox_samples, return_counts=True)
-        prevalences = numpy.round((100 * counts) / timebox_size, 2)
-        timebox_prevalences = dict(zip(unique, prevalences))
+    #timebox_size = params.get("timebox_size")
+    #num_samples = full_dataset.get_number_of_samples()
+    #num_timeboxes = int(num_samples / timebox_size)
 
-        print(f"Timebox {curr_timebox_id} real prevalences: {timebox_prevalences}")
-        real_prevalences[curr_timebox_id] = timebox_prevalences.get(prevalence_bin_id)
+    #real_prevalences = [0] * num_timeboxes
+    #labelled_output = full_dataset.get_output()
+    #for curr_timebox_id in range(0, num_timeboxes):
+        # For a given timebox, count percentage of samples by result.
+    #    curr_timebox_starting_idx = curr_timebox_id * timebox_size
+    #    timebox_samples = labelled_output[curr_timebox_starting_idx:curr_timebox_starting_idx + timebox_size]
+    #    unique, counts = numpy.unique(timebox_samples, return_counts=True)
+    #    prevalences = numpy.round((100 * counts) / timebox_size, 2)
+    #    timebox_prevalences = dict(zip(unique, prevalences))
 
-    print(f"Expected prevalences by timebox for bin {prevalence_bin_id}: {prevalence_array}")
-    print(f"Obtained prevalences by timebox for bin {prevalence_bin_id}: {real_prevalences}")
+     #   print(f"Timebox {curr_timebox_id} real prevalences: {timebox_prevalences}")
+     #   real_prevalences[curr_timebox_id] = timebox_prevalences.get(prevalence_bin_id)
+
+    #print(f"Expected prevalences by timebox and bin: {configured_prevalences.get_all_prevalences()}")
+    #print(f"Obtained prevalences by timebox for bin {prevalence_bin_id}: {real_prevalences}")
