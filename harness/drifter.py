@@ -32,6 +32,7 @@ def load_bins(dataset_filename, dataset_class_name, bin_params, predictions_file
         # TODO: Connect predictions with full dataset. Assumption right now is that samples are in the same order.
 
     # Sort into bins.
+    # TODO: Change this to support bins values other than by dataset results.
     print_and_log(f"Bins: {bin_params}")
     bins = databin.create_bins(bin_params)
     bins = databin.sort_into_bins(base_dataset.get_ids(), base_dataset.get_output(), bins)
@@ -105,7 +106,7 @@ def generate_timebox_samples(drift_module, timebox_id, curr_bin_offset, input_bi
     return timebox_sample_ids
 
 
-def test_drift(config, drift_module, params):
+def test_drift(config, drift_module, drift_params, bin_params):
     """Tests an existing drifted dataset based on its expected properties defined in params."""
     print("Testing drifted dataset")
     dataset_class_name = config.get("dataset_class")
@@ -115,7 +116,7 @@ def test_drift(config, drift_module, params):
     dataset_class = dataset.load_dataset_class(dataset_class_name)
     full_dataset, reference_dataset = ref_dataset.load_full_from_ref_and_base(dataset_class, drifted_dataset_file, base_dataset_file)
 
-    drift_module.test(full_dataset, params)
+    drift_module.test(full_dataset, drift_params, bin_params)
 
 
 def get_drift_stamped_name(config_filename):
@@ -140,7 +141,7 @@ def main():
     drift_module, params = load_drift_config(config.get("drift_scenario"))
 
     if args.test:
-        test_drift(config, drift_module, params)
+        test_drift(config, drift_module, params, config.get("bins"))
     else:
         # Check optional predictions input.
         full_predictions = None
