@@ -141,7 +141,8 @@ def randrange_with_exclusions(range_max, exclusions):
 
 def test(full_dataset, params):
     # TODO: Fix this to work with restructure.
-    #"""Tests that the given dataset was properly drifted."""
+    """Tests that the given dataset was properly drifted."""
+    pass
     #configured_prevalences.load_prevalence_arrays(params, num_total_bins)
 
     #timebox_size = params.get("timebox_size")
