@@ -1,11 +1,11 @@
 import random
 
 
-def create_bins(bin_info_list):
+def create_bins(bin_info_list, shuffle):
     """Creates a list of bins based on a string list of bin info."""
     bins = []
     for bin_info in bin_info_list:
-        bins.append(DataBin(bin_info[0], bin_info[1]))
+        bins.append(DataBin(bin_info[0], bin_info[1], shuffle))
     return bins
 
 
@@ -24,17 +24,20 @@ class DataBin:
     """Class to represent a bin of data of a certain classification."""
     name = ""
     value = None
+    shuffle = True
     ids = []
     id_queue = []
 
-    def __init__(self, new_name, new_value):
+    def __init__(self, new_name, new_value, shuffle=True):
         self.name = new_name
         self.value = new_value
+        self.shuffle=shuffle
         self.ids = []
 
     def setup_queue(self):
         self.id_queue = self.ids.copy()
-        random.shuffle(self.id_queue)
+        if self.shuffle:
+            random.shuffle(self.id_queue)
 
     def get_queue_length(self):
         return len(self.id_queue)

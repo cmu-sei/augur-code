@@ -17,7 +17,7 @@ DEFAULT_CONFIG_FILENAME = "./drifter_config.json"
 DRIFT_EXP_CONFIG_FOLDER = "../experiments/drifter"
 
 
-def load_bins(dataset_filename, dataset_class_name, bin_params, predictions_filename=None):
+def load_bins(dataset_filename, dataset_class_name, bin_params, predictions_filename=None, shuffle=True):
     """Loads a dataset into bins"""
 
     # Load dataset to drift.
@@ -34,8 +34,10 @@ def load_bins(dataset_filename, dataset_class_name, bin_params, predictions_file
     # Sort into bins.
     print_and_log(f"Bins: {bin_params}")
     values = get_bin_values(base_dataset, bin_params)
-    bins = databin.create_bins(bin_params)
+    bins = databin.create_bins(bin_params, shuffle)
     bins = databin.sort_into_bins(base_dataset.get_ids(), values, bins)
+
+    # Setup queues.
     print_and_log("Filled bins: ")
     for bin in bins:
         print_and_log(f" - {bin.info()}")
@@ -168,7 +170,8 @@ def main():
             full_predictions = config.get("predictions")
 
         # Apply drift.
-        bins = load_bins(config.get("dataset"), config.get("dataset_class"), config.get("bins"), full_predictions)
+        bin_shuffle = config.get("bin_shuffle") if config.contains("bin_shuffle") else True
+        bins = load_bins(config.get("dataset"), config.get("dataset_class"), config.get("bins"), full_predictions, bin_shuffle)
         drifted_dataset = apply_drift(bins, drift_module, params)
 
         # Save it to regular file, and timestamped file.
