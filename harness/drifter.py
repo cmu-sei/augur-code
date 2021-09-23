@@ -17,7 +17,7 @@ DEFAULT_CONFIG_FILENAME = "./drifter_config.json"
 DRIFT_EXP_CONFIG_FOLDER = "../experiments/drifter"
 
 
-def load_bins(dataset_filename, dataset_class_name, bin_params, predictions_filename=None, shuffle=True):
+def load_bins(dataset_filename, dataset_class_name, bin_params, predictions_filename=None, bin_value="results", shuffle=True):
     """Loads a dataset into bins"""
 
     # Load dataset to drift.
@@ -33,7 +33,7 @@ def load_bins(dataset_filename, dataset_class_name, bin_params, predictions_file
 
     # Sort into bins.
     print_and_log(f"Bins: {bin_params}")
-    values = get_bin_values(base_dataset, bin_params)
+    values = get_bin_values(base_dataset, bin_value)
     bins = databin.create_bins(bin_params, shuffle)
     bins = databin.sort_into_bins(base_dataset.get_ids(), values, bins)
 
@@ -46,11 +46,8 @@ def load_bins(dataset_filename, dataset_class_name, bin_params, predictions_file
     return bins
 
 
-def get_bin_values(base_dataset, bin_params):
+def get_bin_values(base_dataset, bin_value):
     """Gets the values to be used when sorting into bins for the given dataset, from the configured options."""
-    # Default to dataset results, but get other types of values if configured.
-    bin_value = bin_params.get("bin_value") if "bin_value" in bin_params else "results"
-
     values = None
     if bin_value == "results":
         values = base_dataset.get_output()
@@ -170,8 +167,9 @@ def main():
             full_predictions = config.get("predictions")
 
         # Apply drift.
+        bin_value = config.get("bin_value") if config.contains("bin_value") else "results"
         bin_shuffle = config.get("bin_shuffle") if config.contains("bin_shuffle") else True
-        bins = load_bins(config.get("dataset"), config.get("dataset_class"), config.get("bins"), full_predictions, bin_shuffle)
+        bins = load_bins(config.get("dataset"), config.get("dataset_class"), config.get("bins"), full_predictions, bin_value, bin_shuffle)
         drifted_dataset = apply_drift(bins, drift_module, params)
 
         # Save it to regular file, and timestamped file.
