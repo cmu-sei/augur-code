@@ -96,6 +96,7 @@ def apply_drift(input_bins, drift_module, params):
 
         # Randomize results in timebox to avoid stacking bin results at the end.
         if shuffle_on:
+            print_and_log("Shuffling timebox samples.")
             random.shuffle(timebox_sample_ids)
         drifted_dataset.add_multiple_references(timebox_sample_ids, timebox_id)
 
