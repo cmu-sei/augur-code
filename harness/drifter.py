@@ -84,7 +84,7 @@ def apply_drift(input_bins, drift_module, params):
     print("Applying drift to generated drifted dataset.")
     max_num_samples = params.get("max_num_samples")
     timebox_size = params.get("timebox_size")
-    shuffle_on = params.get("bin_shuffle") if "bin_shuffle" in params else True
+    shuffle_on = params.get("timebox_shuffle") if "timebox_shuffle" in params else True
 
     # Loop until we get all samples we want.
     drifted_dataset = ref_dataset.RefDataSet()

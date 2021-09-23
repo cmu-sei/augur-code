@@ -3,7 +3,6 @@
   "dataset": "../output/merged_dataset.json",
   "output": "../output/0_no_drift.json",
   "bin_value": "all",
-  "bin_shuffle": false,
   "bins":
     [
       ["all", 0]
@@ -15,7 +14,8 @@
     "params":
     {
       "max_num_samples":  10028,
-      "timebox_size": 10028
+      "timebox_size": 10028,
+      "timebox_shuffle": false
     }
   }
 }
