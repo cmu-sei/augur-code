@@ -32,16 +32,32 @@ def load_bins(dataset_filename, dataset_class_name, bin_params, predictions_file
         # TODO: Connect predictions with full dataset. Assumption right now is that samples are in the same order.
 
     # Sort into bins.
-    # TODO: Change this to support bins values other than by dataset results.
     print_and_log(f"Bins: {bin_params}")
+    values = get_bin_values(base_dataset, bin_params)
     bins = databin.create_bins(bin_params)
-    bins = databin.sort_into_bins(base_dataset.get_ids(), base_dataset.get_output(), bins)
+    bins = databin.sort_into_bins(base_dataset.get_ids(), values, bins)
     print_and_log("Filled bins: ")
     for bin in bins:
         print_and_log(f" - {bin.info()}")
         bin.setup_queue()
 
     return bins
+
+
+def get_bin_values(base_dataset, bin_params):
+    """Gets the values to be used when sorting into bins for the given dataset, from the configured options."""
+    # Default to dataset results, but get other types of values if configured.
+    bin_value = bin_params.get("bin_value") if "bin_value" in bin_params else "results"
+
+    values = None
+    if bin_value == "results":
+        values = base_dataset.get_output()
+    elif bin_value == "all":
+        # We set all values to 0, assuming single bin will also set its value to 0.
+        values = [0] * base_dataset.get_number_of_samples()
+    else:
+        raise Exception(f"Invalid bin value configured: {bin_value}")
+    return values
 
 
 def load_drift_config(drift_config):
@@ -68,6 +84,7 @@ def apply_drift(input_bins, drift_module, params):
     print("Applying drift to generated drifted dataset.")
     max_num_samples = params.get("max_num_samples")
     timebox_size = params.get("timebox_size")
+    shuffle_on = params.get("bin_shuffle") if "bin_shuffle" in params else True
 
     # Loop until we get all samples we want.
     drifted_dataset = ref_dataset.RefDataSet()
@@ -78,7 +95,8 @@ def apply_drift(input_bins, drift_module, params):
         timebox_sample_ids = generate_timebox_samples(drift_module, timebox_id, curr_bin_offset, input_bins, timebox_size, params)
 
         # Randomize results in timebox to avoid stacking bin results at the end.
-        random.shuffle(timebox_sample_ids)
+        if shuffle_on:
+            random.shuffle(timebox_sample_ids)
         drifted_dataset.add_multiple_references(timebox_sample_ids, timebox_id)
 
         # Offset to indicate the starting bin for the condition.
