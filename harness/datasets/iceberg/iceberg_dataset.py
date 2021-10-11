@@ -65,8 +65,8 @@ class IcebergDataSet(dataset.DataSet):
     def add_sample(self, position, sample):
         """Adds a sample from a dictionary to a given position."""
         super().add_sample(position, sample)
-        if position >= self.x_band1.size:
-            raise Exception(f"Invalid position ({position}) given when adding sample (size is {self.x_band1.size})")
+        if position >= self.get_number_of_samples():
+            raise Exception(f"Invalid position ({position}) given when adding sample (size is {self.get_number_of_samples()}. Please use allocate_space() to prepare arrays first.)")
         self.x_band1[position] = sample[IcebergDataSet.BAND1_KEY]
         self.x_band2[position] = sample[IcebergDataSet.BAND2_KEY]
         self.x_angle[position] = sample[IcebergDataSet.ANGLE_KEY]
@@ -111,5 +111,3 @@ class IcebergDataSet(dataset.DataSet):
         dataset_df[IcebergDataSet.ICEBERG_KEY] = self.y_output
 
         dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
-
-

@@ -1,7 +1,7 @@
 {
   "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
   "dataset": "../output/merged_dataset.json",
-  "output": "../output/02_sudden_drift.json",
+  "output": "../output/14_gradual_drift_aggressive.json",
   "bins":
     [
       ["no_iceberg", 0],
@@ -9,17 +9,18 @@
     ],
   "drift_scenario":
   {
-    "condition": "sudden",
+    "condition": "gradual aggressive",
     "module": "prevalence_drift",
     "params":
     {
-      "max_num_samples": 9999,
-      "timebox_size": 3333,
+      "max_num_samples":  10026,
+      "timebox_size": 1671,
+      "prevalence_bin": 1,
       "prevalences":
       {
         "1":
         {
-          "percentages_by_timebox": [65, 40, 60],
+          "percentages_by_timebox": [65, 53, 40, 75, 35, 20],
           "prevalence_repeat": false
         }
       }

@@ -27,6 +27,10 @@ class DataSet:
     ID_KEY = "id"
     x_ids = np.empty(0, dtype=str)
 
+    def get_ids(self):
+        """Returns the dataset ids."""
+        return self.x_ids
+
     def allocate_space(self, size):
         """Pre-allocates the space for this dataset to avoid scalability issues, when the size is known."""
         self.x_ids = np.empty(size, dtype=str)

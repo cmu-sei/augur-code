@@ -1,20 +1,19 @@
 import random
 
 
-def create_bins(bin_info_list):
+def create_bins(bin_info_list, shuffle):
     """Creates a list of bins based on a string list of bin info."""
     bins = []
     for bin_info in bin_info_list:
-        bins.append(DataBin(bin_info[0], bin_info[1]))
+        bins.append(DataBin(bin_info[0], bin_info[1], shuffle))
     return bins
 
 
-def sort_into_bins(ids, outputs, bins):
-    """Sorts the ids into bins, based on their outputs matching bin values."""
-    # Go over all samples and then check which bin value matches it, to move sample into that bin.
-    for sample_idx, output in enumerate(outputs):
+def sort_into_bins(ids, values, bins):
+    """Sorts the ids into bins, based on the given values matching bin values."""
+    for sample_idx, value in enumerate(values):
         for bin_idx, bin in enumerate(bins):
-            if output == bin.value:
+            if value == bin.value:
                 bins[bin_idx].add(ids[sample_idx])
                 break
 
@@ -25,17 +24,20 @@ class DataBin:
     """Class to represent a bin of data of a certain classification."""
     name = ""
     value = None
+    shuffle = True
     ids = []
     id_queue = []
 
-    def __init__(self, new_name, new_value):
+    def __init__(self, new_name, new_value, shuffle=True):
         self.name = new_name
         self.value = new_value
+        self.shuffle=shuffle
         self.ids = []
 
     def setup_queue(self):
         self.id_queue = self.ids.copy()
-        random.shuffle(self.id_queue)
+        if self.shuffle:
+            random.shuffle(self.id_queue)
 
     def get_queue_length(self):
         return len(self.id_queue)

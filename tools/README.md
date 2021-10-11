@@ -29,13 +29,16 @@ The Drifter tool configuration has the following fields:
  - **dataset_class**: same as config field in Trainer tool.
  - **dataset**: relative path to a JSON file with the labelled dataset to use for generating a drifted one.
  - **output**: relative path to a JSON file that will contain the drifted dataset, referencing the **dataset** above by containing only new ids and original_ids pointing to samples in it. In test mode, this is the tested dataset.
+ - **bin_shuffle**: (OPTIONAL) true or false to indicate whether to shuffle samples in each bin after sorting them. Defaults to true.
+ - **bin_values**: (OPTIONAL) dataset values to use when sorting into bins. Current values: "all" (one bin with everything), "results" for results/output/truth values. Defaults to "results".
  - **bins**: array defining bins to split the **dataset** into when generating drift. Each item in the array will also be an array, containing first the bin name, and then the bin order (i.e, ["no_iceberg", 0])
  - **drift_scenario**: information about the drift being generated.
    - **condition**: friendly name for the drift type. 
    - **module**: Python module implementing the drift (see general README for more details), which has to go inside the `harness/drift/` (i.e., "random_drift").
    - **params**: dictionary of specific parameters for this drift generator. Depend on the **module** defined above. It will at least contain the following minimum parameters:
      - **max_num_samples**: how many samples to output into the drifted dataset.
-     - **timebox_size**: size of the timebox for generating the drifted dataset. 
+     - **timebox_size**: size of the timebox for generating the drifted dataset.
+     - **timebox_shuffle**: (OPTIONAL) true or false to indicate whether to shuffle samples in each timebox after selecting them from bins. Defaults to true.
 
 The bash scripts for this tool include:
 - **drifter.sh**: uses the `drifter_config.json` file, default for creating a drifted dataset.
@@ -67,6 +70,7 @@ The Predictor tool configuration has the following fields:
 The bash scripts for this tool include:
 - **predictor.sh**: uses the `predictor_config.json` file, default for predicting and generating metrics.
 - **labeller.sh**: uses the `labeller_config.json` file, uses the "label" mode to create an updated dataset with the predictions as its labels.
+- **predictor_fullds.sh**: uses the `predictor_fullds_config.json` file, calculates only predictions for a full dataset.
 
 ## Merger Tool
 

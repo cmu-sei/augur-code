@@ -40,8 +40,15 @@ def predict(model, model_input):
     return predictions
 
 
-def calculate_metrics(dataset, predictions, config, timebox_size):
+def calculate_metrics(dataset, predictions, config, reference_dataset):
     """Calculates metrics for the given configs and dataset."""
+    if not config.contains("metrics"):
+        print_and_log("No metrics configured.")
+        return None
+
+    timebox_size = reference_dataset.get_timebox_size()
+    print_and_log(f"Timebox size: {timebox_size}")
+
     metrics = config.get("metrics")
     results = {}
     timeboxes = {}
@@ -84,20 +91,13 @@ def calculate_metrics(dataset, predictions, config, timebox_size):
 
 def save_predictions(full_dataset, predictions, output_filename, reference_dataset=None):
     """Saves the ids, predictions and metrics into a JSON file."""
-    # Turn everything into a DataFrame before turning into JSON.
     print_and_log("Creating predictions DataFrame")
     if reference_dataset:
         output_df = reference_dataset.as_dataframe()
     else:
         output_df = full_dataset.as_basic_dataframe()
-        print_and_log(output_df)
-    output_df["truth"] = full_dataset.y_output
-    output_df["prediction"] = predictions.get_predictions()
-    output_df["raw_prediction"] = predictions.get_raw_predictions()
 
-    print_and_log("Saving predictions DataFrame to JSON file")
-    output_df.to_json(output_filename, orient="records", indent=4)
-    print_and_log("Finished saving predictions JSON file")
+    predictions.save_to_file(output_filename, output_df)
 
 
 def save_metrics(metrics, metrics_filename):
@@ -172,16 +172,19 @@ def main():
     raw_predictions = predict(model, full_dataset.get_model_input())
     predictions = Predictions(config.get("threshold"))
     predictions.store_raw_predictions(raw_predictions)
+    predictions.classify_raw_predictions()
 
     # Save to file, depending on mode, and calculate metrics if needed.
     mode = config.get("mode")
     if mode == "predict":
-        timebox_size = reference_dataset.get_timebox_size()
-        print_and_log(f"Timebox size: {timebox_size}")
         predictions.store_expected_results(full_dataset.get_output())
-        metric_results = calculate_metrics(full_dataset, predictions, config, timebox_size)
         save_predictions(full_dataset, predictions, config.get("output").get("predictions_output"), reference_dataset)
-        save_metrics(metric_results, config.get("output").get("metrics_output"))
+
+        # We can only calculate metrics if we have a ref dataset, since they are calculated by timebox,
+        # which are only defined in a reference datasets.
+        if reference_dataset is not None:
+            metric_results = calculate_metrics(full_dataset, predictions, config, reference_dataset)
+            save_metrics(metric_results, config.get("output").get("metrics_output"))
 
         # If requested, package this experiment results.
         if args.store:

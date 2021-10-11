@@ -1,0 +1,14 @@
+{
+  "mode": "predict",
+  "threshold": 0.5,
+  "input":
+  {
+    "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
+    "dataset": "../output/merged_dataset.json",
+    "model": "../output/trained_model"
+  },
+  "output":
+  {
+    "predictions_output": "../output/predictions_fullds.json"
+  }
+}

@@ -15,9 +15,14 @@
     {
       "max_num_samples": 12000,
       "timebox_size": 1000,
-      "prevalence_bin": 1,
-      "prevalences": [65, 55, 45, 30, 40, 50, 60, 50, 40, 30, 45, 55],
-      "prevalence_repeat": false
+      "prevalences":
+      {
+        "1":
+        {
+          "percentages_by_timebox": [65, 55, 45, 30, 40, 50, 60, 50, 40, 30, 45, 55],
+          "prevalence_repeat": false
+        }
+      }
     }
   }
 }

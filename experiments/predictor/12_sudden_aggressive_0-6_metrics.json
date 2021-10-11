@@ -1,0 +1,85 @@
+{
+  "mode": "predict",
+  "threshold": 0.5,
+  "input":
+  {
+    "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
+    "dataset": "../output/12_sudden_drift_aggressive.json",
+    "base_dataset": "../output/merged_dataset.json",
+    "model": "../output/trained_model"
+  },
+  "output":
+  {
+    "predictions_output": "../output/12_sudden_aggressive_0-6_predictions.json",
+    "metrics_output": "../output/12_sudden_aggressive_0-6_metrics.json"
+  },
+  "metrics":
+  [
+    {
+      "name": "Kullback-Leibler Divergence",
+      "type": "DistanceMetric",
+      "module": "kl_divergence",
+      "params":
+      {
+        "distribution": "kernel_density",
+        "range_start": -1,
+        "range_end": 2
+      }
+    },
+    {
+      "name": "Hellinger Distance",
+      "type": "DistanceMetric",
+      "module": "hellinger",
+      "params":
+      {
+        "distribution": "kernel_density",
+        "range_start": -1,
+        "range_end": 2
+      }
+    },
+    {
+      "name": "Total Variation Distance",
+      "type": "DistanceMetric",
+      "module": "tvd",
+      "params":
+      {
+        "distribution": "kernel_density",
+        "range_start": -1,
+        "range_end": 2
+      }
+    },
+    {
+      "name": "Kolmogorov-Smirnov Statistic",
+      "type": "ErrorMetric",
+      "module": "kolmogorov_smirnov"
+    },
+    {
+      "name": "Wasserstein Distance",
+      "type": "DistanceMetric",
+      "module": "wasserstein",
+      "params":
+      {
+        "distribution": "kernel_density",
+        "range_start": -1,
+        "range_end": 2
+      }
+    },
+    {
+      "name": "Energy Distance",
+      "type": "DistanceMetric",
+      "module": "energy",
+      "params":
+      {
+        "distribution": "kernel_density",
+        "range_start": -1,
+        "range_end": 2
+      }
+    },
+    {
+      "name": "Z Test / Student's t",
+      "type": "ErrorMetric",
+      "module": "z_test"
+    }
+  ]
+}
+
