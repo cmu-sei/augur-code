@@ -7,6 +7,12 @@
       ["no_iceberg", 0],
       ["iceberg", 1]
     ],
+  "timestamps":
+  {
+    "enabled": true,
+    "start_datetime": "2020-04-01",
+    "increment": 1
+  },
   "drift_scenario":
   {
     "condition": "random",

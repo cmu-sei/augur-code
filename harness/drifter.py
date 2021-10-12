@@ -3,6 +3,7 @@ import random
 import datetime
 import os
 import shutil
+import time
 
 from datasets import ref_dataset
 from utils import arguments
@@ -106,6 +107,28 @@ def apply_drift(input_bins, drift_module, params):
     return drifted_dataset
 
 
+def add_timestamps(drifted_dataset, timestamp_params):
+    """Adds sequential timestamps to a dataset."""
+    enabled = timestamp_params.get("enabled")
+    if not enabled:
+        print_and_log("Timestamps not enabled.")
+        return
+
+    start_datetime = time.strptime(timestamp_params.get("start_datetime"), '%Y-%m-%d')
+    increment_in_days = timestamp_params.get("increment")
+    num_samples = drifted_dataset.get_number_of_samples()
+    DAY_TO_SECONDS = 24 * 60 * 60
+
+    # Generate sequential timestamps for as many samples as we have, with the given start time and increment.
+    timestamps = [0] * num_samples
+    timestamps[0] = time.mktime(start_datetime)
+    for i in range(1, num_samples):
+        timestamps[i] = timestamps[i - 1] + (increment_in_days * DAY_TO_SECONDS)
+
+    drifted_dataset.set_timestamps(timestamps)
+    print_and_log("Generated and stored timestamps.")
+
+
 def generate_timebox_samples(drift_module, timebox_id, curr_bin_offset, input_bins, timebox_size, params):
     """Chooses samples for a given timebox size, and from the given current bin index."""
 
@@ -171,6 +194,7 @@ def main():
         bin_shuffle = config.get("bin_shuffle") if config.contains("bin_shuffle") else True
         bins = load_bins(config.get("dataset"), config.get("dataset_class"), config.get("bins"), full_predictions, bin_value, bin_shuffle)
         drifted_dataset = apply_drift(bins, drift_module, params)
+        add_timestamps(drifted_dataset, config.get("timestamps"))
 
         # Save it to regular file, and timestamped file.
         drifted_dataset.save_to_file(config.get("output"))

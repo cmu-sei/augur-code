@@ -43,6 +43,10 @@ class DataSet:
         """Gets the current size in num of samples."""
         return self.x_ids.size
 
+    def set_timestamps(self, timestamps):
+        """Sets the timestamps."""
+        self.timestamps = timestamps
+
     def add_sample(self, position, sample):
         """Adds a sample in the given position."""
         if position >= self.x_ids.size:

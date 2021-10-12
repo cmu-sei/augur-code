@@ -79,8 +79,7 @@ class RefDataSet(DataSet):
 
     def as_dataframe(self):
         """Adds internal data to a new dataframe."""
-        dataset_df = pd.DataFrame()
-        dataset_df[DataSet.ID_KEY] = self.x_ids
+        dataset_df = super().as_basic_dataframe()
         dataset_df[RefDataSet.ORIGINAL_ID_KEY] = self.x_original_ids
         dataset_df[RefDataSet.TIMEBOX_ID_KEY] = self.timebox_ids
         return dataset_df
