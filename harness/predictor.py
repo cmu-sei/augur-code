@@ -95,7 +95,7 @@ def save_predictions(full_dataset, predictions, output_filename, reference_datas
     if reference_dataset:
         output_df = reference_dataset.as_dataframe()
     else:
-        output_df = full_dataset.as_basic_dataframe()
+        output_df = full_dataset.as_dataframe(include_all_data=False)
 
     predictions.save_to_file(output_filename, output_df)
 

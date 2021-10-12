@@ -1,9 +1,7 @@
 import secrets
 
 import numpy as np
-import pandas as pd
 
-from utils import dataframe_helper
 from datasets.dataset import DataSet
 
 
@@ -43,6 +41,13 @@ class RefDataSet(DataSet):
             sample[RefDataSet.TIMEBOX_ID_KEY] = self.timebox_ids[position]
         return sample
 
+    def add_sample(self, position, sample):
+        """Adds a sample in the given position."""
+        if position >= self.x_original_ids.size:
+            raise Exception(f"Invalid position ({position}) given when adding sample (size is {self.x_original_ids.size})")
+        self.x_original_ids[position] = sample[self.ORIGINAL_ID_KEY]
+        self.timebox_ids[position] = sample[self.TIMEBOX_ID_KEY]
+
     def get_num_timeboxes(self):
         """Gets the number of timeboxes in this dataset."""
         return np.unique(self.timebox_ids).size
@@ -54,7 +59,7 @@ class RefDataSet(DataSet):
 
     def load_from_file(self, dataset_filename):
         """Loads data from a JSON file into this object."""
-        dataset_df = super().load_ids_from_file(dataset_filename)
+        dataset_df = super().load_from_file(dataset_filename)
 
         self.x_original_ids = np.array(dataset_df[RefDataSet.ORIGINAL_ID_KEY])
         self.timebox_ids = np.array(dataset_df[RefDataSet.TIMEBOX_ID_KEY])
@@ -72,16 +77,12 @@ class RefDataSet(DataSet):
         for id in original_ids:
             self.add_reference(id, timebox_id)
 
-    def save_to_file(self, output_filename):
-        """Saves a dataset by only storing its ids and the references to the original ids it has."""
-        dataset_df = self.as_dataframe()
-        dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
-
-    def as_dataframe(self):
+    def as_dataframe(self, include_all_data=True):
         """Adds internal data to a new dataframe."""
-        dataset_df = super().as_basic_dataframe()
-        dataset_df[RefDataSet.ORIGINAL_ID_KEY] = self.x_original_ids
-        dataset_df[RefDataSet.TIMEBOX_ID_KEY] = self.timebox_ids
+        dataset_df = super().as_dataframe()
+        if include_all_data:
+            dataset_df[RefDataSet.ORIGINAL_ID_KEY] = self.x_original_ids
+            dataset_df[RefDataSet.TIMEBOX_ID_KEY] = self.timebox_ids
         return dataset_df
 
     def create_from_reference(self, base_dataset, new_dataset):

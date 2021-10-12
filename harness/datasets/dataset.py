@@ -1,4 +1,6 @@
 import importlib
+import abc
+from abc import abstractmethod
 
 import numpy as np
 import pandas as pd
@@ -21,7 +23,7 @@ def load_dataset_class(full_class_name):
     return class_type
 
 
-class DataSet:
+class DataSet(abc.ABC):
     """A base dataset, only containing ids. Meant to be an abstract class for more detailed ones to build on."""
 
     ID_KEY = "id"
@@ -34,11 +36,6 @@ class DataSet:
         """Returns the dataset ids."""
         return self.x_ids
 
-    def allocate_space(self, size):
-        """Pre-allocates the space for this dataset to avoid scalability issues, when the size is known."""
-        self.x_ids = np.empty(size, dtype=str)
-        self.timestamps = np.zeros(size, dtype=int)
-
     def get_number_of_samples(self):
         """Gets the current size in num of samples."""
         return self.x_ids.size
@@ -47,6 +44,7 @@ class DataSet:
         """Sets the timestamps."""
         self.timestamps = timestamps
 
+    @abstractmethod
     def add_sample(self, position, sample):
         """Adds a sample in the given position."""
         if position >= self.x_ids.size:
@@ -67,6 +65,7 @@ class DataSet:
         position = self._get_id_position(id_to_find)
         return self.get_sample(position[0])
 
+    @abstractmethod
     def get_sample(self, position):
         """Returns a sample associated to this id, just containing the id, as a dictionary."""
         if position < len(self.x_ids):
@@ -74,21 +73,22 @@ class DataSet:
         else:
             return {}
 
-    def load_ids_from_file(self, dataset_filename, id_key=None, timestamp_key=None, convert_to_timestamp=None):
-        """Loads ids from a JSON file into this object. Returns the dataframe for loading the rest.
+    @abstractmethod
+    def load_from_file(self, dataset_filename, id_key=None, timestamp_key=None, convert_to_timestamp=None):
+        """Loads ids and times from a JSON file into this object. Returns the dataframe for loading the rest.
            convert_to_timestamp should be a function that converts from whatever format the dataset has its datetime,
            to Unix timestamp."""
+        # Load the referencing dataset from a file into a dataframe.
+        dataset_df = dataframe_helper.load_dataframe_from_file(dataset_filename)
+        print("Sample row: ")
+        print(dataset_df.head(1))
+
         if id_key is None:
             id_key = DataSet.ID_KEY
         if timestamp_key is None:
             timestamp_key = DataSet.TIMESTAMP_KEY
         if convert_to_timestamp is None:
             convert_to_timestamp = lambda x: x
-
-        # Load the referencing dataset from a file into a dataframe.
-        dataset_df = dataframe_helper.load_dataframe_from_file(dataset_filename)
-        print("Sample row: ")
-        print(dataset_df.head(1))
 
         try:
             self.x_ids = np.array(dataset_df[id_key])
@@ -100,17 +100,27 @@ class DataSet:
 
         return dataset_df
 
-    def as_basic_dataframe(self):
+    @abstractmethod
+    def allocate_space(self, size):
+        """Pre-allocates the space for this dataset to avoid scalability issues, when the size is known."""
+        self.x_ids = np.empty(size, dtype=str)
+        self.timestamps = np.zeros(size, dtype=int)
+
+    @abstractmethod
+    def as_dataframe(self, include_all_data=True):
         """Adds internal data to a new dataframe."""
         dataset_df = pd.DataFrame()
-        dataset_df[DataSet.ID_KEY] = self.x_ids
-        dataset_df[DataSet.TIMESTAMP_KEY] = self.timestamps
+        if include_all_data:
+            dataset_df[DataSet.ID_KEY] = self.x_ids
+            dataset_df[DataSet.TIMESTAMP_KEY] = self.timestamps
         return dataset_df
 
-    def load_from_file(self, dataset_filename):
-        """Loads data from a JSON file into this object."""
-        raise NotImplementedError()
+    def save_to_file(self, output_filename):
+        """Stores Numpy arrays with a dataset into a JSON file."""
+        dataset_df = self.as_dataframe()
+        dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
 
+    @abstractmethod
     def get_model_input(self):
         """Returns the inputs to be used."""
         raise NotImplementedError()
@@ -120,12 +130,10 @@ class DataSet:
         If dataset provides just one input, this should return the same as get_model_input."""
         return self.get_model_input()
 
+    @abstractmethod
     def get_output(self):
         raise NotImplementedError()
 
+    @abstractmethod
     def set_output(self, new_output):
-        raise NotImplementedError()
-
-    def save_to_file(self, output_filename):
-        """Stores Numpy arrays with a dataset into a JSON file."""
         raise NotImplementedError()
