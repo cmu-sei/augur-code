@@ -44,6 +44,10 @@ class DataSet(abc.ABC):
         """Sets the timestamps."""
         self.timestamps = timestamps
 
+    def get_timestamps(self):
+        """Returns the timestamps."""
+        return self.timestamps
+
     @abstractmethod
     def add_sample(self, position, sample):
         """Adds a sample in the given position."""

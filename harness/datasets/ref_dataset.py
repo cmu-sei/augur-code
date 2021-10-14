@@ -87,14 +87,15 @@ class RefDataSet(DataSet):
 
     def create_from_reference(self, base_dataset, new_dataset):
         """Creates a new dataset by getting the full samples of a reference from the base dataset."""
-        position = 0
         new_dataset_size = self.x_original_ids.size
         new_dataset.allocate_space(new_dataset_size)
-        for original_id in self.x_original_ids:
+        for idx, original_id in enumerate(self.x_original_ids):
             # Only show print update every 500 ids.
-            if position % 500 == 0:
-                print(f"Finished preparing {position} samples out of {new_dataset_size}", flush=True)
+            if idx % 500 == 0:
+                print(f"Finished preparing {idx} samples out of {new_dataset_size}", flush=True)
+
+            # Get the full sample, but replace the timestamp (if any) with the one from the reference dataset.
             full_sample = base_dataset.get_sample_by_id(original_id)
-            new_dataset.add_sample(position, full_sample)
-            position += 1
+            full_sample[DataSet.TIMESTAMP_KEY] = self.timebox_ids[idx]
+            new_dataset.add_sample(idx, full_sample)
         return new_dataset
