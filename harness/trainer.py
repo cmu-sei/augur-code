@@ -11,6 +11,7 @@ from utils import logging
 from utils import arguments
 from utils.logging import print_and_log
 from datasets import dataset
+from datasets.timeseries import TimeSeries
 # from utils import plotter
 
 DEFAULT_CONFIG_FILENAME = "./trainer_config.json"
@@ -149,6 +150,12 @@ def main():
     if CONFIG.get("evaluation") == "on":
         model = model_utils.load_model_from_file(CONFIG.get("model"))
         evaluate(model, evaluation_input, evaluation_output)
+    if CONFIG.get("time_series") == "on":
+        time_series = TimeSeries()
+        time_series.aggregate(dataset_instance, CONFIG.get("hyper_parameters").get("time_step_in_days"))
+        # TODO: imelement this method to train time series.
+        #model = train_time_series(time_series)
+        #model_utils.save_model_to_file(model, CONFIG.get("model"))
 
     print_and_log("Finished trainer session.")
     print_and_log("--------------------------------------------------------------------")
