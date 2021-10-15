@@ -1,17 +1,18 @@
 {
   "model_module": "iceberg.iceberg_model",
   "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
-  "dataset": "../input/train.json",
+  "dataset": "../output/merged_dataset.json",
   "model": "../output/trained_model",
+  "ts_model": "../output/trained_model_ts",
   "training": "off",
   "cross_validation": "off",
   "evaluation": "off",
-  "time_series": "on",
+  "time_series": "off",
   "hyper_parameters":
   {
     "epochs": 10,
     "batch_size": 32,
     "validation_size": 0.25,
-    "time_step_in_days": 1
+    "samples_per_time": 14
   }
 }

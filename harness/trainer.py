@@ -152,10 +152,11 @@ def main():
         evaluate(model, evaluation_input, evaluation_output)
     if CONFIG.get("time_series") == "on":
         time_series = TimeSeries()
-        time_series.aggregate(dataset_instance, CONFIG.get("hyper_parameters").get("time_step_in_days"))
-        # TODO: imelement this method to train time series.
+        time_series.aggregate_by_number_of_samples(dataset_instance, dataset_instance.get_output(),
+                                                   CONFIG.get("hyper_parameters").get("samples_per_time"))
+        # TODO: implement this method to train time series.
         #model = train_time_series(time_series)
-        #model_utils.save_model_to_file(model, CONFIG.get("model"))
+        #model_utils.save_model_to_file(model, CONFIG.get("ts_model"))
 
     print_and_log("Finished trainer session.")
     print_and_log("--------------------------------------------------------------------")
