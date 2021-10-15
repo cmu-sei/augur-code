@@ -16,9 +16,9 @@ class TimestampIntervalGenerator:
         """Calculates the time interval number where a timestamp falls into, given the time step."""
         return math.floor((self.timestamps[sample_idx] - self.min_timestamp) / self.time_step)
 
-    def get_max_time_interval(self):
-        """Returns the max time interval for the given timestamps."""
-        return self.calculate_time_interval(self.max_timestamp)
+    def get_number_of_intervals(self):
+        """Returns the number of intervals for the given timestamps."""
+        return self.calculate_time_interval(self.max_timestamp) + 1
 
 
 class NumSamplesIntervalGenerator:
@@ -32,9 +32,9 @@ class NumSamplesIntervalGenerator:
         """Calculates the time interval number where a sample falls into, given the time step."""
         return math.floor(sample_idx / self.samples_per_time)
 
-    def get_max_time_interval(self):
-        """Returns the max time interval for the total of samples."""
-        return self.calculate_time_interval(self.num_samples)
+    def get_number_of_intervals(self):
+        """Returns the number of intervals for the total of samples."""
+        return self.calculate_time_interval(self.num_samples - 1) + 1
 
 
 class TimeSeries:
@@ -48,9 +48,9 @@ class TimeSeries:
     def get_aggregated(self):
         return self.aggregated
 
-    def allocate(self, start_time_interval, max_time_interval):
-        """Allocates needed space for arrays. Plus 1 in range since we want to include that max interval."""
-        self.time_intervals = np.arange(start_time_interval, max_time_interval + 1)
+    def allocate(self, start_time_interval, num_intervals):
+        """Allocates needed space for arrays."""
+        self.time_intervals = np.arange(start_time_interval, num_intervals)
         self.aggregated = np.zeros(self.time_intervals.size)
 
     def add_data(self, time, aggregated_value):
@@ -65,8 +65,9 @@ class TimeSeries:
         """Aggregates a given dataset, and stores it in memory."""
         # Pre-allocate space, and fill up times, given timestamps in dataset.
         num_samples = dataset.get_number_of_samples()
-        max_time_interval = start_time_interval + interval_generator.get_max_time_interval()
-        self.allocate(start_time_interval, max_time_interval)
+        num_intervals = interval_generator.get_number_of_intervals()
+        max_time_interval = start_time_interval + num_intervals - 1
+        self.allocate(start_time_interval, num_intervals)
 
         # Go over all samples, adding their output to the corresponding position in the aggregated array.
         for sample_idx in range(0, num_samples):
