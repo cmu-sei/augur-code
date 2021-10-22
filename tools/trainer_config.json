@@ -7,8 +7,15 @@
   "training": "off",
   "cross_validation": "off",
   "evaluation": "off",
-  "time_series": "off",
+  "time_series_training": "off",
+  "time_series_evaluation": "off",
   "hyper_parameters":
+  {
+    "epochs": 10,
+    "batch_size": 32,
+    "validation_size": 0.25
+  },
+  "ts_hyper_parameters":
   {
     "epochs": 10,
     "batch_size": 32,

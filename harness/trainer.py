@@ -1,4 +1,3 @@
-import sys
 import logging
 
 import numpy as np
@@ -11,104 +10,13 @@ from utils import logging
 from utils import arguments
 from utils.logging import print_and_log
 from datasets import dataset
+from datasets.model_trainer import ModelTrainer
 from datasets.timeseries import TimeSeries
-# from utils import plotter
+import datasets.timeseries_model as timeseries_model
 
 DEFAULT_CONFIG_FILENAME = "./trainer_config.json"
+TIMESERIES_MODEL_MODULE = "timeseries_model"
 CONFIG = Config()
-
-MODEL_MODULE = None
-
-
-def get_callbacks(patience=2):
-    """Gets helper callbacks to save checkpoints and allow early stopping when needed."""
-    file_path = ".model_weights.hdf5"
-    es = tfcb.EarlyStopping('val_loss', patience=patience, mode="min")
-    msave = tfcb.ModelCheckpoint(file_path, save_best_only=True)
-    return [es, msave]
-
-
-def train(training_set):
-    """Train."""
-    print_and_log("TRAINING")
-
-    model = MODEL_MODULE.create_model()
-    # model.summary()
-
-    epochs = CONFIG.get("hyper_parameters").get("epochs")
-    batch_size = CONFIG.get("hyper_parameters").get("batch_size")
-    print_and_log(f'Starting training with hyper parameters: epochs: {epochs}, batch size: {batch_size}')
-
-    validation_data = None
-    callbacks = None
-    if training_set.has_validation():
-        print_and_log("Validation data found")
-        validation_data = (training_set.x_validation, training_set.y_validation)
-        callbacks = get_callbacks(patience=5)
-
-    history = model.fit(training_set.x_train, training_set.y_train,
-                        epochs=epochs,
-                        validation_data=validation_data,
-                        batch_size=batch_size,
-                        callbacks=callbacks)
-    print_and_log(f'Final training result ({len(history.history.get("loss"))} epochs): '
-                  f'loss: {history.history.get("loss")[-1]}, '
-                  f'accuracy: {history.history.get("accuracy")[-1]}')
-    if training_set.has_validation():
-        print_and_log(f'Validation: val_loss: {history.history.get("val_loss")[-1]}, '
-                      f'val_accuracy: {history.history.get("val_accuracy")[-1]}')
-
-    print("Done training!", flush=True)
-    # plotter.show_results(history)
-
-    return model, history
-
-
-def evaluate(model, x_inputs, y_inputs):
-    """Does an evaluation."""
-    # Load evaluation dataset and model.
-    print_and_log("EVALUATION")
-    print("Starting evaluation", flush=True)
-    batch_size = CONFIG.get("hyper_parameters").get("batch_size")
-    scores = model.evaluate(x_inputs, y_inputs, batch_size=batch_size)
-    print(f'Done! Evaluation loss and acc: {scores}')
-    return scores
-
-
-def cross_validate(full_dataset, num_folds=5):
-    """k-fold cross-validation to check how model is performing by selecting different sets to train/validate."""
-
-    # Define the K-fold Cross Validator
-    print_and_log("CROSS VALIDATION")
-    kfold = KFold(n_splits=num_folds, shuffle=True)
-
-    # K-fold Cross Validation model evaluation
-    acc_per_fold = []
-    loss_per_fold = []
-    fold_no = 1
-    for train_index, test_index in kfold.split(full_dataset.get_single_input(), full_dataset.get_output()):
-        # Generate a print
-        print('------------------------------------------------------------------------')
-        print_and_log(f'Training for fold {fold_no} ...')
-
-        training_set = MODEL_MODULE.get_fold_data(full_dataset, train_index, test_index)
-
-        # Fit data to model
-        print_and_log(f'Training fold samples: {training_set.num_train_samples}')
-        model, history = train(training_set)
-
-        # Generate generalization metrics
-        print_and_log(f'Evaluation fold samples: {training_set.num_validation_samples}')
-        scores = evaluate(model, training_set.x_validation, training_set.y_validation)
-        print_and_log(f'Score for fold {fold_no}: {model.metrics_names[0]} of {scores[0]}; '
-                      f'{model.metrics_names[1]} of {scores[1]*100}%')
-        acc_per_fold.append(scores[1] * 100)
-        loss_per_fold.append(scores[0])
-
-        # Increase fold number
-        fold_no = fold_no + 1
-
-    print_and_log("Done with cross-validation!")
 
 
 # Main code.
@@ -121,42 +29,39 @@ def main():
     config_file = Config.get_config_file(args, "./", DEFAULT_CONFIG_FILENAME)
     CONFIG.load(config_file)
 
-    # Loading model and dataset
-    global MODEL_MODULE
-    MODEL_MODULE = dataset.load_model_module(CONFIG.get("model_module"))
-
+    # Loading models and dataset
     print_and_log("--------------------------------------------------------------------")
     print_and_log("Starting trainer session.")
+
+    main_model_module = dataset.load_model_module(CONFIG.get("model_module"))
+    ts_model_module = dataset.load_model_module(TIMESERIES_MODEL_MODULE)
+    main_trainer = ModelTrainer(main_model_module, CONFIG.get("hyper_parameters"))
+    ts_trainer = ModelTrainer(ts_model_module, CONFIG.get("ts_hyper_parameters"))
 
     dataset_class = dataset.load_dataset_class(CONFIG.get("dataset_class"))
     dataset_instance = dataset_class()
     dataset_instance.load_from_file(CONFIG.get("dataset"))
-    evaluation_input = dataset_instance.get_model_input()
-    evaluation_output = dataset_instance.get_output()
 
     # Run steps depending on config.
     if CONFIG.get("training") == "on":
-        training_set = MODEL_MODULE.split_data(dataset_instance, CONFIG.get("hyper_parameters").get("validation_size"))
-        print_and_log(f'Dataset samples {dataset_instance.get_number_of_samples()}, '
-                      f'training samples: {len(training_set.x_train[0])}, '
-                      f'validation samples: {len(training_set.x_validation[0])}')
-
-        model, history = train(training_set)
-        model_utils.save_model_to_file(model, CONFIG.get("model"))
-        evaluation_input = training_set.x_validation
-        evaluation_output = training_set.y_validation
+        trained_model = main_trainer.split_and_train(dataset_instance)
+        model_utils.save_model_to_file(trained_model, CONFIG.get("model"))
     if CONFIG.get("cross_validation") == "on":
-        cross_validate(dataset_instance)
+        main_trainer.cross_validate(dataset_instance)
     if CONFIG.get("evaluation") == "on":
-        model = model_utils.load_model_from_file(CONFIG.get("model"))
-        evaluate(model, evaluation_input, evaluation_output)
-    if CONFIG.get("time_series") == "on":
+        trained_model = model_utils.load_model_from_file(CONFIG.get("model"))
+        default_evaluation_input = dataset_instance.get_model_input()
+        default_evaluation_output = dataset_instance.get_output()
+        main_trainer.evaluate(trained_model, default_evaluation_input, default_evaluation_output)
+    if CONFIG.get("time_series_training") == "on":
         time_series = TimeSeries()
         time_series.aggregate_by_number_of_samples(dataset_instance, dataset_instance.get_output(),
-                                                   CONFIG.get("hyper_parameters").get("samples_per_time"))
-        # TODO: implement this method to train time series.
-        #model = train_time_series(time_series)
-        #model_utils.save_model_to_file(model, CONFIG.get("ts_model"))
+                                                   CONFIG.get("ts_hyper_parameters").get("samples_per_time"))
+        trained_model, history = ts_trainer.train(timeseries_model.create_model(), training_set)
+        model_utils.save_model_to_file(trained_model, CONFIG.get("ts_model"))
+    if CONFIG.get("time_series_evaluation") == "on":
+        model = model_utils.load_model_from_file(CONFIG.get("ts_model"))
+        ts_trainer.evaluate(model)
 
     print_and_log("Finished trainer session.")
     print_and_log("--------------------------------------------------------------------")
