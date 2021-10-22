@@ -4,7 +4,7 @@
   "dataset": "../output/merged_dataset.json",
   "model": "../output/trained_model",
   "ts_model": "../output/trained_model_ts",
-  "training": "off",
+  "training": "on",
   "cross_validation": "off",
   "evaluation": "off",
   "time_series_training": "off",
