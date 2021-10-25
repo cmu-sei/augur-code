@@ -124,7 +124,6 @@ class DataSet(abc.ABC):
         dataset_df = self.as_dataframe()
         dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
 
-    @abstractmethod
     def get_model_input(self):
         """Returns the inputs to be used."""
         raise NotImplementedError()
@@ -134,10 +133,8 @@ class DataSet(abc.ABC):
         If dataset provides just one input, this should return the same as get_model_input."""
         return self.get_model_input()
 
-    @abstractmethod
     def get_output(self):
         raise NotImplementedError()
 
-    @abstractmethod
     def set_output(self, new_output):
         raise NotImplementedError()

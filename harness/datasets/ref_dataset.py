@@ -57,6 +57,11 @@ class RefDataSet(DataSet):
         unique, counts = np.unique(self.sample_group_ids, return_counts=True)
         return counts[0]
 
+    def allocate_space(self, size):
+        """Pre-allocates the space for this dataset to avoid scalability issues, when the size is known."""
+        self.x_original_ids = np.empty(size, dtype=str)
+        self.sample_group_ids = np.zeros(size, dtype=str)
+
     def load_from_file(self, dataset_filename):
         """Loads data from a JSON file into this object."""
         dataset_df = super().load_from_file(dataset_filename)

@@ -20,7 +20,7 @@
     "params":
     {
       "max_num_samples":  20,
-      "timebox_size": 5
+      "sample_group_size": 5
     }
   }
 }
