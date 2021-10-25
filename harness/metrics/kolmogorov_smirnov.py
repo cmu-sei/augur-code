@@ -2,14 +2,15 @@ import numpy as np
 from scipy.stats import ks_2samp
 
 
-def metric_error(timebox, dataset, predictions):
+def metric_error(sample_group, dataset=None, predictions=None):
     """Calculates the Kolmogorov-Smirnov error."""
-    ks_stat = ks_2samp(timebox.get_expected_results(), timebox.get_predictions()).statistic
+    ks_stat = ks_2samp(sample_group.get_expected_results(), sample_group.get_predictions()).statistic
     print(f"KS Test: {ks_stat}")
     return ks_stat
 
+
 if __name__ == "__main__":
-    class Timebox:
+    class TestSampleGroup:
 
         def __init__(self, samples):
             self.samples = samples
@@ -21,7 +22,7 @@ if __name__ == "__main__":
             return np.random.random(self.samples)
 
     n = 100
-    timebox = Timebox(n)
-    kstest = metric_error(timebox)
+    sample_group = TestSampleGroup(n)
+    kstest = metric_error(sample_group)
     print(f"Length of return is {np.array(kstest).size}")
     

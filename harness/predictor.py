@@ -12,7 +12,7 @@ from utils import arguments
 from utils import logging
 from utils.logging import print_and_log
 from datasets import dataset
-from utils.timebox import TimeBox
+from utils.samplegroup import SampleGroup
 import metrics.base_metric as augur_metrics
 
 DEFAULT_CONFIG_FILENAME = "./predictor_config.json"
@@ -55,7 +55,7 @@ def calculate_metrics(dataset, predictions, config, reference_dataset):
         print_and_log("No metrics configured.")
         return None
 
-    timebox_size = reference_dataset.get_timebox_size()
+    timebox_size = reference_dataset.get_sample_group_size()
     print_and_log(f"Timebox size: {timebox_size}")
 
     metrics = config.get("metrics")
@@ -74,7 +74,7 @@ def calculate_metrics(dataset, predictions, config, reference_dataset):
             # Set up timebox.
             if timebox_id not in timeboxes.keys():
                 print_and_log(f"Setting up timebox with id: {timebox_id}")
-                timebox = TimeBox(timebox_id, timebox_size)
+                timebox = SampleGroup(timebox_id, timebox_size)
                 timebox.set_data(predictions, curr_sample_idx)
                 timebox.calculate_accuracy()
                 timeboxes[timebox_id] = timebox

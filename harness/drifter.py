@@ -83,26 +83,26 @@ def apply_drift(input_bins, drift_module, params):
     """Applies drift on a given dataset"""
     print("Applying drift to generated drifted dataset.")
     max_num_samples = params.get("max_num_samples")
-    timebox_size = params.get("timebox_size")
-    shuffle_on = params.get("timebox_shuffle") if "timebox_shuffle" in params else True
+    sample_group_size = params.get("sample_group_size")
+    shuffle_on = params.get("sample_group_shuffle") if "sample_group_shuffle" in params else True
 
     # Loop until we get all samples we want.
     drifted_dataset = ref_dataset.RefDataSet()
     curr_bin_offset = 0
-    timebox_id = 0
+    sample_group_id = 0
     while drifted_dataset.get_number_of_samples() < max_num_samples:
-        print_and_log(f"Now getting data for timebox of size {timebox_size}, using bin offset {curr_bin_offset}")
-        timebox_sample_ids = generate_timebox_samples(drift_module, timebox_id, curr_bin_offset, input_bins, timebox_size, params)
+        print_and_log(f"Now getting data for sample group of size {sample_group_size}, using bin offset {curr_bin_offset}")
+        sample_group_sample_ids = generate_sample_group_samples(drift_module, sample_group_id, curr_bin_offset, input_bins, sample_group_size, params)
 
-        # Randomize results in timebox to avoid stacking bin results at the end.
+        # Randomize results in sample group to avoid stacking bin results at the end.
         if shuffle_on:
-            print_and_log("Shuffling timebox samples.")
-            random.shuffle(timebox_sample_ids)
-        drifted_dataset.add_multiple_references(timebox_sample_ids, timebox_id)
+            print_and_log("Shuffling sample group samples.")
+            random.shuffle(sample_group_sample_ids)
+        drifted_dataset.add_multiple_references(sample_group_sample_ids, sample_group_id)
 
         # Offset to indicate the starting bin for the condition.
         curr_bin_offset = (curr_bin_offset + 1) % len(input_bins)
-        timebox_id += 1
+        sample_group_id += 1
     print_and_log("Finished applying drift")
     return drifted_dataset
 
@@ -129,13 +129,13 @@ def add_timestamps(drifted_dataset, timestamp_params):
     print_and_log("Generated and stored timestamps.")
 
 
-def generate_timebox_samples(drift_module, timebox_id, curr_bin_offset, input_bins, timebox_size, params):
-    """Chooses samples for a given timebox size, and from the given current bin index."""
+def generate_sample_group_samples(drift_module, sample_group_id, curr_bin_offset, input_bins, sample_group_size, params):
+    """Chooses samples for a given sample group size, and from the given current bin index."""
 
-    # Get all values for this timebox.
-    timebox_sample_ids = []
-    for sample_index in range(0, timebox_size):
-        bin_idx = drift_module.get_bin_index(sample_index, timebox_id, curr_bin_offset, len(input_bins), params)
+    # Get all values for this sample group.
+    sample_group_sample_ids = []
+    for sample_index in range(0, sample_group_size):
+        bin_idx = drift_module.get_bin_index(sample_index, sample_group_id, curr_bin_offset, len(input_bins), params)
         print_and_log(f"Selecting from bin {bin_idx}")
         curr_bin = input_bins[bin_idx]
 
@@ -143,8 +143,8 @@ def generate_timebox_samples(drift_module, timebox_id, curr_bin_offset, input_bi
             print_and_log(f"No more items in queue, resetting it.")
             curr_bin.setup_queue()
         next_sample_id = curr_bin.pop_from_queue()
-        timebox_sample_ids.append(next_sample_id)
-    return timebox_sample_ids
+        sample_group_sample_ids.append(next_sample_id)
+    return sample_group_sample_ids
 
 
 def test_drift(config, drift_module, drift_params, bin_params):
