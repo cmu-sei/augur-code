@@ -42,11 +42,15 @@ class TimeSeries:
     time_intervals = np.empty(0, dtype=int)
     aggregated = np.empty(0)
 
-    def get_times(self):
+    def get_time_intervals(self):
         return self.time_intervals
 
     def get_aggregated(self):
         return self.aggregated
+
+    def get_model_input(self):
+        """Returns the time intervals and aggregated values as a model input."""
+        return [self.get_time_intervals(), self.get_aggregated()]
 
     def allocate(self, start_time_interval, num_intervals):
         """Allocates needed space for arrays."""

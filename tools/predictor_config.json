@@ -6,7 +6,8 @@
     "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
     "dataset": "../output/drift.json",
     "base_dataset": "../output/merged_dataset.json",
-    "model": "../output/trained_model"
+    "model": "../output/trained_model",
+    "ts_model": "../output/trained_model_ts"
   },
   "output":
   {

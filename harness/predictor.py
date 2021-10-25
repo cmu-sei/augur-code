@@ -3,6 +3,7 @@ import os
 import shutil
 import datetime
 
+from datasets.timeseries import TimeSeries
 from training import model_utils
 from training.predictions import Predictions
 from datasets import ref_dataset
@@ -33,11 +34,19 @@ def load_datasets(input_config):
     return full_dataset, reference_dataset
 
 
-def predict(model, model_input):
-    """Generates predictions based on model and SAR data."""
-    predictions = model.predict(model_input).flatten()
-    print_and_log(f"Predictions shape: {predictions.shape}")
+def predict(model, model_input, threshold):
+    """Generates predictions based on model, returns object with raw and classified predictions."""
+    raw_predictions = model.predict(model_input).flatten()
+    print_and_log(f"Predictions shape: {raw_predictions.shape}")
+    predictions = Predictions(threshold)
+    predictions.store_raw_predictions(raw_predictions)
+    predictions.classify_raw_predictions()
     return predictions
+
+
+# TODO: Create this updated method
+def calculate_metrics2():
+    pass
 
 
 def calculate_metrics(dataset, predictions, config, reference_dataset):
@@ -168,11 +177,13 @@ def main():
     model = model_utils.load_model_from_file(config.get("input").get("model"))
     model.summary()
 
+    # Load TS model.
+    print_and_log("Loading time-series model")
+    ts_model = model_utils.load_model_from_file(config.get("input").get("ts_model"))
+    print_and_log("Time-series model Loaded.")
+
     # Predict.
-    raw_predictions = predict(model, full_dataset.get_model_input())
-    predictions = Predictions(config.get("threshold"))
-    predictions.store_raw_predictions(raw_predictions)
-    predictions.classify_raw_predictions()
+    predictions = predict(model, full_dataset.get_model_input(), config.get("threshold"))
 
     # Save to file, depending on mode, and calculate metrics if needed.
     mode = config.get("mode")
@@ -180,8 +191,15 @@ def main():
         predictions.store_expected_results(full_dataset.get_output())
         save_predictions(full_dataset, predictions, config.get("output").get("predictions_output"), reference_dataset)
 
+        # Aggregate dataset and run time series model.
+        time_series = TimeSeries()
+        time_series.aggregate_by_timestamp(full_dataset, predictions.get_predictions(),
+                                           config.get("hyper_parameters").get("time_step"))
+        ts_predictions = predict(ts_model, time_series.get_model_input(), config.get("threshold"))
+
         # We can only calculate metrics if we have a ref dataset, since they are calculated by timebox,
         # which are only defined in a reference datasets.
+        # TODO: Change this to calculate time series metrics. Call may be similar, different params.
         if reference_dataset is not None:
             metric_results = calculate_metrics(full_dataset, predictions, config, reference_dataset)
             save_metrics(metric_results, config.get("output").get("metrics_output"))
