@@ -11,7 +11,6 @@ from utils.config import Config
 from utils import databin
 from utils import logging
 from utils.logging import print_and_log
-from training import predictions
 from datasets import dataset
 
 DEFAULT_CONFIG_FILENAME = "./drifter_config.json"
@@ -25,12 +24,6 @@ def load_bins(dataset_filename, dataset_class_name, bin_params, predictions_file
     dataset_class = dataset.load_dataset_class(dataset_class_name)
     base_dataset = dataset_class()
     base_dataset.load_from_file(dataset_filename)
-
-    # If present, load predictions info.
-    if predictions_filename is not None:
-        preds = predictions.Predictions()
-        preds.load_from_file(predictions_filename)
-        # TODO: Connect predictions with full dataset. Assumption right now is that samples are in the same order.
 
     # Sort into bins.
     print_and_log(f"Bins: {bin_params}")
@@ -184,15 +177,10 @@ def main():
     if args.test:
         test_drift(config, drift_module, params, config.get("bins"))
     else:
-        # Check optional predictions input.
-        full_predictions = None
-        if config.contains("predictions"):
-            full_predictions = config.get("predictions")
-
         # Apply drift.
         bin_value = config.get("bin_value") if config.contains("bin_value") else "results"
         bin_shuffle = config.get("bin_shuffle") if config.contains("bin_shuffle") else True
-        bins = load_bins(config.get("dataset"), config.get("dataset_class"), config.get("bins"), full_predictions, bin_value, bin_shuffle)
+        bins = load_bins(config.get("dataset"), config.get("dataset_class"), config.get("bins"), bin_value, bin_shuffle)
         drifted_dataset = apply_drift(bins, drift_module, params)
         add_timestamps(drifted_dataset, config.get("timestamps"))
 
