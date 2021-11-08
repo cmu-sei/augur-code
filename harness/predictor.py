@@ -12,7 +12,6 @@ from utils import arguments
 from utils import logging
 from utils.logging import print_and_log
 from datasets import dataset
-from utils.samplegroup import SampleGroup
 import metrics.base_metric as augur_metrics
 
 DEFAULT_CONFIG_FILENAME = "./predictor_config.json"
@@ -44,56 +43,41 @@ def predict(model, model_input, threshold):
     return predictions
 
 
-# TODO: Create this updated method
-def calculate_metrics2():
-    pass
+def ts_predict(model, model_input, threshold):
+    """Generates predictions based on model, returns object with raw and classified predictions."""
+    raw_predictions = model.predict(model_input).flatten()
+    print_and_log(f"Predictions shape: {raw_predictions.shape}")
+    ts_predictions = TimeSeries()
+    # TODO: load the raw_predictions somehow in the TimeSeries result.
+    return ts_predictions
 
 
-def calculate_metrics(dataset, predictions, config, reference_dataset):
+def calculate_metrics(time_series, ts_predictions, config):
     """Calculates metrics for the given configs and dataset."""
     if not config.contains("metrics"):
         print_and_log("No metrics configured.")
         return None
 
-    timebox_size = reference_dataset.get_sample_group_size()
-    print_and_log(f"Timebox size: {timebox_size}")
-
+    # TODO: Accuracy is not calculated, maybe move to separate function before this one?
     metrics = config.get("metrics")
     results = {}
-    timeboxes = {}
     for metric_info in metrics:
         metric_name = metric_info.get('name')
         print_and_log(f"Loading metric: {metric_name}")
         metric = augur_metrics.create_metric(metric_info)
         metric.load_metric_functions(metric_info)
-        metric.initial_setup(dataset, predictions.get_predictions())
+        metric.initial_setup(time_series, ts_predictions)
 
-        curr_sample_idx = 0
-        timebox_id = 0
-        while curr_sample_idx < dataset.get_number_of_samples():
-            # Set up timebox.
-            if timebox_id not in timeboxes.keys():
-                print_and_log(f"Setting up timebox with id: {timebox_id}")
-                timebox = SampleGroup(timebox_id, timebox_size)
-                timebox.set_data(predictions, curr_sample_idx)
-                timebox.calculate_accuracy()
-                timeboxes[timebox_id] = timebox
-
+        for interval_index, time_interval in enumerate(time_series.get_time_intervals()):
             # Calculate metric.
-            curr_timebox = timeboxes[timebox_id]
-            metric.step_setup(curr_timebox)
+            metric.step_setup(interval_index)
             metric_value = metric.calculate_metric()
-            curr_timebox.set_metric_value(metric_name, metric_value)
 
             # Accumulate results.
-            if curr_timebox.id not in results.keys():
-                results[curr_timebox.id] = curr_timebox.to_dict()
-                results[curr_timebox.id]["metrics"] = []
-            results[curr_timebox.id]["metrics"].append({"name": metric_name, "value": curr_timebox.metric_value})
-
-            # Update for next cycle.
-            curr_sample_idx += timebox_size
-            timebox_id += 1
+            if interval_index not in results.keys():
+                results[interval_index] = {}
+                results[interval_index]["metrics"] = []
+            results[interval_index]["metrics"].append({"name": metric_name, "value": metric_value})
 
     return results
 
@@ -195,14 +179,11 @@ def main():
         time_series = TimeSeries()
         time_series.aggregate_by_timestamp(full_dataset, predictions.get_predictions(),
                                            config.get("hyper_parameters").get("time_step"))
-        ts_predictions = predict(ts_model, time_series.get_model_input(), config.get("threshold"))
+        ts_predictions = ts_predict(ts_model, time_series.get_model_input(), config.get("threshold"))
 
-        # We can only calculate metrics if we have a ref dataset, since they are calculated by timebox,
-        # which are only defined in a reference datasets.
-        # TODO: Change this to calculate time series metrics. Call may be similar, different params.
-        if reference_dataset is not None:
-            metric_results = calculate_metrics(full_dataset, predictions, config, reference_dataset)
-            save_metrics(metric_results, config.get("output").get("metrics_output"))
+        # Calculate and store metrics.
+        metric_results = calculate_metrics(time_series, ts_predictions, config)
+        save_metrics(metric_results, config.get("output").get("metrics_output"))
 
         # If requested, package this experiment results.
         if args.store:

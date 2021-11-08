@@ -41,12 +41,19 @@ class TimeSeries:
     """Represents a time series with a time interval and an aggregated value."""
     time_intervals = np.empty(0, dtype=int)
     aggregated = np.empty(0)
+    pdf = np.empty(0)
 
     def get_time_intervals(self):
         return self.time_intervals
 
     def get_aggregated(self):
         return self.aggregated
+
+    def get_pdf(self):
+        return self.pdf
+
+    def set_pdf(self, pdf):
+        self.pdf = pdf
 
     def get_model_input(self):
         """Returns the time intervals and aggregated values as a model input."""
@@ -56,12 +63,14 @@ class TimeSeries:
         """Allocates needed space for arrays."""
         self.time_intervals = np.arange(start_time_interval, num_intervals)
         self.aggregated = np.zeros(self.time_intervals.size)
+        self.pdf = np.zeros(self.time_intervals.size)
 
-    def add_data(self, time, aggregated_value):
+    def add_data(self, time, aggregated_value, pdf=None):
         """Adds aggregated data to the given time position."""
         if time in self.time_intervals:
             idx = np.where(self.time_intervals == time)
             self.aggregated[idx] = aggregated_value
+            self.pdf[idx] = pdf
         else:
             raise Exception(f"Invalid time index, not found in times array: {time}")
 
