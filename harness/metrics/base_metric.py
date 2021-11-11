@@ -1,5 +1,10 @@
 import importlib
 
+import numpy as np
+from scipy.stats import norm
+
+from utils.logging import print_and_log
+
 
 def load_metric_module(module_name):
     """Loads a metric module given the name"""
@@ -29,14 +34,14 @@ def check_module_loaded(metric_module):
 class Metric:
     """Generic Metric class, will load specific metric module as required."""
     metric_module = None
-    metric_params = None
+    config_params = None
     time_series = None
     ts_predictions = None
 
     def load_metric_functions(self, config):
         """Loads a metric module from config."""
         self.metric_module = load_metric_module(config.get("module"))
-        self.metric_params = config.get("params")
+        self.config_params = config.get("params")
 
     def initial_setup(self, time_series, ts_predictions):
         """Method to be called once before starting to work with this metric."""
@@ -66,17 +71,75 @@ class ErrorMetric(Metric):
             return self.metric_module.metric_error(self.time_interval_id, self.time_series, self.ts_predictions)
 
 
+class DensityEstimator:
+    """Implements most common density functions."""
+
+    # Helper array with range of potential valid values used to calculate distributions.
+    DIST_RANGE_STEP = 0.001
+    dist_range = None
+    config_params = None
+
+    def __init__(self, config_params, metric_module):
+        """Gets the config params and sets up the dist range."""
+        self.config_params = config_params
+        self.metric_module = metric_module
+        self.setup_valid_range()
+
+    def setup_valid_range(self):
+        """ Compute the dist range based the configuration."""
+        if self.dist_range is None:
+            range_start = self.config_params.get("range_start")
+            range_end = self.config_params.get("range_end")
+            print_and_log(f"Range: {range_start} to {range_end}")
+            self.dist_range = np.arange(range_start, range_end, self.DIST_RANGE_STEP)
+
+    def calculate_probability_distribution(self, data, metric_params):
+        """Calculates and returns the probability distribution for the given data."""
+        distribution = self.config_params.get("distribution")
+        print_and_log(f"Using distribution: {distribution}")
+        if distribution == "custom":
+            if check_module_loaded(self.metric_module):
+                return self._calculate_custom_dist(data, metric_params, self.metric_module)
+        elif distribution == "normal":
+            return self._calculate_normal_dist(data, metric_params)
+        else:
+            raise Exception(f"Unsupported distribution type: {distribution}")
+
+    def _calculate_custom_dist(self, data, metric_params):
+        """Calls custom density function implemented in defined module."""
+        try:
+            print_and_log("Using custom density function.")
+            return self.metric_module.metric_density(data, self.dist_range, metric_params, self.config_params)
+        except AttributeError:
+            error_msg = "Custom distribution density function not implemented, aborting."
+            print_and_log(error_msg)
+            raise Exception(error_msg)
+
+    def _calculate_normal_dist(self, data, params):
+        """Normal dist calculation."""
+        mean = np.mean(data)
+        std_dev = params.get("std_dev")
+        print_and_log(f"Mean: {mean}, Std Dev: {std_dev}")
+        return norm.pdf(self.dist_range, mean, std_dev)
+
+
 class DistanceMetric(Metric):
     """Implements a distance-based metric that can load metric-specific functions from a config."""
     prev_probability_distribution = []  # P
     curr_probability_distribution = []  # Q
+    density_estimator = None
+
+    def initial_setup(self, time_series, ts_predictions):
+        """Overriden."""
+        super().initial_setup(time_series, ts_predictions)
+        self.density_estimator = DensityEstimator(self.config_params, self.metric_module)
 
     def step_setup(self, time_interval_id):
         """Overriden."""
         # Calculate the probability distribution for the time interval.
-        # TODO: How to calculate P.
-        self.prev_probability_distribution = TODO
-        self.curr_probability_distribution = self.ts_predictions.get_pdf()[time_interval_id]
+        self.prev_probability_distribution = self.density_estimator.calculate_probability_distribution(self.time_series.get_aggregated(),
+                                                                                                       self.time_series.get_pdf_params(time_interval_id))
+        self.curr_probability_distribution = self.ts_predictions.get_pdf(time_interval_id)
 
     def calculate_metric(self):
         """Calculates the distance defined for the current prob dist and the reference one."""

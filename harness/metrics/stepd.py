@@ -1,13 +1,9 @@
-import numpy as np
 
 
-def metric_error(sample_group, dataset, predictions):
+def metric_error(time_interval, time_series, ts_predictions):
     """Calculates the STEPD error."""
-    r0 = np.count_nonzero(np.array_equal(dataset.get_output(), predictions))
-    n0 = dataset.get_number_of_samples()
-    rr = np.count_nonzero(sample_group.get_correctness())
-    nr = sample_group.get_number_of_samples()
-
-    p_hat = (r0 + rr) / (n0 + nr)
-    t = abs((r0 / rr) - (n0 / nr)) - 0.5 * (1 / n0 + 1 / nr) / np.sqrt(p_hat * (1 - p_hat) * (1 / n0 + 1 / nr))
+    x1 = time_series.get_aggregated(time_interval)
+    x2 = ts_predictions.get_pdf_params(time_interval).get("mean")
+    sigma = ts_predictions.get_pdf_params(time_interval).get("std_dev")
+    t = (x1 - x2) / sigma
     return t

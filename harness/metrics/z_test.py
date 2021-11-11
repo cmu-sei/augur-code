@@ -2,9 +2,11 @@ import numpy as np
 from scipy.stats import ttest_ind
 
 
-def metric_error(sample_group, dataset=None, predictions=None):
+def metric_error(time_interval_id, time_series, ts_predictions):
     """Calculates the z test statistic."""
-    z_stat = ttest_ind(sample_group.get_expected_results(), sample_group.get_predictions()).statistic
+    # TODO: Fix this error metric.
+    #z_stat = ttest_ind(sample_group.get_expected_results(), sample_group.get_predictions()).statistic
+    z_stat = 0
     print(f"Z Test: {z_stat}")
     return z_stat
 

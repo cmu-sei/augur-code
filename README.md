@@ -62,15 +62,14 @@ This function should return the index of the bin to select the next sample from,
 #### Metric Modules
 New metric modules can be added to the harness/metrics folder. Each module needs to implement multiple functions, depending on the metric type.
 
-For Distance Metrics, three functions are needed:
+For Distance Metrics, two functions are needed (one is optional):
 
- - `def metric_density(data, valid_range, density_params)` - OPTIONAL: Calculates the probability density function for the given data (a numpy array), with the given valid_range of potential valid values, with the optional given params (a dictionary). The "distribution" config value has to be set to "custom" for this to be used (see README in tools\).
- - `def metric_reduction(probability_distribution)` - OPTIONAL: Applies dimensionality reduction to the given probability distribution. Doesn't need to be implemented if no reduction is required.
  - `def metric_distance(p, q)`: Calculates a distance value between the two given probability distributions (numpy arrays).
+ - `def metric_density(data, valid_range, density_params, config_params)` - OPTIONAL: Calculates the probability density function for the given data (a numpy array), with the given valid_range of potential valid values, with the available density params (a dictionary), and the optional configuration params (a dictionary). The "distribution" config value has to be set to "custom" for this to be used (see README in tools\).
 
  For Error Metrics, at least one function is needed:
 
-  - `def metric_error(timebox, dataset, predictions)`: Calculates the error for the given timebox, knowing the ground truth from the dataset, and the predictions as a parameter, if needed.
+  - `def metric_error(time_interval_id, time_series, ts_predictions)`: Calculates the error for the given time interval, knowing the aggregated data from the time_series, and the time series predictions as a parameter.
 
 #### Dataset Structures
 New dataset structures should be added to the harness/datasets folder, to a subfolder with the name of the new structure. Two modules should be added in there: a dataset module and a model module. The recommended naming structure is:

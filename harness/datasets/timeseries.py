@@ -42,18 +42,35 @@ class TimeSeries:
     time_intervals = np.empty(0, dtype=int)
     aggregated = np.empty(0)
     pdf = np.empty(0)
+    pdf_params = np.empty(0)
 
     def get_time_intervals(self):
         return self.time_intervals
 
-    def get_aggregated(self):
-        return self.aggregated
+    def get_aggregated(self, time_interval_id=None):
+        """Returns either the full array of aggregated values, or a specific one by the time interval index."""
+        if time_interval_id is None:
+            return self.aggregated
+        else:
+            if time_interval_id > len(self.aggregated):
+                return self.aggregated[time_interval_id]
+            else:
+                raise Exception(f"Invalid time interval id passed: {time_interval_id}, length is {len(self.aggregated)}")
 
-    def get_pdf(self):
-        return self.pdf
+    def get_pdf(self, time_interval_id):
+        if time_interval_id > len(self.pdf):
+            return self.pdf[time_interval_id]
+        else:
+            raise Exception(f"Invalid time interval id passed: {time_interval_id}, length is {len(self.pdf)}")
 
     def set_pdf(self, pdf):
         self.pdf = pdf
+
+    def get_pdf_params(self, time_interval_id):
+        if time_interval_id > len(self.pdf_params):
+            return self.pdf_params[time_interval_id]
+        else:
+            raise Exception(f"Invalid time interval id passed: {time_interval_id}, length is {len(self.pdf_params)}")
 
     def get_model_input(self):
         """Returns the time intervals and aggregated values as a model input."""
@@ -64,13 +81,15 @@ class TimeSeries:
         self.time_intervals = np.arange(start_time_interval, num_intervals)
         self.aggregated = np.zeros(self.time_intervals.size)
         self.pdf = np.zeros(self.time_intervals.size)
+        self.pdf_params = np.zeros(self.time_intervals.size)    #TODO: check this
 
-    def add_data(self, time, aggregated_value, pdf=None):
+    def add_data(self, time, aggregated_value, pdf=None, pdf_params=None):
         """Adds aggregated data to the given time position."""
         if time in self.time_intervals:
             idx = np.where(self.time_intervals == time)
             self.aggregated[idx] = aggregated_value
             self.pdf[idx] = pdf
+            self.pdf_params[idx] = pdf_params
         else:
             raise Exception(f"Invalid time index, not found in times array: {time}")
 

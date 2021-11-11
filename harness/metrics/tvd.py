@@ -8,6 +8,7 @@ def metric_distance(p, q):
     print(f"Total variation distance: {tvd}")
     return tvd
 
+
 if __name__ == "__main__":
     n = 1000
     p = np.random.random(n)

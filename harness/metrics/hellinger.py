@@ -7,6 +7,7 @@ def metric_distance(p, q):
     print(f"Hellinger Distance: {hellinger_dist}")
     return hellinger_dist
 
+
 if __name__ == "__main__":
     n = 1000
     p = np.random.random(n)
