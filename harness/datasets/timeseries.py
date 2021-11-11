@@ -47,8 +47,8 @@ class TimeSeries:
 
     def check_valid_id(self, time_interval_id):
         """Checks if the interval id is inside the valid range"""
-        if time_interval_id > len(self.time_intervals) or time_interval_id < 0:
-            raise Exception(f"Invalid time interval id passed: {time_interval_id}, length is {len(self.time_intervals)}")
+        if time_interval_id > self.time_intervals.size or time_interval_id < 0:
+            raise Exception(f"Invalid time interval id passed: {time_interval_id}, length is {self.time_intervals.size}")
 
     def get_time_intervals(self):
         """Getter for the list of time intervals."""

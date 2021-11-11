@@ -98,6 +98,8 @@ class DataSet(abc.ABC):
             self.x_ids = np.array(dataset_df[id_key])
             if timestamp_key in dataset_df.columns:
                 self.timestamps = convert_to_timestamp(np.array(dataset_df[timestamp_key]))
+            else:
+                self.timestamps = np.zeros(self.x_ids.size)
         except KeyError as ex:
             raise Exception(f"Could not load ids from dataset '{dataset_filename}': {type(ex).__name__}: {str(ex)}")
         print("Done storing ids", flush=True)
