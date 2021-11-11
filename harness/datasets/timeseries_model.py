@@ -4,6 +4,10 @@ import sklearn.model_selection as skm
 
 from training.training_set import TrainingSet
 
+# TODO: Complete this time series model.
+# TODO: We may need to add a wrapper function here to actually run the model as well, since we will need to return
+# something more than the array of predictions, to include the pdf and pdf params, in a TimeSeries.
+
 
 def create_model():
     """Model to be used, obtained from sample solution."""

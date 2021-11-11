@@ -42,7 +42,7 @@ class TimeSeries:
     time_intervals = np.empty(0, dtype=int)
     aggregated = np.empty(0)
     pdf = np.empty(0)
-    pdf_params = np.empty(0)
+    pdf_params = []
 
     def get_time_intervals(self):
         return self.time_intervals
@@ -81,7 +81,7 @@ class TimeSeries:
         self.time_intervals = np.arange(start_time_interval, num_intervals)
         self.aggregated = np.zeros(self.time_intervals.size)
         self.pdf = np.zeros(self.time_intervals.size)
-        self.pdf_params = np.zeros(self.time_intervals.size)    #TODO: check this
+        self.pdf_params = [{}] * self.time_intervals.size
 
     def add_data(self, time, aggregated_value, pdf=None, pdf_params=None):
         """Adds aggregated data to the given time position."""
