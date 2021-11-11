@@ -1,6 +1,7 @@
 {
   "mode": "predict",
   "threshold": 0.5,
+  "time_step": 1,
   "input":
   {
     "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",

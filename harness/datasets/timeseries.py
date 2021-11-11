@@ -41,7 +41,7 @@ class TimeSeries:
     """Represents a time series with a time interval and an aggregated value."""
     time_intervals = np.empty(0, dtype=int)
     aggregated = np.empty(0)
-    num_samples = np.empty(0)
+    num_samples = np.empty(0, dtype=int)
     pdf = np.empty(0)
     pdf_params = []
 
@@ -93,7 +93,7 @@ class TimeSeries:
         """Allocates needed space for arrays."""
         self.time_intervals = np.arange(start_time_interval, num_intervals)
         self.aggregated = np.zeros(self.time_intervals.size)
-        self.num_samples = np.zeros(self.time_intervals.size)
+        self.num_samples = np.zeros(self.time_intervals.size, dtype=int)
         self.pdf = np.zeros(self.time_intervals.size)
         self.pdf_params = [{}] * self.time_intervals.size
 
