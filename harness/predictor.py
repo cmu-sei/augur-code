@@ -43,7 +43,7 @@ def predict(model, model_input, threshold):
     return predictions
 
 
-def ts_predict(model, model_input, threshold):
+def ts_predict(model, model_input):
     """Generates predictions based on model, returns object with raw and classified predictions."""
     raw_predictions = model.predict(model_input).flatten()
     print_and_log(f"Predictions shape: {raw_predictions.shape}")
@@ -205,11 +205,12 @@ def main():
         # Aggregate dataset and calculate original dataset classifier accuracy by time interval.
         time_series = TimeSeries()
         time_series.aggregate_by_timestamp(full_dataset, predictions.get_predictions(),
-                                           config.get("hyper_parameters").get("time_step"))
+                                           config.get("time_step"))
         accuracy = calculate_accuracy(predictions, time_series)
 
         # Run time-series model.
-        ts_predictions = ts_predict(ts_model, time_series.get_model_input(), config.get("threshold"))
+        ts_predictions = ts_predict(ts_model, time_series.get_model_input())
+        #ts_predictions = time_series    # TEST
 
         # Calculate and store metrics.
         metric_results = calculate_metrics(time_series, ts_predictions, config)
