@@ -41,10 +41,17 @@ class TimeSeries:
     """Represents a time series with a time interval and an aggregated value."""
     time_intervals = np.empty(0, dtype=int)
     aggregated = np.empty(0)
+    num_samples = np.empty(0)
     pdf = np.empty(0)
     pdf_params = []
 
+    def check_valid_id(self, time_interval_id):
+        """Checks if the interval id is inside the valid range"""
+        if time_interval_id > len(self.time_intervals) or time_interval_id < 0:
+            raise Exception(f"Invalid time interval id passed: {time_interval_id}, length is {len(self.time_intervals)}")
+
     def get_time_intervals(self):
+        """Getter for the list of time intervals."""
         return self.time_intervals
 
     def get_aggregated(self, time_interval_id=None):
@@ -52,25 +59,31 @@ class TimeSeries:
         if time_interval_id is None:
             return self.aggregated
         else:
-            if time_interval_id > len(self.aggregated):
-                return self.aggregated[time_interval_id]
-            else:
-                raise Exception(f"Invalid time interval id passed: {time_interval_id}, length is {len(self.aggregated)}")
+            self.check_valid_id(time_interval_id)
+            return self.aggregated[time_interval_id]
 
     def get_pdf(self, time_interval_id):
-        if time_interval_id > len(self.pdf):
-            return self.pdf[time_interval_id]
-        else:
-            raise Exception(f"Invalid time interval id passed: {time_interval_id}, length is {len(self.pdf)}")
+        """Getter for a specific pdf for the given time interval."""
+        self.check_valid_id(time_interval_id)
+        return self.pdf[time_interval_id]
 
     def set_pdf(self, pdf):
+        """Setter for the list of pdfs."""
         self.pdf = pdf
 
     def get_pdf_params(self, time_interval_id):
-        if time_interval_id > len(self.pdf_params):
-            return self.pdf_params[time_interval_id]
-        else:
-            raise Exception(f"Invalid time interval id passed: {time_interval_id}, length is {len(self.pdf_params)}")
+        """Getter for a specific pdf_params for the given time interval."""
+        self.check_valid_id(time_interval_id)
+        return self.pdf_params[time_interval_id]
+
+    def set_pdf_params(self, pdf_params):
+        """Setter for the list of pdf parameters."""
+        self.pdf_params = pdf_params
+
+    def get_num_samples(self, time_interval_id):
+        """Returns the number of samples aggregated for the given time interval."""
+        self.check_valid_id(time_interval_id)
+        return self.num_samples[time_interval_id]
 
     def get_model_input(self):
         """Returns the time intervals and aggregated values as a model input."""
@@ -80,32 +93,38 @@ class TimeSeries:
         """Allocates needed space for arrays."""
         self.time_intervals = np.arange(start_time_interval, num_intervals)
         self.aggregated = np.zeros(self.time_intervals.size)
+        self.num_samples = np.zeros(self.time_intervals.size)
         self.pdf = np.zeros(self.time_intervals.size)
         self.pdf_params = [{}] * self.time_intervals.size
 
-    def add_data(self, time, aggregated_value, pdf=None, pdf_params=None):
+    def add_data(self, time_interval, aggregated_value, num_samples=None, pdf=None, pdf_params=None):
         """Adds aggregated data to the given time position."""
-        if time in self.time_intervals:
-            idx = np.where(self.time_intervals == time)
+        if time_interval in self.time_intervals:
+            idx = np.where(self.time_intervals == time_interval)
             self.aggregated[idx] = aggregated_value
+            self.num_samples[idx] = num_samples
             self.pdf[idx] = pdf
             self.pdf_params[idx] = pdf_params
         else:
-            raise Exception(f"Invalid time index, not found in times array: {time}")
+            raise Exception(f"Invalid time index, not found in times array: {time_interval}")
 
     def aggregate(self, dataset, values, interval_generator, start_time_interval=0):
         """Aggregates a given dataset, and stores it in memory."""
         # Pre-allocate space, and fill up times, given timestamps in dataset.
-        num_samples = dataset.get_number_of_samples()
+        total_num_samples = dataset.get_number_of_samples()
         num_intervals = interval_generator.get_number_of_intervals()
         max_time_interval = start_time_interval + num_intervals - 1
         self.allocate(start_time_interval, num_intervals)
 
         # Go over all samples, adding their output to the corresponding position in the aggregated array.
-        for sample_idx in range(0, num_samples):
-            sample_time = interval_generator.calculate_time_interval(sample_idx)
-            if start_time_interval <= sample_time <= max_time_interval:
-                self.aggregated[sample_time] += values[sample_idx]
+        for sample_idx in range(0, total_num_samples):
+            # Calculate the interval for the current sample.
+            sample_time_interval_idx = interval_generator.calculate_time_interval(sample_idx)
+
+            # If we are in a valid interval, update the aggregated sum and the number of samples.
+            if start_time_interval <= sample_time_interval_idx <= max_time_interval:
+                self.aggregated[sample_time_interval_idx] += values[sample_idx]
+                self.num_samples[sample_time_interval_idx] += 1
 
     def aggregate_by_timestamp(self, dataset, values, time_step_in_days, start_time=0):
         """Aggregates a given dataset on the given time step, and stores it in memory."""

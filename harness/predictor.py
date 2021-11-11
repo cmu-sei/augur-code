@@ -52,13 +52,33 @@ def ts_predict(model, model_input, threshold):
     return ts_predictions
 
 
+def calculate_accuracy(predictions, time_series):
+    """Calculates the accuracy of a classifier using time intervals defined in a time series."""
+    accuracy_by_interval = {}
+    starting_sample_idx = 0
+    for interval_index, time_interval in enumerate(time_series.get_time_intervals()):
+        # Calculate the size of this interval, and obtain a slice from the current idx of that size.
+        interval_sample_size = time_series.get_num_samples(interval_index)
+        predictions_slice = predictions.create_slice(starting_sample_idx, interval_sample_size)
+
+        # Calculate the accuracy of the slice and store it.
+        accuracy = None
+        if predictions_slice is not None:
+            accuracy_by_interval[interval_index] = predictions_slice.get_accuracy()
+        accuracy_by_interval[interval_index] = accuracy
+
+        # Update the starting idx for next iteration.
+        starting_sample_idx += interval_sample_size
+
+    return accuracy_by_interval
+
+
 def calculate_metrics(time_series, ts_predictions, config):
     """Calculates metrics for the given configs and dataset."""
     if not config.contains("metrics"):
         print_and_log("No metrics configured.")
         return None
 
-    # TODO: Accuracy is not calculated, maybe move to separate function before this one?
     metrics = config.get("metrics")
     results = {}
     for metric_info in metrics:
@@ -80,6 +100,13 @@ def calculate_metrics(time_series, ts_predictions, config):
             results[interval_index]["metrics"].append({"name": metric_name, "value": metric_value})
 
     return results
+
+
+def add_accuracy(metric_results, accuracy_list):
+    """Merges the accuracy results into the metrics results."""
+    for interval_index, accuracy in accuracy_list.items():
+        metric_results[interval_index]["accuracy"] = accuracy
+    return metric_results
 
 
 def save_predictions(full_dataset, predictions, output_filename, reference_dataset=None):
@@ -175,14 +202,18 @@ def main():
         predictions.store_expected_results(full_dataset.get_output())
         save_predictions(full_dataset, predictions, config.get("output").get("predictions_output"), reference_dataset)
 
-        # Aggregate dataset and run time series model.
+        # Aggregate dataset and calculate original dataset classifier accuracy by time interval.
         time_series = TimeSeries()
         time_series.aggregate_by_timestamp(full_dataset, predictions.get_predictions(),
                                            config.get("hyper_parameters").get("time_step"))
+        accuracy = calculate_accuracy(predictions, time_series)
+
+        # Run time-series model.
         ts_predictions = ts_predict(ts_model, time_series.get_model_input(), config.get("threshold"))
 
         # Calculate and store metrics.
         metric_results = calculate_metrics(time_series, ts_predictions, config)
+        metric_results = add_accuracy(metric_results, accuracy)
         save_metrics(metric_results, config.get("output").get("metrics_output"))
 
         # If requested, package this experiment results.

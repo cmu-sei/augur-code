@@ -70,11 +70,13 @@ class Predictions:
         return self.predictions
 
     def create_slice(self, starting_idx, size):
-        """Creates a new TrainingResults object with a slice of the results in this one."""
-        sliced_training_results = Predictions(self.classification_threshold)
-        sliced_training_results.store_expected_results(self.get_expected_results()[starting_idx:starting_idx + size])
-        sliced_training_results.store_predictions(self.get_predictions()[starting_idx:starting_idx + size])
-        return sliced_training_results
+        """Creates a new object of this type with a slice of the results in this one."""
+        if size == 0:
+            return None
+        sliced_predictions = Predictions(self.classification_threshold)
+        sliced_predictions.store_expected_results(self.get_expected_results()[starting_idx:starting_idx + size])
+        sliced_predictions.store_predictions(self.get_predictions()[starting_idx:starting_idx + size])
+        return sliced_predictions
 
     def _calculate_true_false_positives_negatives(self):
         """Calculates confusion matrix, and for each sample if it was a true/false positive/negative."""
