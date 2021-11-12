@@ -150,7 +150,7 @@ class TimeSeries:
         return dictionary
 
 
-def create_test_time_series():
+def create_test_time_series(dist_start=0, dist_end=10, dist_total=10):
     """A manually created time series for testing."""
     class FakeDataset:
         def __init__(self, num_samples):
@@ -164,8 +164,8 @@ def create_test_time_series():
 
     time_series = TimeSeries()
     time_series.aggregate_by_number_of_samples(dataset, output_values, samples_per_time)
-    time_series.set_pdf(np.random.randint(2, 10, (1, time_series.get_num_intervals())))
-    time_series.set_pdf_params([{"std_dev": 3}] * time_series.get_num_intervals())
+    time_series.set_pdf([np.random.randint(dist_start, dist_end, (dist_total))] * time_series.get_num_intervals())
+    time_series.set_pdf_params([{"mean": 5, "std_dev": 3}] * time_series.get_num_intervals())
 
     return time_series
 
