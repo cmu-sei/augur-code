@@ -100,7 +100,7 @@ def calculate_metrics(time_series, ts_predictions, config):
                 metric.step_setup(interval_index)
                 metric_value = metric.calculate_metric()
             except Exception as ex:
-                print_and_log(f"WARNING: could not prepare or calculate metric {metric_name} for interval {interval_index}: {str(ex)}")
+                print_and_log(f"WARNING: Could not prepare or calculate metric {metric_name} for interval {interval_index}: {str(ex)}")
                 continue
 
             # Accumulate results.
@@ -219,7 +219,7 @@ def main():
             print_and_log(f"WARNING: Could not load time-series model: {str(ex)}")
 
         # Run time-series model.
-        ts_predictions = time_series    # TEST
+        #ts_predictions = time_series    # TEST
         try:
             print_and_log("Time-series model executing.")
             ts_predictions = ts_predict(ts_model, time_series.get_model_input())
