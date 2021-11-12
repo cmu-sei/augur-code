@@ -54,6 +54,10 @@ class TimeSeries:
         """Getter for the list of time intervals."""
         return self.time_intervals
 
+    def get_num_intervals(self):
+        """Returns the amount of intervals in the object."""
+        return self.time_intervals.size
+
     def get_aggregated(self, time_interval_id=None):
         """Returns either the full array of aggregated values, or a specific one by the time interval index."""
         if time_interval_id is None:
@@ -136,26 +140,44 @@ class TimeSeries:
         interval_generator = NumSamplesIntervalGenerator(samples_per_time, dataset.get_number_of_samples())
         return self.aggregate(dataset, values, interval_generator, start_time)
 
+    def to_dict(self):
+        """Returns the main attributes of this object as a dictionary."""
+        dictionary = {"time_intervals": self.time_intervals,
+                      "aggregated": self.aggregated,
+                      "num_samples": self.num_samples,
+                      "pdf": self.pdf,
+                      "pdf_params": self.pdf_params}
+        return dictionary
 
-def test():
-    """Quick test of a timeseries aggregation."""
-    print("Testing")
-    samples_per_time = 4
-    output_values = np.array([1, 2, 1, 3, 4, 5, 6, 1, 2, 1, 3, 4, 5, 6, 1])
-    expected_values = np.array([7, 16, 10, 12])
 
+def create_test_time_series():
+    """A manually created time series for testing."""
     class FakeDataset:
         def __init__(self, num_samples):
             self.num_samples = num_samples
         def get_number_of_samples(self):
             return self.num_samples
 
+    samples_per_time = 4
+    output_values = np.array([1, 2, 1, 3, 4, 5, 6, 1, 2, 1, 3, 4, 5, 6, 1])
     dataset = FakeDataset(output_values.size)
+
     time_series = TimeSeries()
     time_series.aggregate_by_number_of_samples(dataset, output_values, samples_per_time)
-    print(time_series.time_intervals)
-    print(time_series.aggregated)
-    print(expected_values)
+    time_series.set_pdf(np.random.randint(2, 10, (1, time_series.get_num_intervals())))
+    time_series.set_pdf_params([{"std_dev": 3}] * time_series.get_num_intervals())
+
+    return time_series
+
+
+def test():
+    """Quick test of a timeseries aggregation."""
+    print("Testing")
+
+    expected_values = np.array([7, 16, 10, 12])
+    time_series = create_test_time_series()
+    print(time_series.to_dict())
+    print(f"Expected values: {expected_values}")
 
 
 if __name__ == '__main__':

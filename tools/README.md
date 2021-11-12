@@ -47,7 +47,7 @@ The bash scripts for this tool include:
 
 The Predictor tool configuration has the following fields:
 
- - **mode**: can be "predict", which will execute the model and output predictions and metrics, or "label", which will execute the model but write an updated labelled dataset with that output.
+ - **mode**: can be "analyze", which will execute the model and output predictions and metrics, or "label", which will execute the model but write an updated labelled dataset with that output.
  - **threshold**: value between 0 and 1 that will convert a raw prediction into a classification.
  - **input**: section for input file and formats.
      - **dataset_class**: same as config field in Trainer tool.
