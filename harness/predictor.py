@@ -89,14 +89,19 @@ def calculate_metrics(time_series, ts_predictions, config):
         metric.initial_setup(time_series, ts_predictions)
 
         for interval_index, time_interval in enumerate(time_series.get_time_intervals()):
-            # Calculate metric.
-            metric.step_setup(interval_index)
-            metric_value = metric.calculate_metric()
-
-            # Accumulate results.
             if interval_index not in results.keys():
                 results[interval_index] = {}
                 results[interval_index]["metrics"] = []
+
+            # Calculate metric.
+            try:
+                metric.step_setup(interval_index)
+                metric_value = metric.calculate_metric()
+            except Exception as ex:
+                print_and_log(f"WARNING: could not prepare or calculate metric {metric_name} for interval {interval_index}: {str(ex)}")
+                continue
+
+            # Accumulate results.
             results[interval_index]["metrics"].append({"name": metric_name, "value": metric_value})
 
     return results
@@ -188,29 +193,37 @@ def main():
     model = model_utils.load_model_from_file(config.get("input").get("model"))
     model.summary()
 
-    # Load TS model.
-    print_and_log("Loading time-series model")
-    ts_model = model_utils.load_model_from_file(config.get("input").get("ts_model"))
-    print_and_log("Time-series model Loaded.")
-
     # Predict.
     predictions = predict(model, full_dataset.get_model_input(), config.get("threshold"))
 
     # Save to file, depending on mode, and calculate metrics if needed.
     mode = config.get("mode")
-    if mode == "predict":
+    if mode == "analyze":
         predictions.store_expected_results(full_dataset.get_output())
         save_predictions(full_dataset, predictions, config.get("output").get("predictions_output"), reference_dataset)
 
         # Aggregate dataset and calculate original dataset classifier accuracy by time interval.
         time_series = TimeSeries()
-        time_series.aggregate_by_timestamp(full_dataset, predictions.get_predictions(),
-                                           config.get("time_step"))
+        time_series.aggregate_by_timestamp(full_dataset, predictions.get_predictions(), config.get("time_step"))
         accuracy = calculate_accuracy(predictions, time_series)
 
+        # Load time-series model.
+        ts_model = None
+        try:
+            print_and_log("Loading time-series model")
+            ts_model = model_utils.load_model_from_file(config.get("input").get("ts_model"))
+            print_and_log("Time-series model Loaded.")
+        except Exception as ex:
+            print_and_log(f"WARNING: Could not load time-series model: {str(ex)}")
+
         # Run time-series model.
-        ts_predictions = ts_predict(ts_model, time_series.get_model_input())
-        #ts_predictions = time_series    # TEST
+        ts_predictions = time_series    # TEST
+        try:
+            print_and_log("Time-series model executing.")
+            ts_predictions = ts_predict(ts_model, time_series.get_model_input())
+            print_and_log("Time-series model finished running.")
+        except Exception as ex:
+            print_and_log(f"WARNING: Could not run time-series model: {str(ex)}")
 
         # Calculate and store metrics.
         metric_results = calculate_metrics(time_series, ts_predictions, config)

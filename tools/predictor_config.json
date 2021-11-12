@@ -1,5 +1,5 @@
 {
-  "mode": "predict",
+  "mode": "analyze",
   "threshold": 0.5,
   "time_step": 1,
   "input":
@@ -25,7 +25,8 @@
       {
         "distribution": "normal",
         "range_start": -1,
-        "range_end": 2
+        "range_end": 1000,
+        "range_step": 1
       }
     }
   ]

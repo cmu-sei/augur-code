@@ -73,11 +73,9 @@ class ErrorMetric(Metric):
 
 class DensityEstimator:
     """Implements most common density functions."""
-
-    # Helper array with range of potential valid values used to calculate distributions.
-    DIST_RANGE_STEP = 0.001
-    dist_range = None
+    dist_range = None     # Helper array with range of potential valid values used to calculate distributions.
     config_params = None
+    metric_module = None
 
     def __init__(self, config_params, metric_module):
         """Gets the config params and sets up the dist range."""
@@ -90,8 +88,9 @@ class DensityEstimator:
         if self.dist_range is None:
             range_start = self.config_params.get("range_start")
             range_end = self.config_params.get("range_end")
+            range_step = self.config_params.get("range_step")
             print_and_log(f"Range: {range_start} to {range_end}")
-            self.dist_range = np.arange(range_start, range_end, self.DIST_RANGE_STEP)
+            self.dist_range = np.arange(range_start, range_end, range_step)
 
     def calculate_probability_distribution(self, data, metric_params):
         """Calculates and returns the probability distribution for the given data."""
@@ -119,6 +118,8 @@ class DensityEstimator:
         """Normal dist calculation."""
         mean = np.mean(data)
         std_dev = params.get("std_dev")
+        if std_dev is None:
+            raise Exception("Can't calculate normal distribution; standard deviation provided for data is None")
         print_and_log(f"Mean: {mean}, Std Dev: {std_dev}")
         return norm.pdf(self.dist_range, mean, std_dev)
 
