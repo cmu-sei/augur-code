@@ -56,6 +56,7 @@ def calculate_accuracy(predictions, time_series):
     """Calculates the accuracy of a classifier using time intervals defined in a time series."""
     accuracy_by_interval = {}
     starting_sample_idx = 0
+    print_and_log("Calculating accuracy by interval.")
     for interval_index, time_interval in enumerate(time_series.get_time_intervals()):
         # Calculate the size of this interval, and obtain a slice from the current idx of that size.
         interval_sample_size = time_series.get_num_samples(interval_index)
@@ -64,12 +65,13 @@ def calculate_accuracy(predictions, time_series):
         # Calculate the accuracy of the slice and store it.
         accuracy = None
         if predictions_slice is not None:
-            accuracy_by_interval[interval_index] = predictions_slice.get_accuracy()
+            accuracy = predictions_slice.get_accuracy()
         accuracy_by_interval[interval_index] = accuracy
 
         # Update the starting idx for next iteration.
         starting_sample_idx += interval_sample_size
 
+    print_and_log("Finished calculating accuracy by interval.")
     return accuracy_by_interval
 
 
