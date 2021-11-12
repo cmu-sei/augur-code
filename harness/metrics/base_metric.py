@@ -139,7 +139,7 @@ class DistanceMetric(Metric):
         """Overriden."""
         # Calculate the probability distribution for the time interval.
         self.prev_probability_distribution = self.density_estimator.calculate_probability_distribution(self.time_series.get_aggregated(),
-                                                                                                       self.time_series.get_pdf_params(time_interval_id))
+                                                                                                       self.ts_predictions.get_pdf_params(time_interval_id))
         self.curr_probability_distribution = self.ts_predictions.get_pdf(time_interval_id)
 
     def calculate_metric(self):
