@@ -1,24 +1,36 @@
-from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
-import sklearn.model_selection as skm
+from statsmodels.tsa.arima.model import ARIMA
 
-from training.training_set import TrainingSet
+from datasets.timeseries import TimeSeries
 
-# TODO: Complete this time series model.
 # TODO: We may need to add a wrapper function here to actually run the model as well, since we will need to return
 # something more than the array of predictions, to include the pdf and pdf params, in a TimeSeries.
 
 
-def create_model():
-    """Model to be used, obtained from sample solution."""
+def create_fit_model(aggregated_history, params):
+    """Creates the model object."""
+    model_order = (int(params.get("order_p")), int(params.get("order_q")), int(params.get("order_d")))
+    model = ARIMA(aggregated_history, order=model_order)
+    fit_model = model.fit()
+    return fit_model
 
-    model = Model()
-    optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
-    model.compile(loss="binary_crossentropy", optimizer=optimizer, metrics=["accuracy"])
-    return model
+
+def get_prediction_params(fit_model, time_interval_id):
+    """Gets the prediction params for the given interval."""
+    forecast = fit_model.get_forecast(steps=time_interval_id)
+
+    keep_idx = time_interval_id - 1
+    mu = forecast.predicted_mean[keep_idx]
+    sigma = forecast.conf_int(alpha=(1-0.68))[keep_idx, 1] - mu
+    return {'mean': mu, 'std_dev': sigma}
 
 
-def split_data(dataset, validation_percentage):
-    """Split training set into train and validation """
-    training_set = TrainingSet()
-    return training_set
+def predict(fit_model, num_time_intervals):
+    """Creates the prediction data, for now only pdf params, based on the fit model."""
+    pdf_params = []
+    for i in range(0, num_time_intervals):
+        pdf_params.append(get_prediction_params(fit_model, i))
+
+    ts_predictions = TimeSeries()
+    ts_predictions.set_pdf_params(pdf_params)
+
+    return ts_predictions

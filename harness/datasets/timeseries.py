@@ -42,7 +42,7 @@ class TimeSeries:
     time_intervals = np.empty(0, dtype=int)
     aggregated = np.empty(0)
     num_samples = np.empty(0, dtype=int)
-    pdf = np.empty(0)
+    pdf = []
     pdf_params = []
 
     def check_valid_id(self, time_interval_id):
@@ -98,7 +98,7 @@ class TimeSeries:
         self.time_intervals = np.arange(start_time_interval, num_intervals)
         self.aggregated = np.zeros(self.time_intervals.size)
         self.num_samples = np.zeros(self.time_intervals.size, dtype=int)
-        self.pdf = np.zeros(self.time_intervals.size)
+        self.pdf = [[]] * self.time_intervals.size
         self.pdf_params = [{}] * self.time_intervals.size
 
     def add_data(self, time_interval, aggregated_value, num_samples=None, pdf=None, pdf_params=None):

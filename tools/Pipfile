@@ -10,7 +10,7 @@ pandas = "*"
 sklearn = "*"
 numpy = "*"
 scipy = "*"
-statsmodel = "*"
+statsmodels = "*"
 
 [dev-packages]
 

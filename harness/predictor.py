@@ -13,6 +13,7 @@ from utils import logging
 from utils.logging import print_and_log
 from datasets import dataset
 import metrics.base_metric as augur_metrics
+import datasets.timeseries_model as timeseries_model
 
 DEFAULT_CONFIG_FILENAME = "./predictor_config.json"
 METRIC_EXP_CONFIG_FOLDER = "../experiments/predictor"
@@ -43,12 +44,10 @@ def predict(model, model_input, threshold):
     return predictions
 
 
-def ts_predict(model, model_input):
-    """Generates predictions based on model, returns object with raw and classified predictions."""
-    raw_predictions = model.predict(model_input).flatten()
-    print_and_log(f"Predictions shape: {raw_predictions.shape}")
-    ts_predictions = TimeSeries()
-    # TODO: load the raw_predictions somehow in the TimeSeries result.
+def ts_predict(time_series, hyper_params):
+    """Fits model and generates predictions based on model."""
+    ts_fit_model = timeseries_model.create_fit_model(time_series.get_aggregated(), hyper_params)
+    ts_predictions = timeseries_model.predict(ts_fit_model, hyper_params.get("time_intervals"))
     return ts_predictions
 
 
@@ -206,26 +205,18 @@ def main():
 
         # Aggregate dataset and calculate original dataset classifier accuracy by time interval.
         time_series = TimeSeries()
-        time_series.aggregate_by_timestamp(full_dataset, predictions.get_predictions(), config.get("time_step"))
+        time_series.aggregate_by_timestamp(full_dataset, predictions.get_predictions(), time_step_in_days=config.get("time_step_in_days"))
         accuracy = calculate_accuracy(predictions, time_series)
 
-        # Load time-series model.
-        ts_model = None
-        try:
-            print_and_log("Loading time-series model")
-            ts_model = model_utils.load_model_from_file(config.get("input").get("ts_model"))
-            print_and_log("Time-series model Loaded.")
-        except Exception as ex:
-            print_and_log(f"WARNING: Could not load time-series model: {str(ex)}")
-
         # Run time-series model.
-        #ts_predictions = time_series    # TEST
+        ts_predictions = None #timeseries.create_test_time_series(0, 1000, 1001)    # TEST
         try:
             print_and_log("Time-series model executing.")
-            ts_predictions = ts_predict(ts_model, time_series.get_model_input())
+            ts_predictions = ts_predict(time_series, config.get("ts_hyper_parameters"))
             print_and_log("Time-series model finished running.")
         except Exception as ex:
             print_and_log(f"WARNING: Could not run time-series model: {str(ex)}")
+            raise ex
 
         # Calculate and store metrics.
         metric_results = calculate_metrics(time_series, ts_predictions, config)
