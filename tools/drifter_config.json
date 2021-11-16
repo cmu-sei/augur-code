@@ -19,8 +19,8 @@
     "module": "random_drift",
     "params":
     {
-      "max_num_samples":  20,
-      "sample_group_size": 5
+      "max_num_samples":  10026,
+      "sample_group_size": 1671
     }
   }
 }

@@ -17,7 +17,7 @@ DEFAULT_CONFIG_FILENAME = "./drifter_config.json"
 DRIFT_EXP_CONFIG_FOLDER = "../experiments/drifter"
 
 
-def load_bins(dataset_filename, dataset_class_name, bin_params, predictions_filename=None, bin_value="results", shuffle=True):
+def load_bins(dataset_filename, dataset_class_name, bin_params, bin_value="results", shuffle=True):
     """Loads a dataset into bins"""
 
     # Load dataset to drift.
