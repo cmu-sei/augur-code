@@ -11,6 +11,8 @@ from utils import arguments
 from utils.logging import print_and_log
 from datasets import dataset
 from datasets.model_trainer import ModelTrainer
+from datasets.timeseries import TimeSeries
+import datasets.timeseries_model as timeseries_model
 
 DEFAULT_CONFIG_FILENAME = "./trainer_config.json"
 CONFIG = Config()
@@ -48,6 +50,12 @@ def main():
         default_evaluation_input = dataset_instance.get_model_input()
         default_evaluation_output = dataset_instance.get_output()
         main_trainer.evaluate(trained_model, default_evaluation_input, default_evaluation_output)
+    if CONFIG.get("time_series_training") == "on":
+        time_series = TimeSeries()
+        time_series.aggregate_by_number_of_samples(dataset_instance.get_output(),
+                                                   CONFIG.get("ts_hyper_parameters").get("samples_per_time"))
+        trained_model = timeseries_model.create_fit_model(time_series.get_aggregated(), CONFIG.get("ts_hyper_parameters"))
+        timeseries_model.save(trained_model, CONFIG.get("ts_model"))
 
     print_and_log("Finished trainer session.")
     print_and_log("--------------------------------------------------------------------")

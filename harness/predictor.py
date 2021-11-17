@@ -44,9 +44,8 @@ def predict(model, model_input, threshold):
     return predictions
 
 
-def ts_predict(time_series, hyper_params):
+def ts_predict(ts_fit_model, hyper_params):
     """Fits model and generates predictions based on model."""
-    ts_fit_model = timeseries_model.create_fit_model(time_series.get_aggregated(), hyper_params)
     ts_predictions = timeseries_model.predict(ts_fit_model, hyper_params.get("time_intervals"))
     return ts_predictions
 
@@ -208,11 +207,20 @@ def main():
         time_series.aggregate_by_timestamp(full_dataset, predictions.get_predictions(), time_step_in_days=config.get("time_step_in_days"))
         accuracy = calculate_accuracy(predictions, time_series)
 
+        # Load time-series model.
+        ts_model = None
+        try:
+            print_and_log("Loading time-series model")
+            ts_model = timeseries_model.load(config.get("input").get("ts_model"))
+            print_and_log("Time-series model Loaded.")
+        except Exception as ex:
+            print_and_log(f"WARNING: Could not load time-series model: {str(ex)}")
+
         # Run time-series model.
         ts_predictions = None #timeseries.create_test_time_series(0, 1000, 1001)    # TEST
         try:
             print_and_log("Time-series model executing.")
-            ts_predictions = ts_predict(time_series, config.get("ts_hyper_parameters"))
+            ts_predictions = ts_predict(ts_model, config.get("ts_hyper_parameters"))
             print_and_log("Time-series model finished running.")
         except Exception as ex:
             print_and_log(f"WARNING: Could not run time-series model: {str(ex)}")

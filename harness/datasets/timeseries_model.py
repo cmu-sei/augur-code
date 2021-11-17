@@ -1,4 +1,5 @@
 from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.arima.model import ARIMAResults
 
 from datasets.timeseries import TimeSeries
 
@@ -34,3 +35,13 @@ def predict(fit_model, num_time_intervals):
     ts_predictions.set_pdf_params(pdf_params)
 
     return ts_predictions
+
+
+def save(ts_trained_model, filename):
+    """Save model to file."""
+    ts_trained_model.save(filename)
+
+
+def load(filename):
+    """Loads a trained model from file."""
+    return ARIMAResults.load(filename)
