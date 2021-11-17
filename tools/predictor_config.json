@@ -2,6 +2,7 @@
   "mode": "analyze",
   "threshold": 0.5,
   "time_step_in_days": 1,
+  "time_intervals": 10,
   "input":
   {
     "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
@@ -14,13 +15,6 @@
   {
     "predictions_output": "../output/predictions.json",
     "metrics_output": "../output/metrics_output.json"
-  },
-  "ts_hyper_parameters":
-  {
-    "time_intervals": 10,
-    "order_p": 3,
-    "order_q": 1,
-    "order_d": 1
   },
   "metrics":
   [

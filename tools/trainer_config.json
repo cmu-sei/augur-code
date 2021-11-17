@@ -7,10 +7,18 @@
   "training": "off",
   "cross_validation": "off",
   "evaluation": "off",
+  "time_series_training": "on",
   "hyper_parameters":
   {
     "epochs": 10,
     "batch_size": 32,
     "validation_size": 0.25
+  },
+  "ts_hyper_parameters":
+  {
+    "samples_per_time_interval": "20",
+    "order_p": 3,
+    "order_q": 1,
+    "order_d": 1
   }
 }
