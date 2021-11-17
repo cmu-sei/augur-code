@@ -204,7 +204,10 @@ def main():
 
         # Aggregate dataset and calculate original dataset classifier accuracy by time interval.
         time_series = TimeSeries()
-        time_series.aggregate_by_timestamp(full_dataset, predictions.get_predictions(), time_step_in_days=config.get("time_step_in_days"))
+        time_series.aggregate_by_timestamp(config.get("time_interval").get("starting_interval"),
+                                           config.get("time_interval").get("interval_unit"),
+                                           full_dataset,
+                                           predictions.get_predictions())
         accuracy = calculate_accuracy(predictions, time_series)
 
         # Load time-series model.

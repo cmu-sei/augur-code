@@ -3,19 +3,17 @@ from statsmodels.tsa.arima.model import ARIMAResults
 
 from datasets.timeseries import TimeSeries
 
-# TODO: We may need to add a wrapper function here to actually run the model as well, since we will need to return
-# something more than the array of predictions, to include the pdf and pdf params, in a TimeSeries.
 
-
-def create_fit_model(aggregated_history, params):
+def create_fit_model(time_intervals, aggregated_history, interval_unit, params):
     """Creates the model object."""
     model_order = (int(params.get("order_p")), int(params.get("order_q")), int(params.get("order_d")))
-    model = ARIMA(aggregated_history, order=model_order)
+    model = ARIMA(aggregated_history, dates=time_intervals, freq=interval_unit, order=model_order)
     fit_model = model.fit()
     return fit_model
 
 
 def get_prediction_params(fit_model, time_interval_id):
+    #TODO: update this to work using dates.
     """Gets the prediction params for the given interval."""
     forecast = fit_model.get_forecast(steps=time_interval_id)
 

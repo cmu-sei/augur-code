@@ -18,7 +18,7 @@
   {
     "samples_per_time_interval": "20",
     "starting_interval": "2021-11-01",
-    "interval_unit": "days"
+    "interval_unit": "D"
   },
   "ts_hyper_parameters":
   {
