@@ -25,18 +25,15 @@ class IntervalGenerator:
 
 class TimestampIntervalGenerator(IntervalGenerator):
     """Calculates time intervals based on timestamps."""
-    DAYS_TO_SECONDS = 1 / (24 * 60 * 60)
-
-    def __init__(self, starting_interval, interval_unit, time_step_in_days, timestamps):
+    def __init__(self, starting_interval, interval_unit, timestamps):
         super().__init__(starting_interval, interval_unit)
-        self.time_step = time_step_in_days * self.DAYS_TO_SECONDS
         self.timestamps = timestamps
         self.min_timestamp = timestamps[0]
         self.max_timestamp = timestamps[timestamps.size-1]
 
     def calculate_time_interval(self, sample_idx):
         """Calculates the time interval number where a timestamp falls into, given the time step."""
-        delta = math.floor((self.timestamps[sample_idx] - self.min_timestamp) / self.time_step)
+        delta = math.floor(pandas.to_timedelta((self.timestamps[sample_idx] - self.min_timestamp)) / pandas.to_timedelta(1, self.interval_unit))
         return self.starting_interval + pandas.Timedelta(delta, unit=self.interval_unit)
 
     def get_last_time_interval(self):
@@ -162,10 +159,10 @@ class TimeSeries:
             self.aggregated[interval_idx] += values[sample_idx]
             self.num_samples[interval_idx] += 1
 
-    def aggregate_by_timestamp(self, start_interval_string, interval_unit, dataset, values, time_step):
+    def aggregate_by_timestamp(self, start_interval_string, interval_unit, dataset, values):
         """Aggregates a given dataset on the given time step, and stores it in memory."""
         start_interval = pandas.to_datetime(start_interval_string)
-        interval_generator = TimestampIntervalGenerator(start_interval, interval_unit, time_step, dataset.get_timestamps())
+        interval_generator = TimestampIntervalGenerator(start_interval, interval_unit, dataset.get_timestamps())
         return self.aggregate(start_interval, interval_unit, dataset, values, interval_generator)
 
     def aggregate_by_number_of_samples(self, start_interval_string, interval_unit, dataset, values, samples_per_time):
