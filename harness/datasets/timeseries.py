@@ -1,12 +1,34 @@
 import numpy as np
 import math
+import pandas
 
 
-class TimestampIntervalGenerator:
+class IntervalGenerator:
+    """Abstract class with common functions for interval generators."""
+    def __init__(self, starting_interval, interval_unit):
+        self.starting_interval = starting_interval
+        self.interval_unit = interval_unit
+
+    def calculate_time_interval(self, sample_idx):
+        """Calculates the time interval number where a sample falls into, given the time step."""
+        raise NotImplementedError()
+
+    def get_last_time_interval(self):
+        raise NotImplementedError()
+
+    def get_number_of_intervals(self):
+        """Returns the number of intervals for the total of samples."""
+        interval_delta = (self.get_last_time_interval() - self.starting_interval + pandas.to_timedelta(1, self.interval_unit))
+        print(interval_delta)
+        return int(interval_delta / pandas.to_timedelta(1, self.interval_unit))
+
+
+class TimestampIntervalGenerator(IntervalGenerator):
     """Calculates time intervals based on timestamps."""
     DAYS_TO_SECONDS = 1 / (24 * 60 * 60)
 
-    def __init__(self, time_step_in_days, timestamps):
+    def __init__(self, starting_interval, interval_unit, time_step_in_days, timestamps):
+        super().__init__(starting_interval, interval_unit)
         self.time_step = time_step_in_days * self.DAYS_TO_SECONDS
         self.timestamps = timestamps
         self.min_timestamp = timestamps[0]
@@ -14,41 +36,42 @@ class TimestampIntervalGenerator:
 
     def calculate_time_interval(self, sample_idx):
         """Calculates the time interval number where a timestamp falls into, given the time step."""
-        return math.floor((self.timestamps[sample_idx] - self.min_timestamp) / self.time_step)
+        delta = math.floor((self.timestamps[sample_idx] - self.min_timestamp) / self.time_step)
+        return self.starting_interval + pandas.Timedelta(delta, unit=self.interval_unit)
 
-    def get_number_of_intervals(self):
-        """Returns the number of intervals for the given timestamps."""
-        return self.calculate_time_interval(self.max_timestamp) + 1
+    def get_last_time_interval(self):
+        return self.calculate_time_interval(self.max_timestamp)
 
 
-class NumSamplesIntervalGenerator:
+class NumSamplesIntervalGenerator(IntervalGenerator):
     """Calculates time intervals based on number of samples per interval."""
 
-    def __init__(self, samples_per_time, num_samples):
+    def __init__(self, starting_interval, interval_unit, samples_per_time, num_samples):
+        super().__init__(starting_interval, interval_unit)
         self.samples_per_time = samples_per_time
         self.num_samples = num_samples
 
     def calculate_time_interval(self, sample_idx):
         """Calculates the time interval number where a sample falls into, given the time step."""
-        return math.floor(sample_idx / self.samples_per_time)
+        delta = math.floor(sample_idx / self.samples_per_time)
+        return self.starting_interval + pandas.Timedelta(delta, unit=self.interval_unit)
 
-    def get_number_of_intervals(self):
-        """Returns the number of intervals for the total of samples."""
-        return self.calculate_time_interval(self.num_samples - 1) + 1
+    def get_last_time_interval(self):
+        return self.calculate_time_interval(self.num_samples - 1)
 
 
 class TimeSeries:
     """Represents a time series with a time interval and an aggregated value."""
-    time_intervals = np.empty(0, dtype=int)
+    time_intervals = []
     aggregated = np.empty(0)
     num_samples = np.empty(0, dtype=int)
     pdf = []
     pdf_params = []
 
-    def check_valid_id(self, time_interval_id):
-        """Checks if the interval id is inside the valid range"""
-        if time_interval_id > self.time_intervals.size or time_interval_id < 0:
-            raise Exception(f"Invalid time interval id passed: {time_interval_id}, length is {self.time_intervals.size}")
+    def check_valid_idx(self, time_interval_idx):
+        """Checks if the interval idx is inside the valid range"""
+        if time_interval_idx >= self.get_num_intervals() or time_interval_idx < 0:
+            raise Exception(f"Invalid time interval id passed: {time_interval_idx}, length is {self.get_num_intervals()}")
 
     def get_time_intervals(self):
         """Getter for the list of time intervals."""
@@ -56,50 +79,59 @@ class TimeSeries:
 
     def get_num_intervals(self):
         """Returns the amount of intervals in the object."""
-        return self.time_intervals.size
+        return len(self.time_intervals)
 
-    def get_aggregated(self, time_interval_id=None):
+    def get_interval_index(self, interval):
+        """Returns the index of the given interval."""
+        interval_idx = self.time_intervals.index(interval)
+        return interval_idx
+
+    def get_aggregated(self, time_interval_idx=None):
         """Returns either the full array of aggregated values, or a specific one by the time interval index."""
-        if time_interval_id is None:
+        if time_interval_idx is None:
             return self.aggregated
         else:
-            self.check_valid_id(time_interval_id)
-            return self.aggregated[time_interval_id]
+            self.check_valid_idx(time_interval_idx)
+            return self.aggregated[time_interval_idx]
 
-    def get_pdf(self, time_interval_id):
+    def get_pdf(self, time_interval_idx):
         """Getter for a specific pdf for the given time interval."""
-        self.check_valid_id(time_interval_id)
-        return self.pdf[time_interval_id]
+        self.check_valid_idx(time_interval_idx)
+        return self.pdf[time_interval_idx]
 
     def set_pdf(self, pdf):
         """Setter for the list of pdfs."""
         self.pdf = pdf
 
-    def get_pdf_params(self, time_interval_id):
+    def get_pdf_params(self, time_interval_idx):
         """Getter for a specific pdf_params for the given time interval."""
-        self.check_valid_id(time_interval_id)
-        return self.pdf_params[time_interval_id]
+        self.check_valid_idx(time_interval_idx)
+        return self.pdf_params[time_interval_idx]
 
     def set_pdf_params(self, pdf_params):
         """Setter for the list of pdf parameters."""
         self.pdf_params = pdf_params
 
-    def get_num_samples(self, time_interval_id):
+    def get_num_samples(self, time_interval_idx):
         """Returns the number of samples aggregated for the given time interval."""
-        self.check_valid_id(time_interval_id)
-        return self.num_samples[time_interval_id]
+        self.check_valid_idx(time_interval_idx)
+        return self.num_samples[time_interval_idx]
 
     def get_model_input(self):
         """Returns the time intervals and aggregated values as a model input."""
         return [self.get_time_intervals(), self.get_aggregated()]
 
-    def allocate(self, start_time_interval, num_intervals):
-        """Allocates needed space for arrays."""
-        self.time_intervals = np.arange(start_time_interval, num_intervals)
-        self.aggregated = np.zeros(self.time_intervals.size)
-        self.num_samples = np.zeros(self.time_intervals.size, dtype=int)
-        self.pdf = [[]] * self.time_intervals.size
-        self.pdf_params = [{}] * self.time_intervals.size
+    def setup_time_intervals(self, starting_interval, unit, num_intervals):
+        """Sets up time intervals given the starting one, unit, and how many, as well as pre-allocating other arrays."""
+        self.time_intervals = [""] * num_intervals
+        for i in range(0, num_intervals):
+            self.time_intervals[i] = starting_interval + pandas.Timedelta(i, unit=unit)
+            print(self.time_intervals[i])
+
+        self.aggregated = np.zeros(self.get_num_intervals(), dtype=int)
+        self.num_samples = np.zeros(self.get_num_intervals(), dtype=int)
+        self.pdf = [[]] * self.get_num_intervals()
+        self.pdf_params = [{}] * self.get_num_intervals()
 
     def add_data(self, time_interval, aggregated_value, num_samples=None, pdf=None, pdf_params=None):
         """Adds aggregated data to the given time position."""
@@ -112,33 +144,35 @@ class TimeSeries:
         else:
             raise Exception(f"Invalid time index, not found in times array: {time_interval}")
 
-    def aggregate(self, dataset, values, interval_generator, start_time_interval=0):
+    def aggregate(self, starting_interval, interval_unit, dataset, values, interval_generator):
         """Aggregates a given dataset, and stores it in memory."""
         # Pre-allocate space, and fill up times, given timestamps in dataset.
-        total_num_samples = dataset.get_number_of_samples()
         num_intervals = interval_generator.get_number_of_intervals()
-        max_time_interval = start_time_interval + num_intervals - 1
-        self.allocate(start_time_interval, num_intervals)
+        print(num_intervals)
+        self.setup_time_intervals(starting_interval, interval_unit, num_intervals)
 
         # Go over all samples, adding their output to the corresponding position in the aggregated array.
+        total_num_samples = dataset.get_number_of_samples()
         for sample_idx in range(0, total_num_samples):
             # Calculate the interval for the current sample.
-            sample_time_interval_idx = interval_generator.calculate_time_interval(sample_idx)
+            sample_time_interval = interval_generator.calculate_time_interval(sample_idx)
 
-            # If we are in a valid interval, update the aggregated sum and the number of samples.
-            if start_time_interval <= sample_time_interval_idx <= max_time_interval:
-                self.aggregated[sample_time_interval_idx] += values[sample_idx]
-                self.num_samples[sample_time_interval_idx] += 1
+            # Update the aggregated sum and the number of samples.
+            interval_idx = self.get_interval_index(sample_time_interval)
+            self.aggregated[interval_idx] += values[sample_idx]
+            self.num_samples[interval_idx] += 1
 
-    def aggregate_by_timestamp(self, dataset, values, time_step_in_days, start_time=0):
+    def aggregate_by_timestamp(self, start_interval_string, interval_unit, dataset, values, time_step):
         """Aggregates a given dataset on the given time step, and stores it in memory."""
-        interval_generator = TimestampIntervalGenerator(time_step_in_days, dataset.get_timestamps())
-        return self.aggregate(dataset, values, interval_generator, start_time)
+        start_interval = pandas.to_datetime(start_interval_string)
+        interval_generator = TimestampIntervalGenerator(start_interval, interval_unit, time_step, dataset.get_timestamps())
+        return self.aggregate(start_interval, interval_unit, dataset, values, interval_generator)
 
-    def aggregate_by_number_of_samples(self, dataset, values, samples_per_time, start_time=0):
+    def aggregate_by_number_of_samples(self, start_interval_string, interval_unit, dataset, values, samples_per_time):
         """Aggregates a given dataset on the given time step, and stores it in memory."""
-        interval_generator = NumSamplesIntervalGenerator(samples_per_time, dataset.get_number_of_samples())
-        return self.aggregate(dataset, values, interval_generator, start_time)
+        start_interval = pandas.to_datetime(start_interval_string)
+        interval_generator = NumSamplesIntervalGenerator(start_interval, interval_unit, samples_per_time, dataset.get_number_of_samples())
+        return self.aggregate(start_interval, interval_unit, dataset, values, interval_generator)
 
     def to_dict(self):
         """Returns the main attributes of this object as a dictionary."""
@@ -163,7 +197,7 @@ def create_test_time_series(dist_start=0, dist_end=10, dist_total=10):
     dataset = FakeDataset(output_values.size)
 
     time_series = TimeSeries()
-    time_series.aggregate_by_number_of_samples(dataset, output_values, samples_per_time)
+    time_series.aggregate_by_number_of_samples(pandas.to_datetime("2021-11-01"), "days", dataset, output_values, samples_per_time)
     time_series.set_pdf([np.random.randint(dist_start, dist_end, (dist_total))] * time_series.get_num_intervals())
     time_series.set_pdf_params([{"mean": 5, "std_dev": 3}] * time_series.get_num_intervals())
 

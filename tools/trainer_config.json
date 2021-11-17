@@ -14,9 +14,14 @@
     "batch_size": 32,
     "validation_size": 0.25
   },
-  "ts_hyper_parameters":
+  "time_interval":
   {
     "samples_per_time_interval": "20",
+    "starting_interval": "2021-11-01",
+    "interval_unit": "days"
+  },
+  "ts_hyper_parameters":
+  {
     "order_p": 3,
     "order_q": 1,
     "order_d": 1
