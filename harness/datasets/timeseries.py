@@ -2,6 +2,8 @@ import numpy as np
 import math
 import pandas
 
+from utils.logging import print_and_log
+
 
 class IntervalGenerator:
     """Abstract class with common functions for interval generators."""
@@ -19,7 +21,6 @@ class IntervalGenerator:
     def get_number_of_intervals(self):
         """Returns the number of intervals for the total of samples."""
         interval_delta = (self.get_last_time_interval() - self.starting_interval + pandas.to_timedelta(1, self.interval_unit))
-        print(interval_delta)
         return int(interval_delta / pandas.to_timedelta(1, self.interval_unit))
 
 
@@ -69,6 +70,10 @@ class TimeSeries:
         """Checks if the interval idx is inside the valid range"""
         if time_interval_idx >= self.get_num_intervals() or time_interval_idx < 0:
             raise Exception(f"Invalid time interval id passed: {time_interval_idx}, length is {self.get_num_intervals()}")
+
+    def set_time_intervals(self, time_intervals):
+        """Sets the time intervals list."""
+        self.time_intervals = time_intervals
 
     def get_time_intervals(self):
         """Getter for the list of time intervals."""
@@ -123,7 +128,6 @@ class TimeSeries:
         self.time_intervals = [""] * num_intervals
         for i in range(0, num_intervals):
             self.time_intervals[i] = starting_interval + pandas.Timedelta(i, unit=unit)
-            print(self.time_intervals[i])
 
         self.aggregated = np.zeros(self.get_num_intervals(), dtype=int)
         self.num_samples = np.zeros(self.get_num_intervals(), dtype=int)
@@ -145,8 +149,8 @@ class TimeSeries:
         """Aggregates a given dataset, and stores it in memory."""
         # Pre-allocate space, and fill up times, given timestamps in dataset.
         num_intervals = interval_generator.get_number_of_intervals()
-        print(num_intervals)
         self.setup_time_intervals(starting_interval, interval_unit, num_intervals)
+        print_and_log(f"Last time interval: {self.time_intervals[len(self.time_intervals) - 1]}")
 
         # Go over all samples, adding their output to the corresponding position in the aggregated array.
         total_num_samples = dataset.get_number_of_samples()
@@ -159,14 +163,18 @@ class TimeSeries:
             self.aggregated[interval_idx] += values[sample_idx]
             self.num_samples[interval_idx] += 1
 
+        print_and_log("Finished aggregating.")
+
     def aggregate_by_timestamp(self, start_interval_string, interval_unit, dataset, values):
         """Aggregates a given dataset on the given time step, and stores it in memory."""
+        print_and_log("Aggregating by timestamp")
         start_interval = pandas.to_datetime(start_interval_string)
         interval_generator = TimestampIntervalGenerator(start_interval, interval_unit, dataset.get_timestamps())
         return self.aggregate(start_interval, interval_unit, dataset, values, interval_generator)
 
     def aggregate_by_number_of_samples(self, start_interval_string, interval_unit, dataset, values, samples_per_time):
         """Aggregates a given dataset on the given time step, and stores it in memory."""
+        print_and_log("Aggregating by number of samples")
         start_interval = pandas.to_datetime(start_interval_string)
         interval_generator = NumSamplesIntervalGenerator(start_interval, interval_unit, samples_per_time, dataset.get_number_of_samples())
         return self.aggregate(start_interval, interval_unit, dataset, values, interval_generator)

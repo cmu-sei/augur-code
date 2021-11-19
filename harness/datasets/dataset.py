@@ -48,6 +48,10 @@ class DataSet(abc.ABC):
         """Returns the timestamps."""
         return self.timestamps
 
+    def has_timestamps(self):
+        """If the sum of the timestamps is zero, they have not been loaded."""
+        return np.sum(self.timestamps) != 0
+
     @abstractmethod
     def add_sample(self, position, sample):
         """Adds a sample in the given position."""
