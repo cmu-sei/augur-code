@@ -3,7 +3,7 @@ import random
 import datetime
 import os
 import shutil
-import time
+import pandas
 
 from datasets import ref_dataset
 from utils import arguments
@@ -107,16 +107,16 @@ def add_timestamps(drifted_dataset, timestamp_params):
         print_and_log("Timestamps not enabled.")
         return
 
-    start_datetime = time.strptime(timestamp_params.get("start_datetime"), '%Y-%m-%d')
-    increment_in_days = timestamp_params.get("increment")
     num_samples = drifted_dataset.get_number_of_samples()
-    DAY_TO_SECONDS = 24 * 60 * 60
+    start_datetime = pandas.to_datetime(timestamp_params.get("start_datetime"))
+    increment_unit = timestamp_params.get("increment_unit")
 
     # Generate sequential timestamps for as many samples as we have, with the given start time and increment.
-    timestamps = [0] * num_samples
-    timestamps[0] = time.mktime(start_datetime)
-    for i in range(1, num_samples):
-        timestamps[i] = timestamps[i - 1] + (increment_in_days * DAY_TO_SECONDS)
+    print_and_log(f"Generating timestamps from starting time {start_datetime} and increment unit {increment_unit}")
+    timestamps = [0.0] * num_samples
+    for i in range(0, num_samples):
+        increment = pandas.to_timedelta(i, increment_unit)
+        timestamps[i] = pandas.Timestamp(start_datetime + increment).timestamp()
 
     drifted_dataset.set_timestamps(timestamps)
     print_and_log("Generated and stored timestamps.")
