@@ -44,9 +44,9 @@ def predict(model, model_input, threshold):
     return predictions
 
 
-def ts_predict(ts_fit_model, hyper_params):
+def ts_predict(ts_fit_model, time_series):
     """Fits model and generates predictions based on model."""
-    ts_predictions = timeseries_model.predict(ts_fit_model, hyper_params.get("time_intervals"))
+    ts_predictions = timeseries_model.predict(ts_fit_model, time_series)
     return ts_predictions
 
 
@@ -196,7 +196,7 @@ def main():
     # Predict.
     predictions = predict(model, full_dataset.get_model_input(), config.get("threshold"))
 
-    # Save to file, depending on mode, and calculate metrics if needed.
+    # Analyze and/or save as needed.
     mode = config.get("mode")
     if mode == "analyze":
         predictions.store_expected_results(full_dataset.get_output())
@@ -210,23 +210,15 @@ def main():
                                            predictions.get_predictions())
         accuracy = calculate_accuracy(predictions, time_series)
 
-        # Load time-series model.
-        ts_model = None
-        try:
-            print_and_log("Loading time-series model")
-            ts_model = timeseries_model.load(config.get("input").get("ts_model"))
-            print_and_log("Time-series model Loaded.")
-        except Exception as ex:
-            print_and_log(f"WARNING: Could not load time-series model: {str(ex)}")
-
-        # Run time-series model.
+        # Load and run time-series model.
         ts_predictions = None #timeseries.create_test_time_series(0, 1000, 1001)    # TEST
         try:
-            print_and_log("Time-series model executing.")
-            ts_predictions = ts_predict(ts_model, config.get("ts_hyper_parameters"))
+            print_and_log("Time-series model loading and executing.")
+            ts_model = timeseries_model.load(config.get("input").get("ts_model"))
+            ts_predictions = ts_predict(ts_model, time_series)
             print_and_log("Time-series model finished running.")
         except Exception as ex:
-            print_and_log(f"WARNING: Could not run time-series model: {str(ex)}")
+            print_and_log(f"WARNING: Could not load or run time-series model: {str(ex)}")
             raise ex
 
         # Calculate and store metrics.

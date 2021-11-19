@@ -12,26 +12,32 @@ def create_fit_model(time_intervals, aggregated_history, interval_unit, params):
     return fit_model
 
 
-def get_prediction_params(fit_model, time_interval_id):
-    #TODO: update this to work using dates.
-    """Gets the prediction params for the given interval."""
-    forecast = fit_model.get_forecast(steps=time_interval_id)
+def get_prediction_params(fit_model, start_interval, end_interval):
+    """Gets the prediction params for the given intervals."""
+    forecasts = fit_model.get_prediction(start=start_interval, end=end_interval)
 
-    keep_idx = time_interval_id - 1
-    mu = forecast.predicted_mean[keep_idx]
-    sigma = forecast.conf_int(alpha=(1-0.68))[keep_idx, 1] - mu
-    return {'mean': mu, 'std_dev': sigma}
-
-
-def predict(fit_model, num_time_intervals):
-    """Creates the prediction data, for now only pdf params, based on the fit model."""
     pdf_params = []
-    for i in range(0, num_time_intervals):
-        pdf_params.append(get_prediction_params(fit_model, i))
+    for idx in range(0, len(forecasts.predicted_mean)):
+        mu = forecasts.predicted_mean[idx]
+        sigma = forecasts.conf_int(alpha=(1-0.68))[idx, 1] - mu
+        pdf_params.append({'mean': mu, 'std_dev': sigma})
 
+    return pdf_params
+
+
+def predict(fit_model, time_series):
+    """Creates the prediction data, for now only pdf params, based on the fit model."""
+    intervals = time_series.get_time_intervals()
+    start_interval = intervals[0]
+    end_interval = intervals[len(intervals) - 1]
+
+    # Predict the pdf params for each time interval in the series.
+    pdf_params = get_prediction_params(fit_model, start_interval, end_interval)
+
+    # Return a time series object with the same intervals plus the pdf params set for each.
     ts_predictions = TimeSeries()
+    ts_predictions.set_time_intervals(time_series.get_time_intervals())
     ts_predictions.set_pdf_params(pdf_params)
-
     return ts_predictions
 
 
