@@ -14,14 +14,35 @@ from datasets.model_trainer import ModelTrainer
 from datasets.timeseries import TimeSeries
 import datasets.timeseries_model as timeseries_model
 
+LOG_FILE = "training.log"
+RANDOM_SEED = 555
 DEFAULT_CONFIG_FILENAME = "./trainer_config.json"
 CONFIG = Config()
+
+def aggregate_data(dataset_instance, time_interval_params):
+    """Aggregate the dataset data into a time series."""
+    time_series = TimeSeries()
+    if dataset_instance.has_timestamps():
+        # If the dataset comes with timestamps, aggregate using them.
+        time_series.aggregate_by_timestamp(time_interval_params.get("starting_interval"),
+                                           time_interval_params.get("interval_unit"),
+                                           dataset_instance,
+                                           dataset_instance.get_output())
+    else:
+        # If the dataset doesn't have timestamps, use the samples_per_interval config to aggregate.
+        samples_per_interval = int(time_interval_params.get("samples_per_time_interval"))
+        time_series.aggregate_by_number_of_samples(time_interval_params.get("starting_interval"),
+                                                   time_interval_params.get("interval_unit"),
+                                                   dataset_instance,
+                                                   dataset_instance.get_output(),
+                                                   samples_per_interval)
+    return time_series
 
 
 # Main code.
 def main():
-    np.random.seed(555)
-    logging.setup_logging("training.log")
+    np.random.seed(RANDOM_SEED)
+    logging.setup_logging(LOG_FILE)
 
     # Parse args and load config.
     args = arguments.get_parsed_arguments()
@@ -52,25 +73,16 @@ def main():
         main_trainer.evaluate(trained_model, default_evaluation_input, default_evaluation_output)
     if CONFIG.get("time_series_training") == "on":
         time_interval_params = CONFIG.get("time_interval")
-        time_series = TimeSeries()
-        if dataset_instance.has_timestamps():
-            # If the dataset comes with timestamps, aggregate using them.
-            time_series.aggregate_by_timestamp(time_interval_params.get("starting_interval"),
-                                               time_interval_params.get("interval_unit"),
-                                               dataset_instance,
-                                               dataset_instance.get_output())
-        else:
-            # If the dataset doesn't have timestamps, use the samples_per_interval config to aggregate.
-            samples_per_interval = int(CONFIG.get("time_interval").get("samples_per_time_interval"))
-            time_series.aggregate_by_number_of_samples(time_interval_params.get("starting_interval"),
-                                                       time_interval_params.get("interval_unit"),
-                                                       dataset_instance,
-                                                       dataset_instance.get_output(),
-                                                       samples_per_interval)
+        time_series = aggregate_data(dataset_instance, time_interval_params)
+        print_and_log(f"Finished aggregating data, number of aggregated intervals: {time_series.get_num_intervals()}")
+
+        print_and_log(f"Training time-series model")
         trained_model = timeseries_model.create_fit_model(time_series.get_time_intervals(),
                                                           time_series.get_aggregated(),
                                                           time_interval_params.get("interval_unit"),
                                                           CONFIG.get("ts_hyper_parameters"))
+
+        print_and_log(f"Finished training time-series model, saving it now.")
         timeseries_model.save(trained_model, CONFIG.get("ts_model"))
 
     print_and_log("Finished trainer session.")
