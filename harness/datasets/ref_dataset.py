@@ -101,6 +101,6 @@ class RefDataSet(DataSet):
 
             # Get the full sample, but replace the timestamp (if any) with the one from the reference dataset.
             full_sample = base_dataset.get_sample_by_id(original_id)
-            full_sample[DataSet.TIMESTAMP_KEY] = self.sample_group_ids[idx]
+            full_sample[DataSet.TIMESTAMP_KEY] = self.timestamps[idx]
             new_dataset.add_sample(idx, full_sample)
         return new_dataset
