@@ -29,16 +29,15 @@ class TimestampIntervalGenerator(IntervalGenerator):
     def __init__(self, starting_interval, interval_unit, timestamps):
         super().__init__(starting_interval, interval_unit)
         self.timestamps = timestamps
-        self.min_timestamp = timestamps[0]
-        self.max_timestamp = timestamps[timestamps.size-1]
 
     def calculate_time_interval(self, sample_idx):
         """Calculates the time interval number where a timestamp falls into, given the time step."""
-        delta = math.floor(pandas.to_timedelta((self.timestamps[sample_idx] - self.min_timestamp)) / pandas.to_timedelta(1, self.interval_unit))
+        min_timestamp = self.timestamps[0]
+        delta = math.floor(pandas.to_timedelta((self.timestamps[sample_idx] - min_timestamp)) / pandas.to_timedelta(1, self.interval_unit))
         return self.starting_interval + pandas.Timedelta(delta, unit=self.interval_unit)
 
     def get_last_time_interval(self):
-        return self.calculate_time_interval(self.max_timestamp)
+        return self.calculate_time_interval(self.timestamps.size - 1)
 
 
 class NumSamplesIntervalGenerator(IntervalGenerator):
@@ -157,6 +156,7 @@ class TimeSeries:
         for sample_idx in range(0, total_num_samples):
             # Calculate the interval for the current sample.
             sample_time_interval = interval_generator.calculate_time_interval(sample_idx)
+            #print(f"Sample: {sample_idx}, time interval: {sample_time_interval}")
 
             # Update the aggregated sum and the number of samples.
             interval_idx = self.get_interval_index(sample_time_interval)
