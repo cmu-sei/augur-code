@@ -17,14 +17,16 @@ DEFAULT_CONFIG_FILENAME = "./drifter_config.json"
 DRIFT_EXP_CONFIG_FOLDER = "../experiments/drifter"
 
 
-def load_bins(dataset_filename, dataset_class_name, bin_params, bin_value="results", shuffle=True):
-    """Loads a dataset into bins"""
-
-    # Load dataset to drift.
+def load_dataset(dataset_filename, dataset_class_name):
+    """Load dataset to drift."""
     dataset_class = dataset.load_dataset_class(dataset_class_name)
     base_dataset = dataset_class()
     base_dataset.load_from_file(dataset_filename)
+    return base_dataset
 
+
+def load_bins(base_dataset, bin_params, bin_value="results", shuffle=True):
+    """Loads a dataset into bins"""
     # Sort into bins.
     print_and_log(f"Bins: {bin_params}")
     values = get_bin_values(base_dataset, bin_value)
@@ -100,11 +102,11 @@ def apply_drift(input_bins, drift_module, params):
     return drifted_dataset
 
 
-def add_timestamps(drifted_dataset, timestamp_params):
+def add_timestamps(base_dataset, drifted_dataset, timestamp_params):
     """Adds sequential timestamps to a dataset."""
     enabled = timestamp_params.get("enabled")
     if not enabled:
-        print_and_log("Timestamps not enabled.")
+        print_and_log("Timestamp generation not enabled.")
         return
 
     num_samples = drifted_dataset.get_number_of_samples()
@@ -177,12 +179,15 @@ def main():
     if args.test:
         test_drift(config, drift_module, params, config.get("bins"))
     else:
-        # Apply drift.
+        # Sort dataset into bins.
+        base_dataset = load_dataset(config.get("dataset"), config.get("dataset_class"))
         bin_value = config.get("bin_value") if config.contains("bin_value") else "results"
         bin_shuffle = config.get("bin_shuffle") if config.contains("bin_shuffle") else True
-        bins = load_bins(config.get("dataset"), config.get("dataset_class"), config.get("bins"), bin_value, bin_shuffle)
+        bins = load_bins(base_dataset, config.get("bins"), bin_value, bin_shuffle)
+
+        # Apply drift.
         drifted_dataset = apply_drift(bins, drift_module, params)
-        add_timestamps(drifted_dataset, config.get("timestamps"))
+        add_timestamps(base_dataset, drifted_dataset, config.get("timestamps"))
 
         # Save it to regular file, and timestamped file.
         drifted_dataset.save_to_file(config.get("output"))
