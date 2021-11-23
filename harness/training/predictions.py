@@ -84,8 +84,8 @@ class Predictions:
             conf_matrix = confusion_matrix(self.expected_results, self.predictions)
             self.total_true_negatives, self.total_false_positives, self.total_false_negatives, self.total_true_positives \
                 = conf_matrix.ravel()
-            print(f"TN: {self.total_true_negatives}, TP: {self.total_true_positives}, "
-                  f"FN: {self.total_false_negatives}, FP: {self.total_false_positives}")
+            #print(f"TN: {self.total_true_negatives}, TP: {self.total_true_positives}, "
+            #      f"FN: {self.total_false_negatives}, FP: {self.total_false_positives}")
 
             self.tf_pn_by_sample = []
             for idx, truth in enumerate(self.expected_results):

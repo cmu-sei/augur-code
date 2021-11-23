@@ -1,25 +1,37 @@
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.arima.model import ARIMAResults
+import pandas as pd
 
 from datasets.timeseries import TimeSeries
 
 
 def create_fit_model(time_intervals, aggregated_history, interval_unit, params):
     """Creates the model object."""
+    # Prepare data as dataframe.
+    data = {"Date": time_intervals, "Values": aggregated_history}
+    dataframe = pd.DataFrame(data)
+    dataframe.set_index("Date", inplace=True)
+
+    # Build and fit model.
     model_order = (int(params.get("order_p")), int(params.get("order_q")), int(params.get("order_d")))
-    model = ARIMA(aggregated_history, dates=time_intervals, freq=interval_unit, order=model_order)
+    model = ARIMA(dataframe, freq=interval_unit, order=model_order)
     fit_model = model.fit()
     return fit_model
 
 
 def get_prediction_params(fit_model, start_interval, end_interval):
     """Gets the prediction params for the given intervals."""
+    print(f"Intervals to predict: {start_interval} to {end_interval}")
     forecasts = fit_model.get_prediction(start=start_interval, end=end_interval)
 
     pdf_params = []
-    for idx in range(0, len(forecasts.predicted_mean)):
-        mu = forecasts.predicted_mean[idx]
-        sigma = forecasts.conf_int(alpha=(1-0.68))[idx, 1] - mu
+    confidence_level = 0.68
+    alpha = 1 - confidence_level
+    summary = forecasts.summary_frame(alpha=alpha)
+    print(summary)
+    for index, row in summary.iterrows():
+        mu = row['mean']
+        sigma = row['mean_ci_upper'] - mu
         pdf_params.append({'mean': mu, 'std_dev': sigma})
 
     return pdf_params
