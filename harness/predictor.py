@@ -91,6 +91,7 @@ def calculate_metrics(time_series, ts_predictions, config):
         for interval_index, time_interval in enumerate(time_series.get_time_intervals()):
             if interval_index not in results.keys():
                 results[interval_index] = {}
+                results[interval_index]["interval"] = time_interval.timestamp()
                 results[interval_index]["metrics"] = []
 
             # Calculate metric.
