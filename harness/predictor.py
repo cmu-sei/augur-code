@@ -3,22 +3,22 @@ import os
 import shutil
 import datetime
 
-from datasets.timeseries import TimeSeries
+from analysis.timeseries import TimeSeries
 from training import model_utils
-from training.predictions import Predictions
+from analysis.predictions import Predictions
 from datasets import ref_dataset
 from utils.config import Config
 from utils import arguments
 from utils import logging
 from utils.logging import print_and_log
 from datasets import dataset
-import metrics.base_metric as augur_metrics
-import datasets.timeseries_model as timeseries_model
+import analysis.metric as augur_metrics
+import training.timeseries_model as timeseries_model
 
+LOG_FILE_NAME = "predictor.log"
 DEFAULT_CONFIG_FILENAME = "./predictor_config.json"
 METRIC_EXP_CONFIG_FOLDER = "../experiments/predictor"
 PACKAGED_FOLDER_BASE = "../output/packaged/"
-LOG_FILE_NAME = "predictor.log"
 
 
 def load_datasets(input_config):
@@ -207,8 +207,8 @@ def main():
         time_series = TimeSeries()
         time_series.aggregate_by_timestamp(config.get("time_interval").get("starting_interval"),
                                            config.get("time_interval").get("interval_unit"),
-                                           full_dataset,
-                                           predictions.get_predictions())
+                                           predictions.get_predictions(),
+                                           full_dataset.get_timestamps())
         accuracy = calculate_accuracy(predictions, time_series)
 
         # Load and run time-series model.

@@ -144,7 +144,7 @@ class TimeSeries:
         else:
             raise Exception(f"Invalid time index, not found in times array: {time_interval}")
 
-    def aggregate(self, starting_interval, interval_unit, dataset, values, interval_generator):
+    def aggregate(self, starting_interval, interval_unit, values, interval_generator):
         """Aggregates a given dataset, and stores it in memory."""
         # Pre-allocate space, and fill up times, given timestamps in dataset.
         num_intervals = interval_generator.get_number_of_intervals()
@@ -152,7 +152,7 @@ class TimeSeries:
         print_and_log(f"Last time interval: {self.time_intervals[len(self.time_intervals) - 1]}")
 
         # Go over all samples, adding their output to the corresponding position in the aggregated array.
-        total_num_samples = dataset.get_number_of_samples()
+        total_num_samples = values.size
         for sample_idx in range(0, total_num_samples):
             # Calculate the interval for the current sample.
             sample_time_interval = interval_generator.calculate_time_interval(sample_idx)
@@ -165,19 +165,19 @@ class TimeSeries:
 
         print_and_log("Finished aggregating.")
 
-    def aggregate_by_timestamp(self, start_interval_string, interval_unit, dataset, values):
+    def aggregate_by_timestamp(self, start_interval_string, interval_unit, values, timestamps):
         """Aggregates a given dataset on the given time step, and stores it in memory."""
         print_and_log("Aggregating by timestamp")
         start_interval = pandas.to_datetime(start_interval_string)
-        interval_generator = TimestampIntervalGenerator(start_interval, interval_unit, dataset.get_timestamps())
-        return self.aggregate(start_interval, interval_unit, dataset, values, interval_generator)
+        interval_generator = TimestampIntervalGenerator(start_interval, interval_unit, timestamps)
+        return self.aggregate(start_interval, interval_unit, values, interval_generator)
 
-    def aggregate_by_number_of_samples(self, start_interval_string, interval_unit, dataset, values, samples_per_time):
+    def aggregate_by_number_of_samples(self, start_interval_string, interval_unit, values, samples_per_time):
         """Aggregates a given dataset on the given time step, and stores it in memory."""
         print_and_log("Aggregating by number of samples")
         start_interval = pandas.to_datetime(start_interval_string)
-        interval_generator = NumSamplesIntervalGenerator(start_interval, interval_unit, samples_per_time, dataset.get_number_of_samples())
-        return self.aggregate(start_interval, interval_unit, dataset, values, interval_generator)
+        interval_generator = NumSamplesIntervalGenerator(start_interval, interval_unit, samples_per_time, values.size)
+        return self.aggregate(start_interval, interval_unit, values, interval_generator)
 
     def to_dict(self):
         """Returns the main attributes of this object as a dictionary."""
@@ -202,7 +202,7 @@ def create_test_time_series(dist_start=0, dist_end=10, dist_total=10):
     dataset = FakeDataset(output_values.size)
 
     time_series = TimeSeries()
-    time_series.aggregate_by_number_of_samples(pandas.to_datetime("2021-11-01"), "days", dataset, output_values, samples_per_time)
+    time_series.aggregate_by_number_of_samples(pandas.to_datetime("2021-11-01"), "days", output_values, samples_per_time)
     time_series.set_pdf([np.random.randint(dist_start, dist_end, (dist_total))] * time_series.get_num_intervals())
     time_series.set_pdf_params([{"mean": 5, "std_dev": 3}] * time_series.get_num_intervals())
 

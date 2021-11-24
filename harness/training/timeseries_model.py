@@ -2,7 +2,7 @@ from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.arima.model import ARIMAResults
 import pandas as pd
 
-from datasets.timeseries import TimeSeries
+from analysis.timeseries import TimeSeries
 
 
 def create_fit_model(time_intervals, aggregated_history, interval_unit, params):

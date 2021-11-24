@@ -7,10 +7,12 @@ import pandas as pd
 
 from utils import dataframe_helper
 
+DATASETS_PACKAGE = "extensions.datasets."
+
 
 def load_model_module(module_name):
     """Loads a model module given the name"""
-    return importlib.import_module("datasets." + module_name)
+    return importlib.import_module(DATASETS_PACKAGE + module_name)
 
 
 def load_dataset_class(full_class_name):
@@ -18,7 +20,7 @@ def load_dataset_class(full_class_name):
     parts = full_class_name.rsplit(".", 1)
     module_name = parts[0]
     class_name = parts[1]
-    dataset_module = importlib.import_module("datasets." + module_name)
+    dataset_module = importlib.import_module(DATASETS_PACKAGE + module_name)
     class_type = getattr(dataset_module, class_name)
     return class_type
 
@@ -131,7 +133,7 @@ class DataSet(abc.ABC):
         dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)
 
     def get_model_input(self):
-        """Returns the inputs to be used."""
+        """Returns the inputs to be used as a numpy array."""
         raise NotImplementedError()
 
     def get_single_input(self):
@@ -140,7 +142,9 @@ class DataSet(abc.ABC):
         return self.get_model_input()
 
     def get_output(self):
+        """Has to return a numpy array with the output."""
         raise NotImplementedError()
 
     def set_output(self, new_output):
+        """Gets a numpy array and sets it as the output."""
         raise NotImplementedError()

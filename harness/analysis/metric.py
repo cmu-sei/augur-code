@@ -1,12 +1,13 @@
 import importlib
 
+from analysis.density import DensityEstimator
 
-from utils.density import DensityEstimator
+METRICS_PACKAGE = "extensions.metrics."
 
 
 def load_metric_module(module_name):
     """Loads a metric module given the name"""
-    return importlib.import_module("metrics." + module_name)
+    return importlib.import_module(METRICS_PACKAGE + module_name)
 
 
 def create_metric(metric_info):
