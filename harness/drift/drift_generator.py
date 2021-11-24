@@ -31,14 +31,6 @@ def load_drift_config(drift_config):
     return drift_module, params
 
 
-def load_dataset(dataset_filename, dataset_class_name):
-    """Load dataset to drift."""
-    dataset_class = dataset.load_dataset_class(dataset_class_name)
-    base_dataset = dataset_class()
-    base_dataset.load_from_file(dataset_filename)
-    return base_dataset
-
-
 def load_bins(base_dataset, bin_params, bin_value="results", shuffle=True):
     """Loads a dataset into bins"""
     # Sort into bins.
