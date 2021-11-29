@@ -3,9 +3,11 @@
   "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
   "dataset": "../output/merged_dataset.json",
   "model": "../output/trained_model",
+  "ts_model": "../output/trained_model_ts",
   "training": "off",
   "cross_validation": "on",
   "evaluation": "on",
+  "time_series_training": "off",
   "hyper_parameters":
   {
     "epochs": 10,
