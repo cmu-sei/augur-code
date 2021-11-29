@@ -12,6 +12,11 @@ def create_fit_model(time_intervals, aggregated_history, interval_unit, params):
     dataframe = pd.DataFrame(data)
     dataframe.set_index("Date", inplace=True)
 
+    # Rebuild index to avoid warning and issue with frequency.
+    tidx = pd.DatetimeIndex(dataframe.index.values, freq=interval_unit)
+    dataframe.set_index(tidx, inplace=True)
+    print(dataframe)
+
     # Build and fit model.
     model_order = (int(params.get("order_p")), int(params.get("order_q")), int(params.get("order_d")))
     model = ARIMA(dataframe, freq=interval_unit, order=model_order)
