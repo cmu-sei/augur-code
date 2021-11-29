@@ -1,17 +1,23 @@
 {
-  "mode": "predict",
+  "mode": "analyze",
   "threshold": 0.5,
   "input":
   {
     "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
     "dataset": "../output/oversample_drift.json",
     "base_dataset": "../output/merged_dataset.json",
-    "model": "../output/trained_model"
+    "model": "../output/trained_model",
+    "ts_model": "../output/trained_model_ts"
   },
   "output":
   {
     "predictions_output": "../output/oversample_hellinger_predictions.json",
     "metrics_output": "../output/oversample_hellinger_metrics.json"
+  },
+  "time_interval":
+  {
+    "starting_interval": "2023-03-18",
+    "interval_unit": "D"
   },
   "metrics":
   [
@@ -23,7 +29,8 @@
       {
         "distribution": "normal",
         "range_start": -1,
-        "range_end": 2
+        "range_end": 1000,
+        "range_step": 1
       }
     }
   ]

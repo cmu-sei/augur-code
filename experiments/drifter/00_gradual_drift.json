@@ -7,6 +7,11 @@
       ["no_iceberg", 0],
       ["iceberg", 1]
     ],
+  "timestamps":
+  {
+    "start_datetime": "2023-03-18",
+    "increment_unit": "H"
+  },
   "drift_scenario":
   {
     "condition": "gradual",
@@ -14,12 +19,12 @@
     "params":
     {
       "max_num_samples":  10026,
-      "timebox_size": 1671,
+      "sample_group_size": 1671,
       "prevalences":
       {
         "1":
         {
-          "percentages_by_timebox": [65, 63, 60, 55, 45, 40],
+          "percentages_by_sample_group": [65, 63, 60, 55, 45, 40],
           "prevalence_repeat": false
         }
       }

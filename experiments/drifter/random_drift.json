@@ -7,6 +7,11 @@
       ["no_iceberg", 0],
       ["iceberg", 1]
     ],
+  "timestamps":
+  {
+    "start_datetime": "2023-03-18",
+    "increment_unit": "H"
+  },
   "drift_scenario":
   {
     "condition": "random",
@@ -14,7 +19,7 @@
     "params":
     {
       "max_num_samples":  100,
-      "timebox_size": 10
+      "sample_group_size": 10
     }
   }
 }

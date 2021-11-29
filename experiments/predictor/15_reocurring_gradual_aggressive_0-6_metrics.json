@@ -1,17 +1,23 @@
 {
-  "mode": "predict",
+  "mode": "analyze",
   "threshold": 0.5,
   "input":
   {
     "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
     "dataset": "../output/15_reocurring_gradual_drift_aggressive.json",
     "base_dataset": "../output/merged_dataset.json",
-    "model": "../output/trained_model"
+    "model": "../output/trained_model",
+    "ts_model": "../output/trained_model_ts"
   },
   "output":
   {
     "predictions_output": "../output/15_reocurring_gradual_aggressive_0-6_predictions.json",
     "metrics_output": "../output/15_reocurring_gradual_aggressive_0-6_metrics.json"
+  },
+  "time_interval":
+  {
+    "starting_interval": "2023-03-18",
+    "interval_unit": "D"
   },
   "metrics":
   [
@@ -23,7 +29,8 @@
       {
         "distribution": "kernel_density",
         "range_start": -1,
-        "range_end": 2
+        "range_end": 1000,
+        "range_step": 1
       }
     },
     {
@@ -34,7 +41,8 @@
       {
         "distribution": "kernel_density",
         "range_start": -1,
-        "range_end": 2
+        "range_end": 1000,
+        "range_step": 1
       }
     },
     {
@@ -45,7 +53,8 @@
       {
         "distribution": "kernel_density",
         "range_start": -1,
-        "range_end": 2
+        "range_end": 1000,
+        "range_step": 1
       }
     },
     {
@@ -61,7 +70,8 @@
       {
         "distribution": "kernel_density",
         "range_start": -1,
-        "range_end": 2
+        "range_end": 1000,
+        "range_step": 1
       }
     },
     {
@@ -72,7 +82,8 @@
       {
         "distribution": "kernel_density",
         "range_start": -1,
-        "range_end": 2
+        "range_end": 1000,
+        "range_step": 1
       }
     },
     {

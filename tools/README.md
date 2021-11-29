@@ -48,8 +48,8 @@ The Drifter tool configuration has the following fields:
    - **module**: Python module implementing the drift (see general README for more details), which has to go inside the `harness/drift/` (i.e., "random_drift").
    - **params**: dictionary of specific parameters for this drift generator. Depend on the **module** defined above. It will at least contain the following minimum parameters:
      - **max_num_samples**: how many samples to output into the drifted dataset.
-     - **timebox_size**: size of the timebox for generating the drifted dataset.
-     - **timebox_shuffle**: (OPTIONAL) true or false to indicate whether to shuffle samples in each timebox after selecting them from bins. Defaults to true.
+     - **sample_group_size**: size of the sample group for generating the drifted dataset.
+     - **sample_group_shuffle**: (OPTIONAL) true or false to indicate whether to shuffle samples in each group after selecting them from bins. Defaults to true.
 
 The bash scripts for this tool include:
 - **drifter.sh**: uses the `drifter_config.json` file, default for creating a drifted dataset.
