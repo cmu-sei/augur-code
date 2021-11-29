@@ -113,7 +113,7 @@ def generate_sample_group_samples(drift_module, sample_group_id, curr_bin_offset
     sample_group_sample_ids = []
     for sample_index in range(0, sample_group_size):
         bin_idx = drift_module.get_bin_index(sample_index, sample_group_id, curr_bin_offset, len(input_bins), params)
-        print_and_log(f"Selecting from bin {bin_idx}")
+        #print_and_log(f"Selecting from bin {bin_idx}")
         curr_bin = input_bins[bin_idx]
 
         if curr_bin.get_queue_length() == 0:
