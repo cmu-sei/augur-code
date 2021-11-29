@@ -89,13 +89,8 @@ def apply_drift(input_bins, drift_module, params):
     return drifted_dataset
 
 
-def add_timestamps(base_dataset, drifted_dataset, timestamp_params):
+def add_timestamps(drifted_dataset, timestamp_params):
     """Adds sequential timestamps to a dataset."""
-    enabled = timestamp_params.get("enabled")
-    if not enabled:
-        print_and_log("Timestamp generation not enabled.")
-        return
-
     num_samples = drifted_dataset.get_number_of_samples()
     start_datetime = pandas.to_datetime(timestamp_params.get("start_datetime"))
     increment_unit = timestamp_params.get("increment_unit")
@@ -108,7 +103,7 @@ def add_timestamps(base_dataset, drifted_dataset, timestamp_params):
         timestamps[i] = pandas.Timestamp(start_datetime + increment).timestamp()
 
     drifted_dataset.set_timestamps(timestamps)
-    print_and_log("Generated and stored timestamps.")
+    print_and_log("Generated and applied timestamps.")
 
 
 def generate_sample_group_samples(drift_module, sample_group_id, curr_bin_offset, input_bins, sample_group_size, params):

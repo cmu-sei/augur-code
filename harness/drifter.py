@@ -42,7 +42,7 @@ def main():
 
         # Apply drift.
         drifted_dataset = drift_generator.apply_drift(bins, drift_module, params)
-        drift_generator.add_timestamps(base_dataset, drifted_dataset, config.get("timestamps"))
+        drift_generator.add_timestamps(drifted_dataset, config.get("timestamps"))
 
         # Save it to regular file, and timestamped file.
         drifted_dataset.save_to_file(config.get("output"))

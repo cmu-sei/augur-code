@@ -9,7 +9,6 @@
     ],
   "timestamps":
   {
-    "enabled": true,
     "start_datetime": "2023-03-18",
     "increment_unit": "H"
   },
