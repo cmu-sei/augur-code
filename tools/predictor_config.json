@@ -32,6 +32,16 @@
         "range_end": 1000,
         "range_step": 1
       }
+    },
+    {
+      "name": "Z Test / Student's t",
+      "type": "ErrorMetric",
+      "module": "z_test"
+    },
+    {
+      "name": "Kolmogorov-Smirnov Statistic",
+      "type": "ErrorMetric",
+      "module": "kolmogorov_smirnov"
     }
   ]
 }

@@ -29,7 +29,7 @@ class DensityEstimator:
 
     def calculate_probability_distribution(self, distribution, data, density_params):
         """Calculates and returns the probability distribution for the given data."""
-        print_and_log(f"Using distribution: {distribution}")
+        #print_and_log(f"Using distribution: {distribution}")
         if distribution == "custom":
             if self.external_module is None:
                 raise Exception("Custom density requested, but no custom module set up.")
@@ -58,7 +58,7 @@ class DensityEstimator:
         std_dev = density_params.get("std_dev")
         if mean is None or std_dev is None:
             raise Exception("Can't calculate normal distribution; one of the params is None")
-        print_and_log(f"Mean: {mean}, Std Dev: {std_dev}")
+        #print_and_log(f"Mean: {mean}, Std Dev: {std_dev}")
         return norm.pdf(self.dist_range, mean, std_dev)
 
     def _calculate_normal_dist(self, data, density_params):
@@ -67,5 +67,5 @@ class DensityEstimator:
         std_dev = density_params.get("std_dev")
         if std_dev is None:
             raise Exception("Can't calculate normal distribution; standard deviation provided for data is None")
-        print_and_log(f"Mean: {mean}, Std Dev: {std_dev}")
+        #print_and_log(f"Mean: {mean}, Std Dev: {std_dev}")
         return norm.pdf(self.dist_range, mean, std_dev)
