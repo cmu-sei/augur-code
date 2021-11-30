@@ -59,7 +59,8 @@ class DensityEstimator:
         if mean is None or std_dev is None:
             raise Exception("Can't calculate normal distribution; one of the params is None")
         #print_and_log(f"Mean: {mean}, Std Dev: {std_dev}")
-        return norm.pdf(self.dist_range, mean, std_dev)
+        dist = norm.pdf(self.dist_range, mean, std_dev)
+        return dist
 
     def _calculate_normal_dist(self, data, density_params):
         """Normal dist calculation, using only std dev from params."""
@@ -68,4 +69,5 @@ class DensityEstimator:
         if std_dev is None:
             raise Exception("Can't calculate normal distribution; standard deviation provided for data is None")
         #print_and_log(f"Mean: {mean}, Std Dev: {std_dev}")
-        return norm.pdf(self.dist_range, mean, std_dev)
+        dist = norm.pdf(self.dist_range, mean, std_dev)
+        return dist
