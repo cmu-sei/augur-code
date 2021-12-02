@@ -5,7 +5,7 @@ from scipy.stats import wasserstein_distance
 def metric_distance(p, q):
     """Calculates total variation distance."""
     tvd = np.mean(np.abs(p - q)) / 2
-    print(f"Total variation distance: {tvd}")
+    #print(f"Total variation distance: {tvd}")
     return tvd
 
 

@@ -5,7 +5,7 @@ from scipy.stats import wasserstein_distance
 def metric_distance(p, q):
     """Calculates Wasserstein distance."""
     wass = np.mean(np.abs(p - q))
-    print(f"Wasserstein distance: {wass}")
+    #print(f"Wasserstein distance: {wass}")
     return wass
 
 

@@ -5,7 +5,7 @@ from scipy.stats import energy_distance
 def metric_distance(p, q):
     """Calculates Energy distance."""
     energy_dist = energy_distance(p,q)
-    print(f"Energy distance: {energy_dist}")
+    #print(f"Energy distance: {energy_dist}")
     return energy_dist
 
 
