@@ -7,6 +7,7 @@ from utils import dataframe_helper
 
 def classify(predictions, threshold):
     """Turns raw predictions into actual classification. Only 1/0 for now."""
+    # TODO: Add support for more complex classifications.
     return np.where(predictions > threshold, 1, 0)
 
 
@@ -17,7 +18,10 @@ class Predictions:
     ACCURACY_TRUE_NEGATIVE = "tn"
     ACCURACY_FALSE_POSITIVE = "fp"
     ACCURACY_FALSE_NEGATIVE = "fn"
+
+    # TODO: Add support for more complex classifications
     POSITIVE_CLASS = 1
+    LABELS = [0, 1]
 
     TRUTH_KEY = "truth"
     PREDICTIONS_KEY = "prediction"
@@ -81,7 +85,7 @@ class Predictions:
     def _calculate_true_false_positives_negatives(self):
         """Calculates confusion matrix, and for each sample if it was a true/false positive/negative."""
         if self.expected_results is not None and self.predictions is not None:
-            conf_matrix = confusion_matrix(self.expected_results, self.predictions)
+            conf_matrix = confusion_matrix(self.expected_results, self.predictions, labels=self.LABELS)
             self.total_true_negatives, self.total_false_positives, self.total_false_negatives, self.total_true_positives \
                 = conf_matrix.ravel()
             #print(f"TN: {self.total_true_negatives}, TP: {self.total_true_positives}, "
