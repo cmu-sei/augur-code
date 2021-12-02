@@ -92,8 +92,13 @@ def apply_drift(input_bins, drift_module, params):
 def add_timestamps(drifted_dataset, timestamp_params):
     """Adds sequential timestamps to a dataset."""
     num_samples = drifted_dataset.get_number_of_samples()
-    start_datetime = pandas.to_datetime(timestamp_params.get("start_datetime"))
     increment_unit = timestamp_params.get("increment_unit")
+    start_datetime_config = timestamp_params.get("start_datetime")
+    if start_datetime_config == "auto":
+        # TODO: Get first forecast timestamp from time series as first drift date.
+        raise NotImplementedError("Automatic start datetime functionality not implemented yet.")
+    else:
+        start_datetime = pandas.to_datetime(start_datetime_config)
 
     # Generate sequential timestamps for as many samples as we have, with the given start time and increment.
     print_and_log(f"Generating timestamps from starting time {start_datetime} and increment unit {increment_unit}")

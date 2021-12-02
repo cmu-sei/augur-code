@@ -153,6 +153,7 @@ def package_results(config, packaged_folder_base, log_file_name):
     """Copies all results to a date-time folder to store experiment results."""
     dataset = config.get("input").get("dataset")
     model = config.get("input").get("model")
+    ts_model = config.get("input").get("ts_model")
     predictions = config.get("output").get("predictions_output")
     metrics = config.get("output").get("metrics_output")
 
@@ -173,6 +174,7 @@ def package_results(config, packaged_folder_base, log_file_name):
     shutil.copy(config.config_filename, config_folder)
     shutil.copy(dataset, full_folder_path)
     shutil.copytree(model, os.path.join(full_folder_path, os.path.basename(os.path.normpath(model))))
+    shutil.copy(ts_model, full_folder_path)
     shutil.copy(predictions, full_folder_path)
     shutil.copy(metrics, full_folder_path)
     shutil.copy(log_file_name, full_folder_path)
