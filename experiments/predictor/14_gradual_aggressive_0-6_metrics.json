@@ -27,7 +27,7 @@
       "module": "kl_divergence",
       "params":
       {
-        "distribution": "kernel_density",
+        "distribution": "normal",
         "range_start": -1,
         "range_end": 1000,
         "range_step": 1
@@ -39,7 +39,7 @@
       "module": "hellinger",
       "params":
       {
-        "distribution": "kernel_density",
+        "distribution": "normal",
         "range_start": -1,
         "range_end": 1000,
         "range_step": 1
@@ -51,7 +51,7 @@
       "module": "tvd",
       "params":
       {
-        "distribution": "kernel_density",
+        "distribution": "normal",
         "range_start": -1,
         "range_end": 2
       }
@@ -67,7 +67,7 @@
       "module": "wasserstein",
       "params":
       {
-        "distribution": "kernel_density",
+        "distribution": "normal",
         "range_start": -1,
         "range_end": 1000,
         "range_step": 1
@@ -79,7 +79,7 @@
       "module": "energy",
       "params":
       {
-        "distribution": "kernel_density",
+        "distribution": "normal",
         "range_start": -1,
         "range_end": 1000,
         "range_step": 1

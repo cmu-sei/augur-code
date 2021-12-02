@@ -16,7 +16,7 @@
   },
   "time_interval":
   {
-    "samples_per_time_interval": "20",
+    "samples_per_time_interval": "50",
     "starting_interval": "2021-11-01",
     "interval_unit": "D"
   },
