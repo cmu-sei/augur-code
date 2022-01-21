@@ -1,15 +1,29 @@
 {
   "model_module": "iceberg.iceberg_model",
   "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
-  "dataset": "../input/train.json",
+  "dataset": "../output/merged_dataset.json",
   "model": "../output/trained_model",
-  "training": "on",
+  "ts_model": "../output/trained_model_ts",
+  "training": "off",
   "cross_validation": "off",
   "evaluation": "off",
+  "time_series_training": "on",
   "hyper_parameters":
   {
     "epochs": 10,
     "batch_size": 32,
     "validation_size": 0.25
+  },
+  "time_interval":
+  {
+    "samples_per_time_interval": "50",
+    "starting_interval": "2021-11-01",
+    "interval_unit": "D"
+  },
+  "ts_hyper_parameters":
+  {
+    "order_p": 3,
+    "order_q": 1,
+    "order_d": 1
   }
 }

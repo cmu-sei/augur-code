@@ -7,6 +7,11 @@
       ["no_iceberg", 0],
       ["iceberg", 1]
     ],
+  "timestamps":
+  {
+    "start_datetime": "2022-05-21",
+    "increment_unit": "H"
+  },
   "drift_scenario":
   {
     "condition": "reocurring sudden aggressive",
@@ -14,12 +19,12 @@
     "params":
     {
       "max_num_samples": 12000,
-      "timebox_size": 1000,
+      "sample_group_size": 1000,
       "prevalences":
       {
         "1":
         {
-          "percentages_by_timebox": [65, 10, 70],
+          "percentages_by_sample_group": [65, 10, 70],
           "prevalence_repeat": true,
           "prevalence_repeat_range": [-10, 10]
         }

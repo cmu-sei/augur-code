@@ -7,6 +7,7 @@ from utils import dataframe_helper
 
 def classify(predictions, threshold):
     """Turns raw predictions into actual classification. Only 1/0 for now."""
+    # TODO: Add support for more complex classifications.
     return np.where(predictions > threshold, 1, 0)
 
 
@@ -17,7 +18,10 @@ class Predictions:
     ACCURACY_TRUE_NEGATIVE = "tn"
     ACCURACY_FALSE_POSITIVE = "fp"
     ACCURACY_FALSE_NEGATIVE = "fn"
+
+    # TODO: Add support for more complex classifications
     POSITIVE_CLASS = 1
+    LABELS = [0, 1]
 
     TRUTH_KEY = "truth"
     PREDICTIONS_KEY = "prediction"
@@ -70,20 +74,22 @@ class Predictions:
         return self.predictions
 
     def create_slice(self, starting_idx, size):
-        """Creates a new TrainingResults object with a slice of the results in this one."""
-        sliced_training_results = Predictions(self.classification_threshold)
-        sliced_training_results.store_expected_results(self.get_expected_results()[starting_idx:starting_idx + size])
-        sliced_training_results.store_predictions(self.get_predictions()[starting_idx:starting_idx + size])
-        return sliced_training_results
+        """Creates a new object of this type with a slice of the results in this one."""
+        if size == 0:
+            return None
+        sliced_predictions = Predictions(self.classification_threshold)
+        sliced_predictions.store_expected_results(self.get_expected_results()[starting_idx:starting_idx + size])
+        sliced_predictions.store_predictions(self.get_predictions()[starting_idx:starting_idx + size])
+        return sliced_predictions
 
     def _calculate_true_false_positives_negatives(self):
         """Calculates confusion matrix, and for each sample if it was a true/false positive/negative."""
         if self.expected_results is not None and self.predictions is not None:
-            conf_matrix = confusion_matrix(self.expected_results, self.predictions)
+            conf_matrix = confusion_matrix(self.expected_results, self.predictions, labels=self.LABELS)
             self.total_true_negatives, self.total_false_positives, self.total_false_negatives, self.total_true_positives \
                 = conf_matrix.ravel()
-            print(f"TN: {self.total_true_negatives}, TP: {self.total_true_positives}, "
-                  f"FN: {self.total_false_negatives}, FP: {self.total_false_positives}")
+            #print(f"TN: {self.total_true_negatives}, TP: {self.total_true_positives}, "
+            #      f"FN: {self.total_false_negatives}, FP: {self.total_false_positives}")
 
             self.tf_pn_by_sample = []
             for idx, truth in enumerate(self.expected_results):

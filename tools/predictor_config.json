@@ -1,17 +1,23 @@
 {
-  "mode": "predict",
+  "mode": "analyze",
   "threshold": 0.5,
   "input":
   {
     "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
     "dataset": "../output/drift.json",
     "base_dataset": "../output/merged_dataset.json",
-    "model": "../output/trained_model"
+    "model": "../output/trained_model",
+    "ts_model": "../output/trained_model_ts"
   },
   "output":
   {
     "predictions_output": "../output/predictions.json",
     "metrics_output": "../output/metrics_output.json"
+  },
+  "time_interval":
+  {
+    "starting_interval": "2023-03-18",
+    "interval_unit": "D"
   },
   "metrics":
   [
@@ -23,8 +29,19 @@
       {
         "distribution": "normal",
         "range_start": -1,
-        "range_end": 2
+        "range_end": 1000,
+        "range_step": 1
       }
+    },
+    {
+      "name": "Z Test / Student's t",
+      "type": "ErrorMetric",
+      "module": "z_test"
+    },
+    {
+      "name": "Kolmogorov-Smirnov Statistic",
+      "type": "ErrorMetric",
+      "module": "kolmogorov_smirnov"
     }
   ]
 }

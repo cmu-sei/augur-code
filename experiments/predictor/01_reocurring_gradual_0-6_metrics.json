@@ -1,17 +1,23 @@
 {
-  "mode": "predict",
+  "mode": "analyze",
   "threshold": 0.5,
   "input":
   {
     "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
     "dataset": "../output/01_reocurring_gradual_drift.json",
     "base_dataset": "../output/merged_dataset.json",
-    "model": "../output/trained_model"
+    "model": "../output/trained_model",
+    "ts_model": "../output/trained_model_ts"
   },
   "output":
   {
     "predictions_output": "../output/01_reocurring_gradual_0-6_predictions.json",
     "metrics_output": "../output/01_reocurring_gradual_0-6_metrics.json"
+  },
+  "time_interval":
+  {
+    "starting_interval": "2022-05-21",
+    "interval_unit": "D"
   },
   "metrics":
   [
@@ -21,9 +27,10 @@
       "module": "kl_divergence",
       "params":
       {
-        "distribution": "kernel_density",
+        "distribution": "normal",
         "range_start": -1,
-        "range_end": 2
+        "range_end": 1000,
+        "range_step": 1
       }
     },
     {
@@ -32,9 +39,10 @@
       "module": "hellinger",
       "params":
       {
-        "distribution": "kernel_density",
+        "distribution": "normal",
         "range_start": -1,
-        "range_end": 2
+        "range_end": 1000,
+        "range_step": 1
       }
     },
     {
@@ -43,9 +51,10 @@
       "module": "tvd",
       "params":
       {
-        "distribution": "kernel_density",
+        "distribution": "normal",
         "range_start": -1,
-        "range_end": 2
+        "range_end": 1000,
+        "range_step": 1
       }
     },
     {
@@ -59,9 +68,10 @@
       "module": "wasserstein",
       "params":
       {
-        "distribution": "kernel_density",
+        "distribution": "normal",
         "range_start": -1,
-        "range_end": 2
+        "range_end": 1000,
+        "range_step": 1
       }
     },
     {
@@ -70,9 +80,10 @@
       "module": "energy",
       "params":
       {
-        "distribution": "kernel_density",
+        "distribution": "normal",
         "range_start": -1,
-        "range_end": 2
+        "range_end": 1000,
+        "range_step": 1
       }
     },
     {

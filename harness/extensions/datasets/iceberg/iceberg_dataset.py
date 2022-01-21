@@ -1,8 +1,5 @@
 import numpy as np
-import pandas as pd
 
-
-from utils import dataframe_helper
 from datasets import dataset
 
 
@@ -26,7 +23,7 @@ class IcebergDataSet(dataset.DataSet):
 
     def load_from_file(self, dataset_filename):
         """Loads data from a JSON file into this object."""
-        dataset_df = super().load_ids_from_file(dataset_filename)
+        dataset_df = super().load_from_file(dataset_filename)
 
         # We set the samples with no info on inc_angle to 0 as its value, to simplify.
         dataset_df.inc_angle = dataset_df.inc_angle.replace('na', 0)
@@ -86,6 +83,16 @@ class IcebergDataSet(dataset.DataSet):
             sample[IcebergDataSet.ICEBERG_KEY] = self.y_output[position]
         return sample
 
+    def as_dataframe(self, include_all_data=True):
+        """Adds internal data to a new dataframe."""
+        dataset_df = super().as_dataframe()
+        if include_all_data:
+            dataset_df[IcebergDataSet.BAND1_KEY] = self.x_band1
+            dataset_df[IcebergDataSet.BAND2_KEY] = self.x_band2
+            dataset_df[IcebergDataSet.ANGLE_KEY] = self.x_angle
+            dataset_df[IcebergDataSet.ICEBERG_KEY] = self.y_output
+        return dataset_df
+
     def get_model_input(self):
         """Returns the 2 inputs to be used: the combined bands and the angle."""
         return [self.x_combined_bands, self.x_angle]
@@ -100,14 +107,3 @@ class IcebergDataSet(dataset.DataSet):
 
     def set_output(self, new_output):
         self.y_output = new_output
-
-    def save_to_file(self, output_filename):
-        """Stores Numpy arrays with a dataset into a JSON file."""
-        dataset_df = pd.DataFrame()
-        dataset_df[dataset.DataSet.ID_KEY] = self.x_ids
-        dataset_df[IcebergDataSet.BAND1_KEY] = self.x_band1
-        dataset_df[IcebergDataSet.BAND2_KEY] = self.x_band2
-        dataset_df[IcebergDataSet.ANGLE_KEY] = self.x_angle
-        dataset_df[IcebergDataSet.ICEBERG_KEY] = self.y_output
-
-        dataframe_helper.save_dataframe_to_file(dataset_df, output_filename)

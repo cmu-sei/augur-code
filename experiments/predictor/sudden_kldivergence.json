@@ -6,12 +6,18 @@
     "dataset_class": "iceberg.iceberg_dataset.IcebergDataSet",
     "dataset": "../output/sudden_drift.json",
     "base_dataset": "../output/merged_dataset.json",
-    "model": "../output/trained_model"
+    "model": "../output/trained_model",
+    "ts_model": "../output/trained_model_ts"
   },
   "output":
   {
     "predictions_output": "../output/sudden_kl_predictions.json",
     "metrics_output": "../output/sudden_kl_metrics_output.json"
+  },
+  "time_interval":
+  {
+    "starting_interval": "2022-05-21",
+    "interval_unit": "D"
   },
   "metrics":
   [
